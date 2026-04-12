@@ -579,7 +579,7 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|---|
 | `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction` | Auth flows: create user + profile + default tag; sign in; password reset |
 | `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `deleteTag` | Tag CRUD — deleteTag guards is_default; createTag validates label + amount |
-| `lib/actions/gift.actions.ts` | `initializeGift` | Parses form, calculates 3% fee + net_amount, inserts PENDING contribution via admin client, calls initializePaystackTransaction with caller-generated reference, redirect()s to Paystack authorization URL; cleans up pending row on Paystack failure |
+| `lib/actions/gift.actions.ts` | `initializeGift` | Parses form, calculates 3% fee + net_amount, applies Section 4.3 anonymous override server-side (isAnonymous=true → displayName=null always), inserts PENDING contribution via admin client, calls initializePaystackTransaction with caller-generated reference, redirect()s to Paystack authorization URL; cleans up pending row on Paystack failure |
 
 ### Paystack Library
 
@@ -610,6 +610,8 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|---|
 | `/[username]` | `app/[username]/page.tsx` | Public gift link page — fetches profile + tags + confirmed direct contributions in parallel; left col: ProfileCard + ContributionFeedCard; right col: GiftForm |
 | `/[username]` (not found) | `app/[username]/not-found.tsx` | Friendly 404 when username doesn't exist |
+| `/gift/success` | `app/gift/success/page.tsx` | Paystack callback on successful payment — reads `?reference=` param, fetches contribution + creator name, shows confirmation with amount pill and back link; pending fallback if reference not found yet |
+| `/gift/cancelled` | `app/gift/cancelled/page.tsx` | Shown when payment is abandoned — warm copy, "Try again" link back to `?from=username` creator page if param present, else "Go home" |
 
 ### Database Migrations
 
@@ -1191,6 +1193,44 @@ Last session: Phase 2 / Session 2.2 — Gift tag management page + formatCurrenc
       • All catch paths: log 'failed' with error_message, return 200
       • logWebhookEvent() helper never throws — swallows its own errors
       • ALL DB writes use createAdminClient() (service role — no RLS)
+
+  Session 4.3 completed:
+  - app/gift/success/page.tsx — Server Component, Paystack callback page:
+      • Reads ?reference= from searchParams (Paystack appends this to callbackUrl)
+      • Fetches contribution by paystack_ref via public Supabase client; joins
+        profiles!recipient_id to get display_name + username
+      • Success state: 🙏 emoji, "Your gift was sent! Thank you" heading (Fraunces),
+        green amount pill (success-soft bg, success text, formatCurrency), 
+        "← Back to {name}'s page" link in accent colour
+      • Pending/not-found fallback: ⏳ emoji, "We're confirming your payment — 
+        check back shortly", "← Go home" link
+      • All copy follows Section 3.5; all styles use design tokens
+  - app/gift/cancelled/page.tsx — Server Component, payment abandoned page:
+      • Reads optional ?from= param (creator username for "Try again" link)
+      • 💛 emoji, "Payment didn't go through" heading (Fraunces)
+      • Body: "No worries — nothing was charged. Try again whenever you're ready."
+      • If ?from= present: "← Try again" links back to /{username}
+      • If no ?from=: "← Go home" links to /
+      • Note: Paystack redirect-based flow has no built-in cancel_url param —
+        the cancelled page is navigated to manually or linked from the gift form
+  - lib/actions/gift.actions.ts — updated callbackUrl:
+      • Was: {APP_URL}/{username}?gift=success
+      • Now: {APP_URL}/gift/success
+      • Paystack appends ?reference=xxx&trxref=xxx to this URL on redirect
+
+  Bug fix (Session 4.3 addendum):
+  - lib/actions/gift.actions.ts — fixed display_name anonymous override:
+      • Bug: isAnonymous was read AFTER displayName was computed; the anonymous
+        override was never applied server-side, meaning a user's name could be
+        stored even when they chose to appear as Anonymous
+      • Fix: read isAnonymous first, then apply: displayName = isAnonymous ? null : rawDisplayName
+      • This enforces Section 4.3 Rule 1 at the data layer (not just at display time)
+      • The 3 cases are now correctly handled:
+          is_anonymous=true  → display_name always NULL (regardless of form value)
+          is_anonymous=false + name entered → display_name = trimmed name
+          is_anonymous=false + no name → display_name = NULL
+      • Data flow confirmed correct: form <input name="display_name"> → FormData →
+        formData.get('display_name') → rawDisplayName → anonymous override → DB insert
 
 Next task:    Phase 5 — Support Pools (creator + public)
   - lib/utils/slug.ts — implement generateSlug(title) (still a stub)

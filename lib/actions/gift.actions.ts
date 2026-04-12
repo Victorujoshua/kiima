@@ -13,11 +13,15 @@ export async function initializeGift(
   _prevState: InitializeGiftState | null,
   formData: FormData
 ): Promise<InitializeGiftState> {
-  const recipientId = (formData.get('recipient_id') as string | null) ?? '';
-  const tagId       = (formData.get('tag_id')        as string | null) || null;
-  const rawAmount   = (formData.get('amount')         as string | null) ?? '';
-  const displayName = (formData.get('display_name')   as string | null)?.trim() || null;
-  const isAnonymous = formData.get('is_anonymous') === 'true';
+  const recipientId    = (formData.get('recipient_id') as string | null) ?? '';
+  const tagId          = (formData.get('tag_id')        as string | null) || null;
+  const rawAmount      = (formData.get('amount')         as string | null) ?? '';
+  const rawDisplayName = (formData.get('display_name')   as string | null)?.trim() || null;
+  const isAnonymous    = formData.get('is_anonymous') === 'true';
+
+  // Section 4.3: anonymous choice always overrides — never store the name when anonymous.
+  // This must be enforced server-side regardless of what the form sends.
+  const displayName = isAnonymous ? null : rawDisplayName;
 
   const amount = Number(rawAmount);
   if (!recipientId || isNaN(amount) || amount <= 0) {
@@ -71,7 +75,7 @@ export async function initializeGift(
       amount,
       currency:    profile.currency,
       reference,
-      callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/${profile.username}?gift=success`,
+      callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/gift/success`,
       metadata: {
         recipient_id:  recipientId,
         tag_id:        tagId,
