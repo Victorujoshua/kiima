@@ -3,8 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getTagsByUser } from '@/lib/actions/tag.actions';
 import ProfileCard from '@/components/cards/ProfileCard';
 import GiftForm from '@/components/forms/GiftForm';
-import ContributionFeedCard from '@/components/cards/ContributionFeedCard';
-import type { Profile, Currency, Contribution } from '@/types';
+import type { Profile, Currency } from '@/types';
 
 interface PageProps {
   params: { username: string };
@@ -22,31 +21,13 @@ export default async function UserPage({ params }: PageProps) {
 
   if (!profile) notFound();
 
-  // Fetch tags and confirmed direct-gift contributions in parallel
-  const [tags, { data: rawContributions }] = await Promise.all([
-    getTagsByUser(profile.id),
-    supabase
-      .from('contributions')
-      .select('*, tag:gift_tags!tag_id(*)')
-      .eq('recipient_id', profile.id)
-      .eq('status', 'confirmed')
-      .is('pool_id', null)          // direct gifts only — pool contributions show on pool page
-      .order('created_at', { ascending: false })
-      .limit(10),
-  ]);
-
-  const contributions = (rawContributions ?? []) as Contribution[];
+  // Fetch gift tags — contributions are private, shown only in creator dashboard
+  const tags = await getTagsByUser(profile.id);
 
   return (
-    <main style={pageStyle}>
+    <main style={pageStyle} className="k-page">
       <div style={gridStyle}>
-        {/* Left column: profile info + contribution feed */}
-        <div style={leftColStyle}>
-          <ProfileCard profile={profile as Profile} />
-          <ContributionFeedCard contributions={contributions} />
-        </div>
-
-        {/* Right column: gift form */}
+        <ProfileCard profile={profile as Profile} />
         <GiftForm
           recipientId={profile.id}
           tags={tags}
@@ -60,7 +41,7 @@ export default async function UserPage({ params }: PageProps) {
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-bg)',
-  padding: '40px 20px',
+  padding: '40px 0',
 };
 
 const gridStyle: React.CSSProperties = {
@@ -72,8 +53,3 @@ const gridStyle: React.CSSProperties = {
   alignItems: 'start',
 };
 
-const leftColStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '16px',
-};

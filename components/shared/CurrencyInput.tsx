@@ -24,8 +24,14 @@ export default function CurrencyInput({
 }: CurrencyInputProps) {
   const symbol = CURRENCY_SYMBOLS[currency];
 
+  // Display the raw numeric value formatted with commas (e.g. 10000 → "10,000").
+  // The parent always stores the raw number string; formatting is display-only.
+  const displayValue = value
+    ? Number(value).toLocaleString('en', { maximumFractionDigits: 0 })
+    : '';
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // Strip anything that isn't a digit
+    // Strip commas and anything that isn't a digit before passing to parent.
     onChange?.(e.target.value.replace(/[^0-9]/g, ''));
   }
 
@@ -52,7 +58,7 @@ export default function CurrencyInput({
       <input
         type="text"
         inputMode="numeric"
-        value={value}
+        value={displayValue}
         onChange={readOnly ? undefined : handleChange}
         readOnly={readOnly}
         placeholder="0"

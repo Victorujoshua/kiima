@@ -3,14 +3,15 @@ import type { Contribution } from '@/types';
 
 interface ContributionFeedCardProps {
   contributions: Contribution[];
+  heading?: string;
 }
 
-export default function ContributionFeedCard({ contributions }: ContributionFeedCardProps) {
+export default function ContributionFeedCard({ contributions, heading = 'Recent gifts' }: ContributionFeedCardProps) {
   const recent = contributions.slice(0, 10);
 
   return (
     <div style={cardStyle}>
-      <h2 style={headingStyle}>Recent gifts</h2>
+      <h2 style={headingStyle}>{heading}</h2>
 
       {recent.length === 0 ? (
         <p style={emptyStyle}>No gifts yet — be the first to show love ❤️</p>

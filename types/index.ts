@@ -30,6 +30,7 @@ export interface SupportPool {
   raised: number;
   status: PoolStatus;
   slug: string;
+  show_contributors: boolean;
   created_at: string;
 }
 

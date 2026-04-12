@@ -21,13 +21,44 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
   const [amount, setAmount] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isAnon, setIsAnon] = useState(false);
+  const [nameError, setNameError] = useState('');
 
   function handleTagSelect(tag: GiftTag | null) {
     setSelectedTag(tag);
     setAmount(tag ? String(tag.amount) : '');
   }
 
-  const canSubmit = Number(amount) > 0;
+  function handleAmountChange(value: string) {
+    setAmount(value);
+    // Deselect the active tag when the gifter edits the amount away from it
+    if (selectedTag && value !== String(selectedTag.amount)) {
+      setSelectedTag(null);
+    }
+  }
+
+  function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setDisplayName(e.target.value);
+    if (e.target.value.trim()) setNameError('');
+  }
+
+  function handleNameBlur() {
+    if (!isAnon && !displayName.trim()) {
+      setNameError('Please enter your name');
+    }
+  }
+
+  // When anonymous is toggled ON: clear the name and any error.
+  // When toggled OFF: re-enable the field (user must fill it before submitting).
+  function handleAnonChange(value: boolean) {
+    setIsAnon(value);
+    if (value) {
+      setDisplayName('');
+      setNameError('');
+    }
+  }
+
+  const amountMissing = Number(amount) <= 0;
+  const canSubmit = !amountMissing && (isAnon || displayName.trim() !== '');
 
   return (
     <div style={cardStyle}>
@@ -37,7 +68,7 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
         action={formAction}
         style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}
       >
-        {/* Hidden fields */}
+        {/* Hidden fields — synced on every render so FormData reads current state */}
         <input type="hidden" name="recipient_id" value={recipientId} />
         <input type="hidden" name="tag_id" value={selectedTag?.id ?? ''} />
         <input type="hidden" name="is_anonymous" value={String(isAnon)} />
@@ -60,23 +91,15 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
 
         {/* Amount */}
         <div>
-          <label style={labelStyle}>
-            {selectedTag ? 'Amount' : 'How much?'}
-          </label>
+          <label style={labelStyle}>How much?</label>
           <CurrencyInput
             currency={currency}
             value={amount}
-            onChange={setAmount}
-            readOnly={selectedTag !== null}
+            onChange={handleAmountChange}
           />
-          {selectedTag && (
-            <p style={hintStyle}>
-              Tap the tag again to enter a custom amount.
-            </p>
-          )}
         </div>
 
-        {/* Name */}
+        {/* Name — required unless anonymous */}
         <div>
           <label htmlFor="gift-name" style={labelStyle}>
             Your name
@@ -85,19 +108,24 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
             id="gift-name"
             name="display_name"
             type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Your name (optional)"
+            value={isAnon ? '' : displayName}
+            onChange={handleNameChange}
+            onBlur={handleNameBlur}
+            placeholder={isAnon ? 'Sending anonymously' : 'Your name'}
+            disabled={isAnon}
             autoComplete="off"
-            className="k-input"
+            className={`k-input${nameError ? ' k-input--error' : ''}`}
           />
+          {nameError && (
+            <p style={fieldErrorStyle} role="alert">{nameError}</p>
+          )}
         </div>
 
         {/* Anonymous toggle — Section 4.3 */}
         <AnonymousToggle
           isAnon={isAnon}
           displayName={displayName}
-          onChange={setIsAnon}
+          onChange={handleAnonChange}
         />
 
         {/* Global error */}
@@ -110,11 +138,12 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
         {/* CTA */}
         <SubmitButton disabled={!canSubmit} />
 
-        {!canSubmit && (
+        {amountMissing && (
           <p style={{ ...hintStyle, textAlign: 'center' }}>
             Choose a tag or enter an amount to continue.
           </p>
         )}
+
       </form>
     </div>
   );
@@ -173,6 +202,13 @@ const hintStyle: React.CSSProperties = {
   margin: 'var(--space-xs) 0 0',
 };
 
+const fieldErrorStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: '12px',
+  color: 'var(--color-danger)',
+  margin: 'var(--space-xs) 0 0',
+};
+
 const errorStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: '13px',
@@ -182,4 +218,3 @@ const errorStyle: React.CSSProperties = {
   padding: '10px var(--space-md)',
   margin: 0,
 };
-

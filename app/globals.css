@@ -34,6 +34,12 @@ body {
 .k-input--error {
   border-color: var(--color-danger) !important;
 }
+.k-input:disabled {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 1;
+}
 
 /* ─── Button base ─────────────────────────────────────── */
 .k-btn {
@@ -199,10 +205,30 @@ body {
 .k-dash-main {
   flex: 1;
   min-width: 0;
+  padding-left: 100px;
+  padding-right: 100px;
   padding-bottom: 72px; /* clear mobile tab bar */
+}
+@media (max-width: 1024px) {
+  .k-dash-main { padding-left: 40px; padding-right: 40px; }
 }
 @media (min-width: 768px) {
   .k-dash-main { padding-bottom: 0; }
+}
+@media (max-width: 768px) {
+  .k-dash-main { padding-left: 20px; padding-right: 20px; }
+}
+
+/* Responsive horizontal padding for public pages */
+.k-page {
+  padding-left: 100px;
+  padding-right: 100px;
+}
+@media (max-width: 1024px) {
+  .k-page { padding-left: 40px; padding-right: 40px; }
+}
+@media (max-width: 768px) {
+  .k-page { padding-left: 20px; padding-right: 20px; }
 }
 
 /* Bottom tab bar — shown on mobile, hidden on desktop */
@@ -245,6 +271,17 @@ body {
   background: var(--color-accent-soft);
   color: var(--color-accent);
   font-weight: 600;
+}
+
+/* ─── Skeleton loader ─────────────────────────────────── */
+@keyframes k-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+.k-skeleton {
+  background: rgba(28, 25, 22, 0.07);
+  border-radius: var(--radius-sm);
+  animation: k-pulse 1.6s ease-in-out infinite;
 }
 
 /* Mobile tab link */

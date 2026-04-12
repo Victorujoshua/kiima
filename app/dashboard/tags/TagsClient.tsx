@@ -216,9 +216,9 @@ export default function TagsClient({ tags, userId, currency }: TagsClientProps) 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const pageStyle: React.CSSProperties = {
-  maxWidth: '680px',
+  maxWidth: '900px',
   margin: '0 auto',
-  padding: '40px 20px',
+  padding: '40px 0',
 };
 
 const headingStyle: React.CSSProperties = {

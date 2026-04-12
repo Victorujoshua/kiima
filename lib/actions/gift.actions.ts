@@ -18,9 +18,10 @@ export async function initializeGift(
   const rawAmount      = (formData.get('amount')         as string | null) ?? '';
   const rawDisplayName = (formData.get('display_name')   as string | null)?.trim() || null;
   const isAnonymous    = formData.get('is_anonymous') === 'true';
+  // pool_id is present for pool contributions; empty string means direct gift
+  const poolId         = (formData.get('pool_id') as string | null) || null;
 
   // Section 4.3: anonymous choice always overrides — never store the name when anonymous.
-  // This must be enforced server-side regardless of what the form sends.
   const displayName = isAnonymous ? null : rawDisplayName;
 
   const amount = Number(rawAmount);
@@ -48,12 +49,33 @@ export async function initializeGift(
     return { error: 'Something went wrong — try again.' };
   }
 
+  // For pool contributions, fetch the pool slug so we can build the callback URL
+  let poolSlug: string | null = null;
+  if (poolId) {
+    const { data: pool, error: poolError } = await supabase
+      .from('support_pools')
+      .select('slug')
+      .eq('id', poolId)
+      .single();
+
+    if (poolError || !pool) {
+      return { error: 'Something went wrong — try again.' };
+    }
+    poolSlug = pool.slug;
+  }
+
+  // Callback URL: pool contributions return to the pool page;
+  // direct gifts go to the dedicated success page.
+  const callbackUrl = poolSlug
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/${profile.username}/pool/${poolSlug}`
+    : `${process.env.NEXT_PUBLIC_APP_URL}/gift/success`;
+
   // Insert PENDING contribution row before redirecting to Paystack
   const { error: insertError } = await supabase
     .from('contributions')
     .insert({
       recipient_id:  recipientId,
-      pool_id:       null,
+      pool_id:       poolId,
       tag_id:        tagId,
       amount,
       fee,
@@ -75,9 +97,10 @@ export async function initializeGift(
       amount,
       currency:    profile.currency,
       reference,
-      callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/gift/success`,
+      callbackUrl,
       metadata: {
         recipient_id:  recipientId,
+        pool_id:       poolId,
         tag_id:        tagId,
         display_name:  displayName,
         is_anonymous:  isAnonymous,

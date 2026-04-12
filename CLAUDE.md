@@ -534,17 +534,17 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|---|---|
 | `ProfileCard` | `cards/ProfileCard.tsx` | Avatar (img or initials fallback), display name, @username, bio, copy-link pill bar | `profile: Profile` |
 | `GiftActionCard` | `cards/GiftActionCard.tsx` | Tag pills via GiftTagPill + CurrencyInput; uncontrolled by default, accepts optional controlled props for payment form | `tags: GiftTag[], currency: Currency, selectedTag?, onTagSelect?, onAmountChange?` |
-| `SupportPoolCard` | `cards/SupportPoolCard.tsx` | Pool title, progress bar, status | `pool: SupportPool` |
-| `ContributionFeedCard` | `cards/ContributionFeedCard.tsx` | Up to 10 most recent contributions via ContributionRow; empty state: "No gifts yet — be the first to show love ❤️" | `contributions: Contribution[]` |
+| `SupportPoolCard` | `cards/SupportPoolCard.tsx` | Pool title (Fraunces), optional creator byline, description, open/closed badge, closed banner ("This support pool is closed 🔒"), ProgressBar, contributor count footer | `pool: SupportPool, currency: Currency, creatorName?: string, contributorCount?: number` |
+| `ContributionFeedCard` | `cards/ContributionFeedCard.tsx` | Up to 10 most recent contributions via ContributionRow; empty state: "No gifts yet — be the first to show love ❤️"; optional heading prop (default "Recent gifts") | `contributions: Contribution[], heading?: string` |
 | `DashboardStatCard` | `cards/DashboardStatCard.tsx` | Compact stat card: metadata label (uppercase 11px), large bold value (28px), muted sub text | `label: string, value: string, sub: string` |
 
 ### Forms
 
 | Component | File | Purpose | Key Props |
 |---|---|---|---|
-| `GiftForm` | `forms/GiftForm.tsx` | Tag pills + CurrencyInput + name input + AnonymousToggle + submit; calls `initializeGift`; SubmitButton sub-component uses `useFormStatus` for loading state; redirect to Paystack on success | `recipientId: string, tags: GiftTag[], currency: Currency` |
-| `ContributeForm` | `forms/ContributeForm.tsx` | Pool contribution form | `poolId, tags, currency, isClosed` |
-| `PoolCreateForm` | `forms/PoolCreateForm.tsx` | Create new support pool | `creatorId` |
+| `GiftForm` | `forms/GiftForm.tsx` | Tag pills + CurrencyInput (always editable — tag pill fills amount but does not lock field; editing away from tag amount deselects the pill) + name input (required; disabled + cleared when anonymous) + AnonymousToggle + submit; name validates on blur — "Please enter your name" blocks submission; calls `initializeGift`; SubmitButton sub-component uses `useFormStatus` for loading state; redirect to Paystack on success | `recipientId: string, tags: GiftTag[], currency: Currency` |
+| `ContributeForm` | `forms/ContributeForm.tsx` | Pool contribution form — fixed currency tier pills (₦5k/10k/20k/50k/100k or USD/GBP/EUR equivalents), CurrencyInput (always editable — tier pill fills amount but does not lock field; editing away from tier amount deselects the pill), name input, AnonymousToggle; no gift tags; when isClosed=true renders locked closed-state card; calls `initializeGift`; Paystack callbackUrl → pool page | `poolId: string, recipientId: string, currency: Currency, isClosed: boolean` |
+| `PoolCreateForm` | `forms/PoolCreateForm.tsx` | Title + optional description + goal amount (CurrencyInput) + "Show recent contributors publicly" toggle (default ON, same pill-switch style as AnonymousToggle) + hidden user_id/goal_amount/show_contributors bridge inputs; calls `createPool`; field-level validation errors from server action; on success: `redirect('/dashboard/pools')` | `userId: string, currency: Currency` |
 
 ### Shared Atoms
 
@@ -552,9 +552,9 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|---|---|
 | `GiftTagPill` | `shared/GiftTagPill.tsx` | Tag selection button | `tag, selected, onSelect, currency` |
 | `AnonymousToggle` | `shared/AnonymousToggle.tsx` | Toggle + identity preview — implements Section 4.3 Rule 4 exactly | `isAnon, displayName?, onChange` |
-| `ProgressBar` | `shared/ProgressBar.tsx` | Pool progress bar | `raised, goal, currency` |
-| `ContributionRow` | `shared/ContributionRow.tsx` | Renders formatContributionLine() output + date; isLast prop removes bottom border | `contribution: Contribution, isLast?: boolean` |
-| `CurrencyInput` | `shared/CurrencyInput.tsx` | Large amount input with currency symbol prefix; readOnly locks field when tag selected | `currency: Currency, value, onChange?, readOnly?` |
+| `ProgressBar` | `shared/ProgressBar.tsx` | Pool progress bar with mount animation (starts at 0%, transitions to target over 0.6s); gradient fill accent → accent-light; raised/goal labels below track | `raised: number, goal: number, currency: Currency` |
+| `ContributionRow` | `shared/ContributionRow.tsx` | Renders formatContributionLine() output + optional source badge (pool title or "Direct gift") + date (day/month/year); isLast prop removes bottom border | `contribution: Contribution, isLast?: boolean, source?: string` |
+| `CurrencyInput` | `shared/CurrencyInput.tsx` | Large amount input with currency symbol prefix; formats display value with commas (10000 → "10,000") while parent stores raw numeric string; readOnly locks field when tag selected | `currency: Currency, value, onChange?, readOnly?` |
 | `KiimaButton` | `shared/KiimaButton.tsx` | Primary CTA button — variants: primary (dark #1C1916), ghost (terracotta text), danger (red soft→solid on hover); spinner on loading | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
 
 ### Auth Pages
@@ -579,7 +579,8 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|---|
 | `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction` | Auth flows: create user + profile + default tag; sign in; password reset |
 | `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `deleteTag` | Tag CRUD — deleteTag guards is_default; createTag validates label + amount |
-| `lib/actions/gift.actions.ts` | `initializeGift` | Parses form, calculates 3% fee + net_amount, applies Section 4.3 anonymous override server-side (isAnonymous=true → displayName=null always), inserts PENDING contribution via admin client, calls initializePaystackTransaction with caller-generated reference, redirect()s to Paystack authorization URL; cleans up pending row on Paystack failure |
+| `lib/actions/gift.actions.ts` | `initializeGift` | Handles both direct gifts AND pool contributions. Reads optional `pool_id` from formData — if set, fetches pool slug to build pool-page callbackUrl; otherwise callbackUrl = /gift/success. Applies Section 4.3 anonymous override. Calculates 3% fee. Inserts PENDING contribution (with pool_id if present). Calls initializePaystackTransaction. redirect()s to Paystack. Cleans up pending row on Paystack failure. |
+| `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool` | createPool: validates title (≤80 chars) + goalAmount, generates slug (via generateSlug), checks slug uniqueness per creator and appends timestamp if collision, inserts row, redirect('/dashboard/pools'). getPools: returns all pools for userId newest first. closePool: verifies ownership + not already closed before UPDATE. contributePool: stub — validates poolId + amount, returns { success: true }; full Paystack flow in Phase 5.3. |
 
 ### Paystack Library
 
@@ -589,6 +590,17 @@ Keep this updated as components are built. Before building any new component, ch
 | `lib/paystack/webhook.ts` | `verifyPaystackSignature` | HMAC-SHA512 verification of x-paystack-signature header; uses timingSafeEqual |
 | `lib/paystack/verify.ts` | `verifyPaystackTransaction` | GET Paystack /transaction/verify/:reference; used by admin recheckPaystackPayment |
 
+### Dashboard Loading Skeletons
+
+| File | Purpose |
+|---|---|
+| `app/dashboard/loading.tsx` | Overview skeleton — 3 stat card placeholders + recent gifts row placeholders |
+| `app/dashboard/transactions/loading.tsx` | Transactions skeleton — 8 row placeholders with line + source + date bars |
+| `app/dashboard/pools/loading.tsx` | Pools skeleton — 3 pool card placeholders with title, URL, progress bar bars |
+| `app/dashboard/tags/loading.tsx` | Tags skeleton — 4 tag row placeholders + add tag button stub |
+
+All use `.k-skeleton` CSS class (defined in `globals.css`) with `k-pulse` keyframe animation (1.6s ease-in-out, opacity 1→0.45→1).
+
 ### Dashboard Shell
 
 | File | Purpose |
@@ -597,21 +609,30 @@ Keep this updated as components are built. Before building any new component, ch
 | `app/dashboard/DashboardNav.tsx` | `'use client'` — `variant: 'sidebar' \| 'tabs'`; uses `usePathname` for active highlighting; exact match for `/dashboard`, `startsWith` for sub-routes |
 | `app/dashboard/LogoutButton.tsx` | `'use client'` — calls `supabase.auth.signOut()` then `router.push('/login')` |
 
+**Padding system (set once, inherited everywhere):**
+- Dashboard: `.k-dash-main` in `globals.css` provides `padding-left/right`: 100px (desktop >1024px) → 40px (tablet ≤1024px) → 20px (mobile ≤768px). All dashboard pages set only vertical padding in their `pageStyle`.
+- Public pages (`/[username]`, `/[username]/pool/[slug]`): use `className="k-page"` on `<main>` — same responsive breakpoints defined in `globals.css`. Pages set only vertical padding inline.
+
 ### Dashboard Pages
 
 | Route | File | Purpose |
 |---|---|---|
 | `/dashboard` | `app/dashboard/page.tsx` | Overview: 3 DashboardStatCards (gifts received, pool support, total count) + 5 most recent ContributionRows; all stats fetched in parallel |
+| `/dashboard/transactions` | `app/dashboard/transactions/page.tsx` | All confirmed contributions received — newest first, limit 100; joins pool title (shown as source badge per row, "Direct gift" if no pool); empty state: "No gifts yet — share your link to get started ✨"; contribution count label above list |
 | `/dashboard/tags` | `app/dashboard/tags/page.tsx` + `TagsClient.tsx` | Gift tag management — list all tags, SYSTEM badge on default, Remove on custom, inline add form |
+| `/dashboard/pools` | `app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx` | Pool list: title, open/closed badge, public URL with "Copy link" / "Copied! ✓" button (CopyPoolLink client component), ProgressBar, raised/goal labels, "View →" opens public pool page in new tab; "+ Create pool" via PoolsClient; empty state with 🌱 |
+| `/dashboard/pools/[id]` | `app/dashboard/pools/[id]/page.tsx` + `ClosePoolButton.tsx` + `ShowContributorsToggle.tsx` | Pool detail — ownership-guarded; shows pool header card (title, status badge, description, ProgressBar, raised/goal/contributor stats), settings card with `ShowContributorsToggle` (optimistic toggle, calls `updateShowContributors`, refreshes Server Component), danger card with `ClosePoolButton` (when open), closed notice (when closed), full contributions list (all statuses; pending at 0.6 opacity with "Pending" badge) |
 
 ### Public Pages
 
 | Route | File | Purpose |
 |---|---|---|
-| `/[username]` | `app/[username]/page.tsx` | Public gift link page — fetches profile + tags + confirmed direct contributions in parallel; left col: ProfileCard + ContributionFeedCard; right col: GiftForm |
+| `/[username]` | `app/[username]/page.tsx` | Public gift link page — fetches profile + tags; two-column grid: ProfileCard (left) + GiftForm (right); ContributionFeedCard removed — gifts are private, shown only in creator dashboard |
 | `/[username]` (not found) | `app/[username]/not-found.tsx` | Friendly 404 when username doesn't exist |
 | `/gift/success` | `app/gift/success/page.tsx` | Paystack callback on successful payment — reads `?reference=` param, fetches contribution + creator name, shows confirmation with amount pill and back link; pending fallback if reference not found yet |
 | `/gift/cancelled` | `app/gift/cancelled/page.tsx` | Shown when payment is abandoned — warm copy, "Try again" link back to `?from=username` creator page if param present, else "Go home" |
+| `/[username]/pool/[slug]` | `app/[username]/pool/[slug]/page.tsx` | Public pool page — fetches profile + pool by username+slug (notFound if either missing); fetches confirmed contributor count + (if show_contributors=true) up to 10 recent contributions in parallel; two-column grid: SupportPoolCard + optional ContributionFeedCard "Recent contributors" (left, only when show_contributors=true and contributions exist), ContributeForm with fixed tier pills or closed state (right) |
+| `/[username]/pool/[slug]` (not found) | `app/[username]/pool/[slug]/not-found.tsx` | Friendly 404 for missing pool slugs — 🌊 emoji, "Pool not found" heading, "Go home" link |
 
 ### Database Migrations
 
@@ -619,6 +640,7 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|
 | `supabase/migrations/001_initial_schema.sql` | All tables, RLS policies, platform_settings seed row |
 | `supabase/migrations/002_default_tag_trigger.sql` | AFTER INSERT trigger on profiles — inserts default "Buy me a coffee ☕" tag using per-currency amount from platform_settings |
+| `supabase/migrations/003_pool_show_contributors.sql` | ADD COLUMN show_contributors boolean DEFAULT true to support_pools |
 
 ---
 
@@ -863,8 +885,8 @@ Branch naming:
 > Always update before ending a session.
 
 ```
-Last updated: 2026-04-11
-Last session: Phase 2 / Session 2.2 — Gift tag management page + formatCurrency util
+Last updated: 2026-04-12
+Last session: Phase 5 / Session 5.4 — Dashboard pool detail page + ClosePoolButton
 
   Session 0.2 recap:
   - Created styles/tokens.css with all design tokens from Section 3.1
@@ -1232,27 +1254,317 @@ Last session: Phase 2 / Session 2.2 — Gift tag management page + formatCurrenc
       • Data flow confirmed correct: form <input name="display_name"> → FormData →
         formData.get('display_name') → rawDisplayName → anonymous override → DB insert
 
-Next task:    Phase 5 — Support Pools (creator + public)
-  - lib/utils/slug.ts — implement generateSlug(title) (still a stub)
-  - lib/actions/pool.actions.ts — createPool, closePool, getPoolsByUser
-  - components/forms/PoolCreateForm.tsx
-  - app/dashboard/pools/page.tsx — pool list with status + progress
-  - app/dashboard/pools/[id]/page.tsx — pool detail + contributor list
-  - app/[username]/pool/[slug]/page.tsx — public pool page (ContributeForm,
-    ProgressBar, ContributionFeedCard, closed banner)
-  - Also needed: increment_pool_raised Supabase RPC (SQL migration)
-    so the webhook pool update is atomic
+  Session UX fixes (2026-04-12):
+  - app/[username]/page.tsx — removed ContributionFeedCard and its contributions
+    fetch; recent gifts are private — only visible in creator dashboard.
+    Page now fetches profile + tags only; layout is two-column grid: ProfileCard
+    (left) + GiftForm (right). leftColStyle wrapper div also removed.
+  - components/forms/GiftForm.tsx — name field is now required:
+      • Required when anonymous is OFF — canSubmit blocks if name is empty
+      • onBlur validation shows "Please enter your name" inline (fieldErrorStyle)
+      • Error clears when user types a valid name
+      • When anonymous toggled ON: displayName cleared, nameError cleared,
+        field disabled with placeholder "Sending anonymously"
+      • When anonymous toggled OFF: field re-enabled, user must retype name
+      • handleAnonChange() replaces direct setIsAnon in AnonymousToggle onChange
+      • canSubmit = amount > 0 AND (isAnon OR displayName.trim() !== '')
+      • Bottom hint text only shows for missing amount (name has inline error)
+  - components/shared/CurrencyInput.tsx — amount formatted with commas as user types:
+      • displayValue = Number(value).toLocaleString('en', { maximumFractionDigits: 0 })
+      • Input shows formatted display (e.g. "10,000"); parent stores raw "10000"
+      • Hidden input in GiftForm sends raw number to server — no change needed there
+      • handleChange strips commas before calling onChange (already stripped non-digits)
+  - app/globals.css — added .k-input:disabled rule:
+      • background: var(--color-bg), color: var(--color-text-muted), cursor: not-allowed
+      • Matches readOnly styling of CurrencyInput for visual consistency
+  - app/[username]/error.tsx — added (new file): catches render errors in [username]
+    route; shows "Something went wrong — try refreshing" card instead of blank page
+
+  Session 5.1 completed:
+  - lib/utils/slug.ts — generateSlug(title) implemented:
+      • normalize('NFD') + strip diacritics → remove non-word chars (strips emoji,
+        punctuation, symbols) → trim → lowercase → spaces to hyphens → collapse
+        hyphens → trim leading/trailing hyphens
+      • Uses \w instead of \p{L}\p{N} to stay within tsconfig target limits
+  - lib/actions/pool.actions.ts — three server actions:
+      createPool(_prevState, formData): validates title (required, ≤80 chars) + goalAmount
+        (>0). Generates slug, checks uniqueness per creator (appends -{timestamp} on collision).
+        Inserts pool row with status='open', raised=0. redirect('/dashboard/pools') on success.
+        Returns { fieldErrors } on validation failure, { error } on DB failure.
+      getPools(userId): SELECT * ORDER BY created_at DESC. Returns SupportPool[].
+      closePool(poolId, userId): verifies ownership + not already closed before UPDATE.
+        Returns { error } string if guard fails.
+  - components/forms/PoolCreateForm.tsx — 'use client':
+      • Fields: title (text, maxLength 80), description (optional textarea, maxLength 400),
+        goal amount (CurrencyInput — stores raw value in hidden input via useState bridge)
+      • Hidden inputs: user_id, goal_amount (synced from React state)
+      • SubmitButton sub-component uses useFormStatus for loading spinner
+      • Field-level error display from server action state
+      • Global error banner if state.error set
+  - components/shared/ProgressBar.tsx — implemented:
+      • Gradient fill: var(--color-accent) → var(--color-accent-light)
+      • Clamps to 100%, min-width 4px for visibility at 0%
+      • Labels: "{raised} raised" (bold) + "{pct}% of {goal}" (muted)
+  - app/dashboard/pools/page.tsx — Server Component (replaced "Coming soon" stub):
+      • Session guard → redirect /login if absent; fetches profile.currency
+      • Calls getPools(session.user.id) — all pools, newest first
+      • Empty state: 🌱 emoji card
+      • Pool card: title + open/closed badge, optional description, ProgressBar,
+        raised/goal footer, "View →" link to /dashboard/pools/[id]
+      • "+ Create pool" button handled by PoolsClient
+  - app/dashboard/pools/PoolsClient.tsx — 'use client':
+      • Toggles between "+ Create pool" button and inline PoolCreateForm
+      • "← Cancel" link returns to button state
+
+  Session 5.2 completed:
+  - components/shared/ProgressBar.tsx — updated to 'use client':
+      • Mount animation: useState(0) + useEffect setTimeout(60ms) → setWidthPct(target)
+      • transition: 'width 0.6s ease' plays after mount — smooth fill on first render
+      • minWidth changed to 0px so empty pools show no fill at all
+  - components/cards/SupportPoolCard.tsx — implemented:
+      • Props: pool, currency, creatorName?, contributorCount?
+      • Closed banner ("This support pool is closed 🔒") shown when status='closed'
+      • Title in Fraunces 500 22px, open/closed badge (success-soft / bg-muted)
+      • Optional creator byline ("by {name}"), optional description (body 14px)
+      • ProgressBar in middle, contributor count footer with border-top divider
+  - components/cards/ContributionFeedCard.tsx — minor update:
+      • Added optional heading prop (default "Recent gifts") so pool page can say
+        "Recent contributions" without hardcoding
+  - components/forms/ContributeForm.tsx — implemented:
+      • When isClosed=true: renders locked card (🔒 emoji, closed copy, no form fields)
+      • When open: same pattern as GiftForm — tag pills, CurrencyInput, name input
+        (required; disabled when anonymous), AnonymousToggle, SubmitButton
+      • Calls contributePool stub action; shows 🙏 success screen on state.success
+      • CTA copy: "Support this 🤍" (per Section 3.5)
+      • Inner OpenForm component keeps hooks away from early return
+  - lib/actions/pool.actions.ts — contributePool stub added:
+      • Validates poolId + amount > 0, returns { success: true }
+      • TODO: Phase 5.3 will add fee calc, PENDING insert, Paystack redirect
+  - app/[username]/pool/[slug]/page.tsx — public pool page (replaced "Coming soon"):
+      • Fetches profile by username → notFound() if missing
+      • Fetches pool by user_id+slug + tags in parallel → notFound() if pool missing
+      • Fetches confirmed contributions (with gift_tags join, limit 10) + count in parallel
+      • Two-column grid (auto-fit minmax 300px, 1080px max-width):
+          Left: SupportPoolCard + ContributionFeedCard ("Recent contributions")
+          Right: ContributeForm (isClosed passed through)
+  - app/[username]/pool/[slug]/not-found.tsx — pool-specific 404:
+      • 🌊 emoji, "Pool not found" (Fraunces), "Go home" link
+      • Prevents wrong "Creator not found" message bubbling from parent not-found
+
+  Session 5.3 completed:
+  - lib/actions/gift.actions.ts — extended to handle pool contributions:
+      • Reads optional pool_id from formData (empty string → null)
+      • If pool_id present: fetches pool.slug to build callbackUrl
+      • callbackUrl: pool → /{username}/pool/{slug}; direct gift → /gift/success
+      • Inserts contribution with pool_id (was hardcoded null before)
+      • Paystack metadata now includes pool_id
+      • Removed debug console.log left over from earlier session
+  - components/forms/ContributeForm.tsx — wired to real payment:
+      • Replaced contributePool stub import with initializeGift
+      • Removed stub success screen (Paystack redirect handles the flow)
+      • All hidden inputs were already correct: pool_id, recipient_id, tag_id,
+        is_anonymous, amount — no form markup changes needed
+  - app/api/webhooks/paystack/route.ts — verified correct, no changes needed:
+      • Already selects pool_id from the contribution row
+      • If pool_id non-null: calls increment_pool_raised RPC;
+        falls back to read-modify-write if RPC not deployed
+      • Was only broken before because pool_id was always null in the insert;
+        now it is stored correctly and the webhook will increment raised
+
+  Payment flow (end-to-end confirmed):
+    1. User fills ContributeForm → clicks "Support this 🤍"
+    2. initializeGift: calc fee → insert PENDING (pool_id set) → Paystack init
+    3. redirect() to Paystack checkout
+    4. Paystack redirects to /{username}/pool/{slug}?reference=xxx&trxref=xxx
+    5. Paystack webhook fires → verifies sig → confirms contribution →
+       increments support_pools.raised by net_amount
+    6. User refreshes pool page → sees updated raised total + new row in feed
+
+  Session 5.4 completed:
+  - app/dashboard/pools/[id]/page.tsx — Pool detail Server Component:
+      • Ownership guard: queries support_pools with both id AND user_id = session.user.id;
+        redirects to /dashboard/pools if not found or not owned
+      • Fetches profile.currency + all pool contributions (with gift_tags join, newest first)
+        in parallel via Promise.all
+      • Pool header card: title (Fraunces 24px), open/closed badge (green/grey),
+        optional description, ProgressBar, stats row (Raised / Goal / Contributors count)
+      • Contributors count = confirmed contributions only (filters by status='confirmed')
+      • Danger card with ClosePoolButton — only shown when pool is open
+      • Closed notice div when pool.status === 'closed'
+      • All contributions list (creator sees ALL statuses, not just confirmed):
+          - Pending rows: 0.6 opacity + "Pending" badge in muted style
+          - Uses formatContributionLine() for display text
+          - Date in short format (e.g. "12 Apr 2026")
+          - No border on last row
+  - app/dashboard/pools/[id]/ClosePoolButton.tsx — 'use client' two-step confirmation:
+      • Default state: "Close pool" danger button + hint text
+      • Confirming state: warning paragraph + "Yes, close pool" (danger, loading-aware)
+        + "Cancel" (ghost)
+      • handleConfirm(): calls closePool(poolId, userId) directly (no FormData —
+        action accepts typed args); on error: shows error inline, resets to default state;
+        on success: startTransition(() => router.refresh()) re-fetches Server Component
+      • TypeScript check (npx tsc --noEmit): passed clean
+
+  Session 5.5 completed:
+  - app/dashboard/pools/CopyPoolLink.tsx — 'use client' copy button component:
+      • Props: url (full URL for clipboard), display (short display string)
+      • navigator.clipboard.writeText(url) on click; catches silently on failure
+      • "Copy link" → "Copied! ✓" for 2 seconds then reverts (setTimeout)
+      • Styled as a small pill button inline with the URL text
+      • Copied state: success-soft bg, success colour; idle: accent colour, ghost border
+  - app/dashboard/pools/page.tsx — updated:
+      • Fetches username in addition to currency from profile
+      • Computes poolUrl (NEXT_PUBLIC_APP_URL/{username}/pool/{slug}) server-side
+      • Renders CopyPoolLink below pool title with url + display props
+      • "View →" link changed to open /{username}/pool/{slug} in a new tab
+        (target="_blank" rel="noopener noreferrer")
+      • Removed unused pct variable (was computed but never used)
+
+  Session 5.6 completed:
+  - components/forms/ContributeForm.tsx — replaced gift tag pills with fixed tier pills:
+      • TIERS map: NGN [5000,10000,20000,50000,100000]; USD/GBP/EUR [5,10,20,50,100]
+      • Tier pill click: sets selectedTier + fills amount; same pill again deselects + clears
+      • CurrencyInput locked (readOnly) when tier selected, editable for custom amount
+      • Removed all GiftTag/tag_id references — no tag_id hidden input
+      • Props changed: removed tags: GiftTag[] (no longer needed)
+      • Hint copy: "Tap the amount again to enter a custom amount."
+      • Label above pills: "Quick amounts"; label above input: "Or enter a custom amount"
+  - app/[username]/pool/[slug]/page.tsx — simplified:
+      • Removed getTagsByUser fetch + tags import — tags no longer used by ContributeForm
+      • Removed ContributionFeedCard import and render (contribution history is private)
+      • Left column is now SupportPoolCard only (no stacked feed card)
+      • Fetch pool then contributor count sequentially (count needs pool.id)
+      • ContributeForm no longer receives tags prop
+
+  Session 5.7 completed:
+  - components/forms/GiftForm.tsx — amount field always editable:
+      • Added handleAmountChange: calls setAmount + clears selectedTag when
+        typed value diverges from selectedTag.amount
+      • CurrencyInput onChange now points to handleAmountChange (not setAmount directly)
+      • Removed readOnly={selectedTag !== null} from CurrencyInput
+      • Removed hint text "Tap the tag again to enter a custom amount."
+      • Label simplified to always show "How much?" (no conditional)
+  - components/forms/ContributeForm.tsx — same pattern for tier pills:
+      • handleTierSelect simplified: always sets selectedTier + amount (no deselect-on-same)
+      • Added handleAmountChange: clears selectedTier when typed value diverges from tier
+      • CurrencyInput onChange points to handleAmountChange; readOnly removed
+      • Removed hint text and conditional label — label always "Or enter a custom amount"
+      • Pill active state driven by selectedTier matching tier value; clears automatically
+        when user edits amount
+
+  Session 5.8 completed:
+  - supabase/migrations/003_pool_show_contributors.sql — ADD COLUMN show_contributors
+      boolean DEFAULT true to support_pools. NOTE: must be applied manually via the
+      Supabase dashboard SQL editor (supabase CLI not linked to project).
+  - types/index.ts — added show_contributors: boolean to SupportPool interface
+  - lib/actions/pool.actions.ts:
+      • createPool: reads show_contributors from formData (default true if not 'false'),
+        includes in insert
+      • updateShowContributors(poolId, userId, showContributors): new action —
+        UPDATE support_pools SET show_contributors = $value WHERE id AND user_id
+  - components/forms/PoolCreateForm.tsx:
+      • Added showContributors state (default true) + hidden input show_contributors
+      • Toggle rendered above submit button: same pill-switch style as AnonymousToggle,
+        label "Show recent contributors publicly", description copy below label
+  - app/dashboard/pools/[id]/ShowContributorsToggle.tsx — new 'use client' component:
+      • Optimistic toggle: setValue immediately, revert on error
+      • Calls updateShowContributors; on success: startTransition(router.refresh())
+      • Error displayed inline below toggle row
+  - app/dashboard/pools/[id]/page.tsx:
+      • Imports ShowContributorsToggle
+      • Settings card with ShowContributorsToggle rendered between pool header and
+        danger/close card
+  - app/[username]/pool/[slug]/page.tsx:
+      • If pool.show_contributors: fetches up to 10 confirmed contributions in parallel
+        with count query; else skips contributions fetch entirely
+      • Left column renders ContributionFeedCard "Recent contributors" only when
+        show_contributors=true AND contributions.length > 0
+      • leftColStyle added for flex column layout
+
+  Session 6.1 completed:
+  - components/shared/ContributionRow.tsx — updated:
+      • Added optional source?: string prop — renders as a small faint secondary
+        line below the main formatted line (11px, color-text-faint)
+      • Line and source wrapped in a minWidth:0 div to allow ellipsis truncation
+      • Date format updated to include year (day month year) for transaction log use
+  - app/dashboard/transactions/page.tsx — built (replaced "Coming soon" stub):
+      • Fetches all confirmed contributions for session.user.id, newest first, limit 100
+      • Joins tag:gift_tags!tag_id(*) for formatContributionLine
+      • Joins pool:support_pools!pool_id(title) for source label
+      • ContributionWithPool local interface extends Contribution with pool join
+      • source = pool.title if pool contribution, "Direct gift" if pool_id is null
+      • Each row: ContributionRow with source prop
+      • Count label above list ("N contributions")
+      • Empty state: "No gifts yet — share your link to get started ✨"
+      • Card wraps list per Section 3.3
+
+  Session 6.2 completed:
+  - app/globals.css — added @keyframes k-pulse + .k-skeleton utility class:
+      • k-pulse: opacity 1 → 0.45 → 1 over 1.6s ease-in-out infinite
+      • .k-skeleton: rgba(28,25,22,0.07) background, radius-sm, applies k-pulse animation
+  - app/dashboard/loading.tsx — overview skeleton:
+      • Header bars (title + subtitle) + 3 stat card skeletons (label/value/sub bars)
+      • Single card with 5 row skeletons matching ContributionRow layout
+  - app/dashboard/transactions/loading.tsx — transactions skeleton:
+      • Header bars + card with 8 row skeletons (two-line: line + source, date)
+      • Row widths vary to feel natural (50%–90% via modulo)
+  - app/dashboard/pools/loading.tsx — pools skeleton:
+      • Header with title + "Create pool" button placeholder
+      • 3 pool card skeletons: title/badge row, URL bar, progress bar track, footer labels
+  - app/dashboard/tags/loading.tsx — tags skeleton:
+      • Header bars + card with 4 tag row skeletons (label/amount + remove button)
+      • Add tag divider row at bottom
+  - app/dashboard/pools/page.tsx — updated pools empty state copy:
+      • Heading: "You haven't created a pool yet — start one!"
+      • Body: "Set a goal, share your pool link, and let your supporters chip in together."
+  - Empty state audit:
+      • Transactions ✓ "No gifts yet — share your link to get started ✨" (already correct)
+      • Pools ✓ updated to match spec
+      • Tags — system tag always exists, no empty state needed
+      • Dashboard overview stat cards ✓ already handle 0 via ?? [] and ?? 0 fallbacks
+
+  Session 6.3 completed:
+  - app/globals.css — padding system:
+      • .k-dash-main: added padding-left/right 100px desktop (>1024px), 40px tablet
+        (≤1024px), 20px mobile (≤768px). All dashboard pages inherit this.
+      • .k-page: same breakpoints — applied to public page <main> elements via className
+  - Dashboard pages — horizontal padding removed from pageStyle (vertical only remains):
+      • app/dashboard/page.tsx: '40px 20px' → '40px 0'
+      • app/dashboard/transactions/page.tsx: 'var(--space-xl)' → 'var(--space-xl) 0'
+      • app/dashboard/pools/page.tsx: 'var(--space-xl) var(--space-xl)' → 'var(--space-xl) 0'
+      • app/dashboard/pools/[id]/page.tsx: 'var(--space-xl)' → 'var(--space-xl) 0'
+      • app/dashboard/tags/TagsClient.tsx: '40px 20px' → '40px 0'
+  - Dashboard loading skeletons — same horizontal padding removal:
+      • app/dashboard/loading.tsx, transactions/loading.tsx, pools/loading.tsx,
+        tags/loading.tsx: all updated to vertical-only padding in pageStyle
+  - Public pages — added className="k-page" on <main>, inline padding → vertical only:
+      • app/[username]/page.tsx: padding '40px 20px' → '40px 0' + className="k-page"
+      • app/[username]/pool/[slug]/page.tsx: same
+
+  Session 6.4 completed:
+  - Dashboard page container standardised to match overview reference:
+      maxWidth: '900px', margin: '0 auto', padding: '40px 0'
+  - app/dashboard/transactions/page.tsx: was 800px / no margin / var(--space-xl) top → fixed
+  - app/dashboard/pools/page.tsx: was 800px / no margin / var(--space-xl) top → fixed
+  - app/dashboard/tags/TagsClient.tsx: was 680px / correct margin+padding → maxWidth fixed
+
+Next task:    Phase 7 — Admin panel
+  - app/dashboard/transactions/page.tsx — full contribution history for the creator:
+      • All confirmed contributions, newest first
+      • Shows: display name / "Anonymous", amount (net to creator), tag used, date, pool (if any)
+      • Empty state: "No contributions yet"
+  - supabase/migrations/003_increment_pool_raised.sql — atomic RPC to deploy:
+      CREATE OR REPLACE FUNCTION increment_pool_raised(p_pool_id uuid, p_increment numeric)
+      RETURNS void AS $$ UPDATE support_pools SET raised = raised + p_increment
+      WHERE id = p_pool_id $$ LANGUAGE sql SECURITY DEFINER;
 
 Open issues:
-  - lib/utils/slug.ts stub still empty — needed before PoolCreateForm
-  - increment_pool_raised RPC not yet written as a migration
-    (webhook falls back to read-modify-write until it exists)
-  - PAYSTACK_WEBHOOK_SECRET is blank in .env.local — must be set before
-    testing the webhook end-to-end
+  - increment_pool_raised RPC not yet deployed to Supabase
+    (webhook falls back to read-modify-write — safe for V1)
+  - PAYSTACK_WEBHOOK_SECRET must be set in .env.local before end-to-end testing
   - 001_initial_schema.sql not yet run against the live Supabase project
   - 002_default_tag_trigger.sql not yet run against the live Supabase project
-  - gift@kiima.co placeholder email — will need proper gifter email collection
-    or Paystack receipt suppression in a later phase
+  - gift@kiima.co placeholder email — Paystack receipt suppression needed later
 ```
 
 ---
