@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/User/AppData/Local/Temp/claude/C--Users-User-Documents-Kiima/9724dfab-375f-4688-8b9f-fd1f545ea94f/tasks/**)",
+      "Read(//c/tmp/**)",
+      "Bash(npx create-next-app@14 kiima --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)"
+    ]
+  }
+}

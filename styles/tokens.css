@@ -1,0 +1,44 @@
+:root {
+  /* ─── Colours ─────────────────────────────────────────── */
+  --color-bg:           #F6F3EE;
+  --color-surface:      #FFFFFF;
+  --color-border:       rgba(28, 25, 22, 0.06);
+  --color-border-hover: rgba(28, 25, 22, 0.12);
+
+  --color-text-primary:   #1C1916;
+  --color-text-secondary: #5A4D44;
+  --color-text-muted:     #9A9089;
+  --color-text-faint:     #B5AAAA;
+
+  --color-accent:       #C87B5C;
+  --color-accent-soft:  #FDF1EC;
+  --color-accent-light: #E8A07A;
+
+  --color-success:      #3D9B56;
+  --color-success-soft: #EEF8F0;
+  --color-danger:       #E07070;
+  --color-danger-soft:  #FDF0F0;
+
+  /* ─── Typography ──────────────────────────────────────── */
+  --font-display: 'Fraunces', serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+
+  /* ─── Spacing scale ───────────────────────────────────── */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  28px;
+  --space-2xl: 40px;
+
+  /* ─── Radii ───────────────────────────────────────────── */
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:   22px;
+  --radius-full: 100px;
+
+  /* ─── Shadows ─────────────────────────────────────────── */
+  --shadow-card:       0 2px 12px rgba(28, 25, 22, 0.04);
+  --shadow-card-hover: 0 6px 28px rgba(28, 25, 22, 0.09);
+  --shadow-btn:        0 8px 24px rgba(28, 25, 22, 0.20);
+}

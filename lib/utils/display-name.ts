@@ -1,0 +1,39 @@
+import type { Contribution } from '@/types';
+import { formatCurrency } from './currency';
+
+/**
+ * resolveDisplayName(displayName, isAnonymous)
+ * Always use this. Never inline anonymous logic.
+ *
+ * resolveDisplayName("Victor", false)  → "Victor"
+ * resolveDisplayName(null,     false)  → "Anonymous"
+ * resolveDisplayName("Victor", true)   → "Anonymous"
+ * resolveDisplayName(null,     true)   → "Anonymous"
+ */
+export function resolveDisplayName(
+  displayName: string | null,
+  isAnonymous: boolean
+): string {
+  if (isAnonymous) return 'Anonymous';
+  if (!displayName || !displayName.trim()) return 'Anonymous';
+  return displayName.trim();
+}
+
+/**
+ * formatContributionLine(contribution)
+ * Always use this. Never format contribution lines inline.
+ *
+ * → "Victor sent ₦5,000"
+ * → "Anonymous sent ₦2,000"
+ * → "Anonymous bought a coffee ☕"  (when default tag + anonymous)
+ */
+export function formatContributionLine(contribution: Contribution): string {
+  // Section 4.5: special phrasing for anonymous + default tag
+  if (contribution.is_anonymous && contribution.tag?.is_default) {
+    return 'Anonymous bought a coffee ☕';
+  }
+
+  const name = resolveDisplayName(contribution.display_name, contribution.is_anonymous);
+  const amount = formatCurrency(contribution.amount, contribution.currency);
+  return `${name} sent ${amount}`;
+}
