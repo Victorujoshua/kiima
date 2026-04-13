@@ -89,8 +89,8 @@ export default function SuspendButton({ creatorId, isSuspended }: Props) {
         }}
       >
         {isSuspended
-          ? 'This will restore the creator's gift page and dashboard access.'
-          : 'This will block the creator's public gift page from loading. Their data is preserved.'}
+          ? `This will restore the creator's gift page and dashboard access.`
+          : `This will block the creator's public gift page from loading. Their data is preserved.`}
       </p>
       <div style={{ display: 'flex', gap: 8 }}>
         <button
