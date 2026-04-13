@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import type { Profile } from '@/types';
+import type { Profile, SocialLink } from '@/types';
+import SocialLinksRow from '@/components/shared/SocialLinksRow';
 
 interface ProfileCardProps {
   profile: Profile;
+  showLinkBar?: boolean;
+  links?: SocialLink[];
 }
 
-export default function ProfileCard({ profile }: ProfileCardProps) {
+export default function ProfileCard({ profile, showLinkBar = false, links = [] }: ProfileCardProps) {
   const [copied, setCopied] = useState(false);
   const linkDisplay = `kiima.co/${profile.username}`;
 
@@ -55,16 +58,21 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
       {/* Bio */}
       {profile.bio && <p style={bioStyle}>{profile.bio}</p>}
 
-      {/* Copy-link bar */}
-      <button
-        type="button"
-        onClick={handleCopy}
-        style={copyBarStyle}
-        aria-label={copied ? 'Link copied!' : `Copy link: ${linkDisplay}`}
-      >
-        <span style={linkTextStyle}>{linkDisplay}</span>
-        <span style={copyLabelStyle}>{copied ? 'Copied!' : 'Copy link'}</span>
-      </button>
+      {/* Copy-link bar — only shown when showLinkBar=true (dashboard context) */}
+      {showLinkBar && (
+        <button
+          type="button"
+          onClick={handleCopy}
+          style={copyBarStyle}
+          aria-label={copied ? 'Link copied!' : `Copy link: ${linkDisplay}`}
+        >
+          <span style={linkTextStyle}>{linkDisplay}</span>
+          <span style={copyLabelStyle}>{copied ? 'Copied!' : 'Copy link'}</span>
+        </button>
+      )}
+
+      {/* Social link icons — only rendered when links exist */}
+      {links.length > 0 && <SocialLinksRow links={links} />}
     </div>
   );
 }
@@ -142,10 +150,11 @@ const copyBarStyle: React.CSSProperties = {
   justifyContent: 'space-between',
   gap: 'var(--space-sm)',
   width: '100%',
+  minHeight: '44px',
   background: 'var(--color-bg)',
   border: '1px solid var(--color-border)',
   borderRadius: 'var(--radius-full)',
-  padding: '8px var(--space-md)',
+  padding: '10px var(--space-md)',
   cursor: 'pointer',
   transition: 'all 0.15s ease',
 };

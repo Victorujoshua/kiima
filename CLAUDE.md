@@ -319,6 +319,47 @@ The dashboard is **read-only aggregated data**. It shows:
 - Gift tag management (CRUD, except default tag)
 - Support pool list with status and progress
 
+### 4.8 Social Links
+
+Creators can add links to their social media profiles. These appear as icon buttons at the bottom of the ProfileCard on the public gift page.
+
+```
+Supported platforms (V1):
+  instagram  → instagram.com
+  tiktok     → tiktok.com
+  twitter    → twitter.com or x.com
+  youtube    → youtube.com
+  linkedin   → linkedin.com
+  website    → any valid https:// URL
+
+Rules:
+  - Max 6 links per creator (one per platform — enforced by DB unique constraint)
+  - URLs must begin with https://
+  - Platform-specific validation applied before saving:
+      instagram  → must contain instagram.com
+      tiktok     → must contain tiktok.com
+      twitter    → must contain twitter.com OR x.com
+      youtube    → must contain youtube.com
+      linkedin   → must contain linkedin.com
+      website    → any valid https:// URL
+  - Empty URL submitted = delete that platform's link, not save an empty row
+  - Zero links is valid — SocialLinksRow simply does not render on public page
+  - Links are public — anyone visiting the gift page can see them
+
+Display rules:
+  - Public ProfileCard: icons ONLY, no text labels, each opens in new tab
+    (target="_blank" rel="noopener noreferrer")
+  - Dashboard links page: full URL shown with save/delete controls per platform
+  - Hover on icon: soft colour tint matching the platform's brand colour
+
+ProfileCard visibility rule:
+  - The kiima.co/{username} copy-link bar is ONLY shown inside the creator 
+    dashboard — NEVER on the public gift page
+  - ProfileCard accepts a showLinkBar boolean prop (default: false)
+  - Dashboard passes showLinkBar={true}
+  - Public gift page omits showLinkBar (defaults to false)
+```
+
 ---
 
 ## 5. DATABASE SCHEMA
@@ -400,6 +441,19 @@ platform_settings (
   maintenance_mode        boolean DEFAULT false,
   updated_at              timestamptz DEFAULT now()
 )
+
+-- Creator social links
+social_links (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  platform       text NOT NULL,
+                 -- 'instagram' | 'tiktok' | 'twitter' | 
+                 -- 'youtube' | 'linkedin' | 'website'
+  url            text NOT NULL,
+  display_order  int DEFAULT 0,
+  created_at     timestamptz DEFAULT now(),
+  UNIQUE(user_id, platform)   -- one per platform per creator, enforced at DB level
+)
 ```
 
 ### RLS Policies
@@ -418,6 +472,9 @@ webhook_logs:
 platform_settings:
   - No public access
   - Admin only read/write via service role
+social_links:
+  - Public read (for public gift page display)
+  - Only owner can insert/update/delete
 ```
 
 ---
@@ -441,6 +498,7 @@ kiima/
 │   │   ├── page.tsx                   ← Overview stats
 │   │   ├── transactions/page.tsx
 │   │   ├── tags/page.tsx              ← Gift tag management
+│   │   ├── links/page.tsx             ← Social link management
 │   │   └── pools/
 │   │       ├── page.tsx               ← Pool list
 │   │       └── [id]/page.tsx          ← Pool detail
@@ -479,7 +537,8 @@ kiima/
 │   ├── forms/                         ← Form components
 │   │   ├── GiftForm.tsx               ← Direct gifting form
 │   │   ├── ContributeForm.tsx         ← Pool contribution form
-│   │   └── PoolCreateForm.tsx
+│   │   ├── PoolCreateForm.tsx
+│   │   └── SocialLinksForm.tsx        ← Dashboard social link manager
 │   │
 │   ├── shared/                        ← Reusable atoms
 │   │   ├── GiftTagPill.tsx
@@ -487,7 +546,8 @@ kiima/
 │   │   ├── ProgressBar.tsx
 │   │   ├── ContributionRow.tsx
 │   │   ├── CurrencyInput.tsx
-│   │   └── KiimaButton.tsx
+│   │   ├── KiimaButton.tsx
+│   │   └── SocialLinksRow.tsx         ← Icon row on public profile card
 │   │
 │   └── layout/
 │       ├── Navbar.tsx
@@ -507,7 +567,8 @@ kiima/
 │   ├── actions/                       ← Next.js server actions
 │   │   ├── gift.actions.ts
 │   │   ├── pool.actions.ts
-│   │   └── tag.actions.ts
+│   │   ├── tag.actions.ts
+│   │   └── link.actions.ts            ← Social link CRUD
 │   │
 │   └── utils/
 │       ├── currency.ts                ← formatCurrency(amount, currency)
@@ -532,11 +593,12 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Purpose | Key Props |
 |---|---|---|---|
-| `ProfileCard` | `cards/ProfileCard.tsx` | Avatar (img or initials fallback), display name, @username, bio, copy-link pill bar | `profile: Profile` |
+| `ProfileCard` | `cards/ProfileCard.tsx` | Avatar (img or initials fallback), display name, @username, bio, optional copy-link pill bar, optional social link icons row | `profile: Profile, showLinkBar?: boolean` — `showLinkBar` defaults to `false`; pass `showLinkBar={true}` in dashboard context only; public gift page omits it |
 | `GiftActionCard` | `cards/GiftActionCard.tsx` | Tag pills via GiftTagPill + CurrencyInput; uncontrolled by default, accepts optional controlled props for payment form | `tags: GiftTag[], currency: Currency, selectedTag?, onTagSelect?, onAmountChange?` |
 | `SupportPoolCard` | `cards/SupportPoolCard.tsx` | Pool title (Fraunces), optional creator byline, description, open/closed badge, closed banner ("This support pool is closed 🔒"), ProgressBar, contributor count footer | `pool: SupportPool, currency: Currency, creatorName?: string, contributorCount?: number` |
 | `ContributionFeedCard` | `cards/ContributionFeedCard.tsx` | Up to 10 most recent contributions via ContributionRow; empty state: "No gifts yet — be the first to show love ❤️"; optional heading prop (default "Recent gifts") | `contributions: Contribution[], heading?: string` |
 | `DashboardStatCard` | `cards/DashboardStatCard.tsx` | Compact stat card: metadata label (uppercase 11px), large bold value (28px), muted sub text | `label: string, value: string, sub: string` |
+| `AdminStatCard` | `cards/AdminStatCard.tsx` | Admin variant of stat card — same token-based design, 26px value, optional sub line; used on `/admin` overview | `label: string, value: string, sub?: string` |
 
 ### Forms
 
@@ -545,24 +607,26 @@ Keep this updated as components are built. Before building any new component, ch
 | `GiftForm` | `forms/GiftForm.tsx` | Tag pills + CurrencyInput (always editable — tag pill fills amount but does not lock field; editing away from tag amount deselects the pill) + name input (required; disabled + cleared when anonymous) + AnonymousToggle + submit; name validates on blur — "Please enter your name" blocks submission; calls `initializeGift`; SubmitButton sub-component uses `useFormStatus` for loading state; redirect to Paystack on success | `recipientId: string, tags: GiftTag[], currency: Currency` |
 | `ContributeForm` | `forms/ContributeForm.tsx` | Pool contribution form — fixed currency tier pills (₦5k/10k/20k/50k/100k or USD/GBP/EUR equivalents), CurrencyInput (always editable — tier pill fills amount but does not lock field; editing away from tier amount deselects the pill), name input, AnonymousToggle; no gift tags; when isClosed=true renders locked closed-state card; calls `initializeGift`; Paystack callbackUrl → pool page | `poolId: string, recipientId: string, currency: Currency, isClosed: boolean` |
 | `PoolCreateForm` | `forms/PoolCreateForm.tsx` | Title + optional description + goal amount (CurrencyInput) + "Show recent contributors publicly" toggle (default ON, same pill-switch style as AnonymousToggle) + hidden user_id/goal_amount/show_contributors bridge inputs; calls `createPool`; field-level validation errors from server action; on success: `redirect('/dashboard/pools')` | `userId: string, currency: Currency` |
+| `SocialLinksForm` | `forms/SocialLinksForm.tsx` | Dashboard social link manager — one row per supported platform (all 6 always visible); each row: platform icon + label + URL input + Save button; pre-fills existing URLs from DB; on save calls upsertSocialLink; empty URL on save calls deleteSocialLink; inline "Saved ✓" success and inline error per row | `userId: string, existingLinks: SocialLink[]` |
 
 ### Shared Atoms
 
 | Component | File | Purpose | Key Props |
 |---|---|---|---|
 | `GiftTagPill` | `shared/GiftTagPill.tsx` | Tag selection button | `tag, selected, onSelect, currency` |
-| `AnonymousToggle` | `shared/AnonymousToggle.tsx` | Toggle + identity preview — implements Section 4.3 Rule 4 exactly | `isAnon, displayName?, onChange` |
+| `AnonymousToggle` | `shared/AnonymousToggle.tsx` | Toggle + identity preview — implements Section 4.3 Rule 4 exactly; outer button has transparent padding to reach 44px tap target; inner `<span>` is the visual track | `isAnon, displayName?, onChange` |
 | `ProgressBar` | `shared/ProgressBar.tsx` | Pool progress bar with mount animation (starts at 0%, transitions to target over 0.6s); gradient fill accent → accent-light; raised/goal labels below track | `raised: number, goal: number, currency: Currency` |
 | `ContributionRow` | `shared/ContributionRow.tsx` | Renders formatContributionLine() output + optional source badge (pool title or "Direct gift") + date (day/month/year); isLast prop removes bottom border | `contribution: Contribution, isLast?: boolean, source?: string` |
 | `CurrencyInput` | `shared/CurrencyInput.tsx` | Large amount input with currency symbol prefix; formats display value with commas (10000 → "10,000") while parent stores raw numeric string; readOnly locks field when tag selected | `currency: Currency, value, onChange?, readOnly?` |
 | `KiimaButton` | `shared/KiimaButton.tsx` | Primary CTA button — variants: primary (dark #1C1916), ghost (terracotta text), danger (red soft→solid on hover); spinner on loading | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
+| `SocialLinksRow` | `shared/SocialLinksRow.tsx` | Horizontal row of social icon buttons on the public ProfileCard; renders nothing if links array is empty; each icon opens URL in new tab; hover shows platform colour tint | `links: SocialLink[]` |
 
 ### Auth Pages
 
 | Route | File | Purpose |
 |---|---|---|
-| `/signup` | `app/(auth)/signup/page.tsx` | Creator sign-up — display name, username, email, password, currency |
-| `/login` | `app/(auth)/login/page.tsx` | Creator login — email + password |
+| `/signup` | `app/(auth)/signup/page.tsx` | Creator sign-up — display name, username, email, password, currency; uses `.k-auth-page` class for mobile-safe centering |
+| `/login` | `app/(auth)/login/page.tsx` | Creator login — email + password; uses `.k-auth-page` class for mobile-safe centering |
 | `/forgot-password` | `app/(auth)/forgot-password/page.tsx` | Request password reset email |
 | `/reset-password` | `app/(auth)/reset-password/page.tsx` | Set new password after clicking reset link |
 
@@ -581,6 +645,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `deleteTag` | Tag CRUD — deleteTag guards is_default; createTag validates label + amount |
 | `lib/actions/gift.actions.ts` | `initializeGift` | Handles both direct gifts AND pool contributions. Reads optional `pool_id` from formData — if set, fetches pool slug to build pool-page callbackUrl; otherwise callbackUrl = /gift/success. Applies Section 4.3 anonymous override. Calculates 3% fee. Inserts PENDING contribution (with pool_id if present). Calls initializePaystackTransaction. redirect()s to Paystack. Cleans up pending row on Paystack failure. |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool` | createPool: validates title (≤80 chars) + goalAmount, generates slug (via generateSlug), checks slug uniqueness per creator and appends timestamp if collision, inserts row, redirect('/dashboard/pools'). getPools: returns all pools for userId newest first. closePool: verifies ownership + not already closed before UPDATE. contributePool: stub — validates poolId + amount, returns { success: true }; full Paystack flow in Phase 5.3. |
+| `lib/actions/link.actions.ts` | `getSocialLinks`, `upsertSocialLink`, `deleteSocialLink` | Social link CRUD. getSocialLinks: returns all links for userId ordered by display_order. upsertSocialLink: validates URL per Section 4.8 (https:// required + platform domain check); empty url calls deleteSocialLink instead. deleteSocialLink: DELETE by userId + platform. |
 
 ### Paystack Library
 
@@ -622,17 +687,52 @@ All use `.k-skeleton` CSS class (defined in `globals.css`) with `k-pulse` keyfra
 | `/dashboard/tags` | `app/dashboard/tags/page.tsx` + `TagsClient.tsx` | Gift tag management — list all tags, SYSTEM badge on default, Remove on custom, inline add form |
 | `/dashboard/pools` | `app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx` | Pool list: title, open/closed badge, public URL with "Copy link" / "Copied! ✓" button (CopyPoolLink client component), ProgressBar, raised/goal labels, "View →" opens public pool page in new tab; "+ Create pool" via PoolsClient; empty state with 🌱 |
 | `/dashboard/pools/[id]` | `app/dashboard/pools/[id]/page.tsx` + `ClosePoolButton.tsx` + `ShowContributorsToggle.tsx` | Pool detail — ownership-guarded; shows pool header card (title, status badge, description, ProgressBar, raised/goal/contributor stats), settings card with `ShowContributorsToggle` (optimistic toggle, calls `updateShowContributors`, refreshes Server Component), danger card with `ClosePoolButton` (when open), closed notice (when closed), full contributions list (all statuses; pending at 0.6 opacity with "Pending" badge) |
+| `/dashboard/links` | `app/dashboard/links/page.tsx` | Social link manager — heading + subtext + `SocialLinksForm`; session-guarded; fetches existing links via `getSocialLinks` |
 
 ### Public Pages
 
 | Route | File | Purpose |
 |---|---|---|
-| `/[username]` | `app/[username]/page.tsx` | Public gift link page — fetches profile + tags; two-column grid: ProfileCard (left) + GiftForm (right); ContributionFeedCard removed — gifts are private, shown only in creator dashboard |
+| `/[username]` | `app/[username]/page.tsx` | Public gift link page — fetches profile + tags + social links (parallel); two-column grid: ProfileCard with links (left) + GiftForm (right); `generateMetadata` exports OG tags |
+| `(root)` (not found) | `app/not-found.tsx` | Root 404 — "This page doesn't exist — or maybe it moved 🌿" + home link |
+| `(root)` (error) | `app/error.tsx` | Global error boundary — `'use client'`; "Something went wrong — try again" + `reset()` button |
 | `/[username]` (not found) | `app/[username]/not-found.tsx` | Friendly 404 when username doesn't exist |
 | `/gift/success` | `app/gift/success/page.tsx` | Paystack callback on successful payment — reads `?reference=` param, fetches contribution + creator name, shows confirmation with amount pill and back link; pending fallback if reference not found yet |
 | `/gift/cancelled` | `app/gift/cancelled/page.tsx` | Shown when payment is abandoned — warm copy, "Try again" link back to `?from=username` creator page if param present, else "Go home" |
-| `/[username]/pool/[slug]` | `app/[username]/pool/[slug]/page.tsx` | Public pool page — fetches profile + pool by username+slug (notFound if either missing); fetches confirmed contributor count + (if show_contributors=true) up to 10 recent contributions in parallel; two-column grid: SupportPoolCard + optional ContributionFeedCard "Recent contributors" (left, only when show_contributors=true and contributions exist), ContributeForm with fixed tier pills or closed state (right) |
+| `/[username]/pool/[slug]` | `app/[username]/pool/[slug]/page.tsx` | Public pool page — fetches profile + pool by username+slug (notFound if either missing); fetches confirmed contributor count + (if show_contributors=true) up to 10 recent contributions in parallel; two-column grid: SupportPoolCard + optional ContributionFeedCard "Recent contributors" (left, only when show_contributors=true and contributions exist), ContributeForm with fixed tier pills or closed state (right); `generateMetadata` exports OG tags: title = "{pool title} — Support {display_name}", description = pool description or "Help {name} reach their goal of {formatted amount}" |
 | `/[username]/pool/[slug]` (not found) | `app/[username]/pool/[slug]/not-found.tsx` | Friendly 404 for missing pool slugs — 🌊 emoji, "Pool not found" heading, "Go home" link |
+
+### Admin Shell
+
+| File | Purpose |
+|---|---|
+| `app/admin/layout.tsx` | Server Component guard + shell — reads session (→ /login if absent); fetches profile via admin client, checks `is_admin === true` (→ /dashboard for non-admins); renders fixed left sidebar with brand wordmark, `AdminNav`, and `AdminLogoutButton`. All `/admin` routes are wrapped. Desktop-only. |
+| `app/admin/AdminNav.tsx` | `'use client'` — `usePathname` for active highlighting; exact match for `/admin`, `startsWith` for sub-routes; renders sidebar nav links for all 7 admin sections |
+| `app/admin/AdminLogoutButton.tsx` | `'use client'` — calls `supabase.auth.signOut()` then `router.push('/login')` |
+
+### Admin Pages
+
+| Route | File | Key sub-components |
+|---|---|---|
+| `/admin` | `app/admin/page.tsx` | Uses `AdminStatCard`; shows total creators, confirmed contributions, active pools, platform volume per currency, new creators this week, stuck-pending warning |
+| `/admin/creators` | `app/admin/creators/page.tsx` | `CreatorsClient.tsx` — client-side search by name/username; table of all profiles with display name, username, currency, join date, active/suspended badge, View → link |
+| `/admin/creators/[id]` | `app/admin/creators/[id]/page.tsx` | `SuspendButton.tsx` — two-step suspend/unsuspend with confirmation; page shows profile header, gift tags table, pools table, contributions received (last 30); admin never reveals anonymous gifter identity |
+| `/admin/transactions` | `app/admin/transactions/page.tsx` | `RecheckButton.tsx` — calls `recheckPaystackPayment` inline; status filter tabs (All / Confirmed / Pending) via URL searchParam; table shows date, creator, gifter, gross, fee, net, pool, status, ref |
+| `/admin/pools` | `app/admin/pools/page.tsx` | `ForceCloseButton.tsx` — two-step confirmation; status filter tabs; table shows title, creator, goal, raised, %, contributor count, status, created date |
+| `/admin/tags` | `app/admin/tags/page.tsx` | `DeleteTagButton.tsx` — two-step confirmation; fetches all custom tags (is_default=false) with creator join; delete removes tag immediately |
+| `/admin/webhooks` | `app/admin/webhooks/page.tsx` | Read-only; latest 100 events; failed rows highlighted in danger-soft; failed count banner |
+| `/admin/settings` | `app/admin/settings/page.tsx` | `SettingsForm.tsx` — client component; 4 tag-amount number inputs + maintenance mode toggle; calls `updatePlatformSettings` on submit; Save feedback inline |
+
+### Server Actions
+
+| Action file | Exports | Purpose |
+|---|---|---|
+| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction` | Auth flows: create user + profile + default tag; sign in; password reset |
+| `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `deleteTag` | Tag CRUD — deleteTag guards is_default; createTag validates label + amount |
+| `lib/actions/gift.actions.ts` | `initializeGift` | Handles both direct gifts AND pool contributions. Reads optional `pool_id` from formData — if set, fetches pool slug to build pool-page callbackUrl; otherwise callbackUrl = /gift/success. Applies Section 4.3 anonymous override. Calculates 3% fee. Inserts PENDING contribution (with pool_id if present). Calls initializePaystackTransaction. redirect()s to Paystack. Cleans up pending row on Paystack failure. |
+| `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` | createPool: validates title (≤80 chars) + goalAmount, generates slug (via generateSlug), checks slug uniqueness per creator and appends timestamp if collision, inserts row, redirect('/dashboard/pools'). getPools: returns all pools for userId newest first. closePool: verifies ownership + not already closed before UPDATE. updateShowContributors: UPDATE support_pools SET show_contributors = $value WHERE id AND user_id. |
+| `lib/actions/admin.actions.ts` | `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment` | All use admin client (service role). suspendCreator/unsuspendCreator: UPDATE profiles.suspended. forceClosePool: guards not-already-closed before UPDATE. deleteCustomTag: guards is_default=false before DELETE. updatePlatformSettings: UPDATE platform_settings single row. recheckPaystackPayment: calls verifyPaystackTransaction → if success, confirms contribution + increments pool raised if applicable. |
+| `lib/actions/link.actions.ts` | `getSocialLinks`, `upsertSocialLink`, `deleteSocialLink` | getSocialLinks(userId): returns all links for a creator ordered by display_order. upsertSocialLink(userId, platform, url): validates URL per Section 4.8 rules before saving — throws clear error if validation fails; uses Supabase upsert on (user_id, platform) unique constraint. deleteSocialLink(userId, platform): deletes that platform's link. If url is empty string, upsertSocialLink calls deleteSocialLink instead of upserting. |
 
 ### Database Migrations
 
@@ -641,6 +741,9 @@ All use `.k-skeleton` CSS class (defined in `globals.css`) with `k-pulse` keyfra
 | `supabase/migrations/001_initial_schema.sql` | All tables, RLS policies, platform_settings seed row |
 | `supabase/migrations/002_default_tag_trigger.sql` | AFTER INSERT trigger on profiles — inserts default "Buy me a coffee ☕" tag using per-currency amount from platform_settings |
 | `supabase/migrations/003_pool_show_contributors.sql` | ADD COLUMN show_contributors boolean DEFAULT true to support_pools |
+| `supabase/migrations/004_admin_fields.sql` | ADD COLUMN IF NOT EXISTS suspended boolean DEFAULT false to profiles — idempotent guard (column already in 001 for fresh installs) |
+| `supabase/migrations/005_social_links.sql` | CREATE TABLE social_links with RLS — public read, owner insert/update/delete; UNIQUE(user_id, platform); platform CHECK constraint enforces the 6 allowed values |
+| `supabase/migrations/005_social_links.sql` | CREATE TABLE social_links with RLS policies — public read, owner write |
 
 ---
 
@@ -727,6 +830,35 @@ export interface PlatformSettings {
 // Profile extended with admin flag — only used in admin context
 export interface ProfileWithAdmin extends Profile {
   is_admin: boolean;
+  suspended: boolean;
+}
+
+export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'youtube' | 'linkedin' | 'website';
+
+export interface SocialLink {
+  id: string;
+  user_id: string;
+  platform: SocialPlatform;
+  url: string;
+  display_order: number;
+  created_at: string;
+}
+
+export type SocialPlatform =
+  | 'instagram'
+  | 'tiktok'
+  | 'twitter'
+  | 'youtube'
+  | 'linkedin'
+  | 'website';
+
+export interface SocialLink {
+  id: string;
+  user_id: string;
+  platform: SocialPlatform;
+  url: string;
+  display_order: number;
+  created_at: string;
 }
 ```
 
@@ -839,6 +971,11 @@ Run through this before every code generation. Every session.
 □ Does this feature appear in the Out of Scope list?
   → Section 10 — if yes, stop.
 
+□ Does this touch social links or the ProfileCard?
+  → Re-read Section 4.8 before proceeding.
+  → Confirm: showLinkBar is false on public page, URL validation 
+    is applied before saving, SocialLinksRow renders nothing if empty.
+
 □ Am I building something inside /admin?
   → Re-read Section 15 before proceeding.
   → Confirm: is_admin check is server-side, actions are in admin.actions.ts,
@@ -885,8 +1022,8 @@ Branch naming:
 > Always update before ending a session.
 
 ```
-Last updated: 2026-04-12
-Last session: Phase 5 / Session 5.4 — Dashboard pool detail page + ClosePoolButton
+Last updated: 2026-04-13
+Last session: Social links feature (Section 4.8)
 
   Session 0.2 recap:
   - Created styles/tokens.css with all design tokens from Section 3.1
@@ -1548,23 +1685,216 @@ Last session: Phase 5 / Session 5.4 — Dashboard pool detail page + ClosePoolBu
   - app/dashboard/pools/page.tsx: was 800px / no margin / var(--space-xl) top → fixed
   - app/dashboard/tags/TagsClient.tsx: was 680px / correct margin+padding → maxWidth fixed
 
-Next task:    Phase 7 — Admin panel
-  - app/dashboard/transactions/page.tsx — full contribution history for the creator:
-      • All confirmed contributions, newest first
-      • Shows: display name / "Anonymous", amount (net to creator), tag used, date, pool (if any)
-      • Empty state: "No contributions yet"
-  - supabase/migrations/003_increment_pool_raised.sql — atomic RPC to deploy:
-      CREATE OR REPLACE FUNCTION increment_pool_raised(p_pool_id uuid, p_increment numeric)
-      RETURNS void AS $$ UPDATE support_pools SET raised = raised + p_increment
-      WHERE id = p_pool_id $$ LANGUAGE sql SECURITY DEFINER;
+  Session 7.1 completed:
+  - app/not-found.tsx — root 404 page:
+      • Copy: "This page doesn't exist — or maybe it moved 🌿" + "← Go home" link
+      • Matches design system card/emoji pattern used in route-level not-found files
+  - app/error.tsx — global error boundary:
+      • 'use client' — required to use reset() callback
+      • Copy: "Something went wrong — try again" + "Try again" primary button → reset()
+  - lib/actions/auth.actions.ts — added email format validation:
+      • After empty check: if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        → fieldErrors.email = 'Please enter a valid email.'
+      • Signup form already renders fieldErrors.email inline — no form changes needed
+  - Form audit results:
+      • Signup ✓ — all fields have inline errors including "This username is already taken."
+      • GiftForm — amount hint updated to "Please enter an amount to continue."
+      • ContributeForm — same hint update
+      • Login — global error only (acceptable for a 2-field form, no browser alerts used)
+      • No window.alert() calls exist anywhere in the codebase
+  - Payment failure banner on gift page:
+      • app/gift/cancelled/page.tsx: "Try again" link updated from /{from} to
+        /{from}?payment_failed=1
+      • app/[username]/page.tsx: accepts searchParams.payment_failed; when '1', renders
+        a danger-soft banner "Payment didn't go through — please try again." above the grid
+        (constrained to maxWidth 1080px to align with content)
+
+  Session 7.2 completed:
+  - app/layout.tsx — default metadata updated to include full openGraph block
+      (siteName, title, description)
+  - app/[username]/page.tsx — generateMetadata added:
+      • Fetches profile by username; returns fallback { title: 'Kiima' } if not found
+      • og:title = "{display_name}'s Kiima"
+      • og:description = bio (≤160 chars) or "Send {name} a gift on Kiima."
+      • og:url = {APP_URL}/{username}
+      • og:image = avatar_url ?? {APP_URL}/og-default.png
+      • twitter:card = 'summary'
+  - app/[username]/pool/[slug]/page.tsx — generateMetadata added:
+      • Fetches profile + pool; returns fallback { title: 'Kiima' } if either not found
+      • og:title = "{pool title} — Support {display_name}"
+      • og:description = pool.description (≤160 chars) or "Help {name} reach their goal of {formatCurrency(goal_amount, currency)}"
+      • og:url = {APP_URL}/{username}/pool/{slug}
+      • No og:image on pool pages (no pool image in V1 schema)
+      • twitter:card = 'summary'
+
+  Session 7.3 completed — Mobile audit and fixes:
+  - app/globals.css:
+      • body: added overflow-x: hidden (prevents edge-case horizontal scroll)
+      • .k-currency-pill: padding 8px → 12px + min-height: 44px (tap target fix)
+      • .k-tag-pill: padding 8px → 10px + min-height: 44px (tap target fix)
+      • Added .k-auth-page class with responsive centering:
+          - Default: flex center (same as before)
+          - @media (max-height: 700px): align-items: flex-start + padding-top 40px
+            so tall signup form scrolls correctly on short viewports
+  - components/shared/AnonymousToggle.tsx:
+      • Restructured toggle button: outer button is now transparent with padding: 10px 0
+        giving 44px total tap target (24px visual + 20px padding)
+      • Inner <span> is the visual track (maintains exact visual appearance)
+      • Thumb is nested inside track <span>
+  - components/forms/ContributeForm.tsx:
+      • tierPillStyle: padding 6px 16px → 12px 16px + minHeight: 44px
+        (was the smallest tap target at ~32px; now 44px)
+  - app/(auth)/login/page.tsx:
+      • Replaced inline pageStyle with className="k-auth-page"
+      • eyeBtnStyle: padding 2px → minWidth/minHeight 44px, right: 12px → 0, centered
+      • password input paddingRight: 40px → 48px (compensates for larger eye button)
+  - app/(auth)/signup/page.tsx:
+      • Same changes as login (pageStyle removed, k-auth-page, eyeBtnStyle, paddingRight)
+  - components/cards/ProfileCard.tsx:
+      • copyBarStyle: padding 8px 16px → 10px 16px + minHeight: 44px
+  
+  Mobile gift flow verified (390px):
+    ✓ Land on gift page — ProfileCard + GiftForm in single column
+    ✓ Tag pills wrap cleanly (flex-wrap, nowrap per pill, 44px tap targets)
+    ✓ Amount field — large 22px font, numeric keyboard (inputMode="numeric")
+    ✓ Name field — 45px height input, clear label
+    ✓ Anonymous toggle — 44px tap target (button + transparent padding)
+    ✓ Send gift button — ~48px, full width, accessible
+    ✓ No horizontal scroll (overflow-x: hidden on body, all containers responsive)
+    ✓ Two-column layouts collapse via auto-fit minmax(300px, 1fr)
+
+  Session 7.4 completed — Pre-launch security and copy audit:
+
+  FINDINGS:
+    FAIL (critical): app/admin/layout.tsx was a passthrough with no auth guard —
+      any logged-in user could access all /admin routes.
+    FAIL (cleanup): lib/actions/auth.actions.ts had debug console.log statements
+      logging user email address and user ID — PII in server logs.
+    PASS: .env.local in .gitignore ✓
+    PASS: SUPABASE_SERVICE_ROLE_KEY / PAYSTACK_SECRET_KEY — server-only, zero client exposure ✓
+    PASS: deleteTag validates is_default before deleting ✓
+    PASS: closePool validates creator ownership before UPDATE ✓
+    PASS: Contributions only written/confirmed in webhook handler ✓
+    PASS: Pool totals only incremented in webhook handler ✓
+    PASS: Anonymous logic correct at all 3 layers (client UI, server action, display util) ✓
+    PASS: No forbidden copy — no "Submit", "Error occurred", "Make payment" anywhere ✓
+
+  FIXES:
+  - app/admin/layout.tsx — fully rewritten:
+      • Server Component (no 'use client')
+      • Reads session via createClient() → redirects to /login if absent
+      • Fetches profile.is_admin via createAdminClient() (bypasses RLS)
+      • Redirects non-admins (is_admin !== true) to /dashboard
+      • Wraps all /admin/** routes — guard is automatic for all stubs and future pages
+  - lib/actions/auth.actions.ts — removed all debug console.log statements:
+      • Removed: env check log (hasServiceRoleKey boolean)
+      • Removed: "creating auth user for: {email}" (PII)
+      • Removed: "auth user created, id: {id}" log
+      • Removed: "inserting profile row" log
+      • Removed: "done. emailConfirmationRequired" log
+      • Kept: all console.error() for genuine error paths
+  - Section 7 updated: added Admin Shell entry for app/admin/layout.tsx
+
+  Session 8.1 completed (Phase 8 — Admin panel):
+  NOTE: The "continue" prompt ran ahead and built all of Phase 8 in one pass.
+  All admin pages, client sub-components, server actions, and the layout shell
+  were written in a single batch. Session 8.1 scope below; further sessions
+  are already built but not yet tested.
+
+  Migration:
+  - supabase/migrations/004_admin_fields.sql — ADD COLUMN IF NOT EXISTS
+    suspended boolean DEFAULT false on profiles. Idempotent guard for older
+    deployments (column was already in 001_initial_schema.sql for fresh installs).
+    NOTE: User specified 003_admin_fields.sql but that number is taken by
+    003_pool_show_contributors.sql — correct number is 004.
+
+  app/admin/layout.tsx — rewritten with sidebar shell:
+    - Auth guard retained (redirect /login or /dashboard as before)
+    - Added: 200px sticky sidebar — brand wordmark + "Admin" label in accent,
+      AdminNav component, AdminLogoutButton at bottom
+    - Main content area is flex:1, children render inside it
+    - Desktop-only — no mobile breakpoints (per Section 15.3)
+
+  lib/actions/admin.actions.ts — created (full implementations, not stubs):
+    - suspendCreator(creatorId) — UPDATE profiles SET suspended=true
+    - unsuspendCreator(creatorId) — UPDATE profiles SET suspended=false
+    - forceClosePool(poolId) — guards not-already-closed, then UPDATE
+    - deleteCustomTag(tagId) — guards is_default=false, then DELETE
+    - updatePlatformSettings(settings) — UPDATE platform_settings single row
+    - recheckPaystackPayment(paystackRef) — verifyPaystackTransaction →
+      update contribution to confirmed + increment pool raised if applicable
+    All use createAdminClient() exclusively. Never exposes is_admin via client.
+
+  Additional files built (Phase 8 complete):
+  - components/cards/AdminStatCard.tsx — compact admin stat card
+  - app/admin/page.tsx — overview: 3 stat cards + volume by currency +
+    new creators list + stuck-pending warning (pending > 1 hour)
+  - app/admin/creators/page.tsx + CreatorsClient.tsx — table of all creators,
+    client-side search by name/username
+  - app/admin/creators/[id]/page.tsx + SuspendButton.tsx — creator detail:
+    profile header, tags/pools/contributions tables, suspend/unsuspend with
+    two-step confirmation; anonymous gifter identity never exposed (Section 15.6)
+  - app/admin/transactions/page.tsx + RecheckButton.tsx — all contributions,
+    status filter tabs via URL searchParam, Re-check button on pending rows
+  - app/admin/pools/page.tsx + ForceCloseButton.tsx — all pools, status filter,
+    force-close with two-step confirmation
+  - app/admin/tags/page.tsx + DeleteTagButton.tsx — all custom tags (is_default=false),
+    delete with two-step confirmation
+  - app/admin/webhooks/page.tsx — latest 100 webhook events, read-only,
+    failed rows highlighted in danger-soft
+  - app/admin/settings/page.tsx + SettingsForm.tsx — default tag amounts per
+    currency (4 inputs) + maintenance mode toggle; calls updatePlatformSettings
+
+  Section 7 updated: Admin Shell, Admin Pages, Server Actions, Migrations, Cards.
+  Section 8 updated: ProfileWithAdmin now includes suspended: boolean.
+
+  Social links feature — complete:
+  - supabase/migrations/005_social_links.sql — new table with UNIQUE(user_id, platform),
+    platform CHECK constraint, public read RLS, owner insert/update/delete RLS.
+    Must be run against the live Supabase project.
+  - types/index.ts — added SocialPlatform union type + SocialLink interface
+  - lib/actions/link.actions.ts — getSocialLinks, upsertSocialLink, deleteSocialLink.
+    upsertSocialLink: validates https:// prefix + platform domain before saving;
+    empty url triggers deleteSocialLink instead of an upsert.
+  - components/shared/SocialLinksRow.tsx — 'use client'; horizontal icon row;
+    renders nothing when links array is empty; hover shows platform brand colour
+    tint (background 18% opacity) + coloured icon; uses inline SVGs for all 6 platforms.
+  - components/forms/SocialLinksForm.tsx — 'use client'; 6 LinkRow sub-components
+    (one per platform, each manages its own url/status state); save calls
+    upsertSocialLink directly; inline "Saved ✓" + inline error per row.
+  - components/cards/ProfileCard.tsx — added links?: SocialLink[] prop (default []);
+    renders SocialLinksRow below copy-link bar when links.length > 0.
+  - app/[username]/page.tsx — fetches getSocialLinks in parallel with getTagsByUser;
+    passes links to ProfileCard; showLinkBar omitted (defaults false on public page).
+  - app/dashboard/links/page.tsx — session-guarded; heading "Your Links"; renders
+    SocialLinksForm with existing links from getSocialLinks.
+  - app/dashboard/DashboardNav.tsx — added Links nav item between Gift Tags and Pools;
+    both sidebar label "Links" and tab label "Links".
+
+  Session 8.1 hotfix — ProfileCard link bar visibility:
+  - components/cards/ProfileCard.tsx: added showLinkBar?: boolean prop (default false).
+    Copy-link bar is conditionally rendered only when showLinkBar={true}.
+    Public gift page (app/[username]/page.tsx) omits the prop → bar hidden.
+    Dashboard must pass showLinkBar={true} when using ProfileCard.
+    The useState(copied) / handleCopy logic is retained — activates when showLinkBar=true.
+  - Section 7 ProfileCard entry updated to reflect new prop.
+
+Next task:    Live testing against Supabase — run all 5 migrations, verify
+              end-to-end payment flow, check admin panel with a real is_admin account,
+              verify social links save/display on public gift page.
 
 Open issues:
   - increment_pool_raised RPC not yet deployed to Supabase
     (webhook falls back to read-modify-write — safe for V1)
+  - og-default.png not yet created — needed as fallback og:image on gift link pages
   - PAYSTACK_WEBHOOK_SECRET must be set in .env.local before end-to-end testing
   - 001_initial_schema.sql not yet run against the live Supabase project
   - 002_default_tag_trigger.sql not yet run against the live Supabase project
+  - 003_pool_show_contributors.sql not yet run against the live Supabase project
+  - 004_admin_fields.sql not yet run against the live Supabase project
+  - 005_social_links.sql not yet run against the live Supabase project
   - gift@kiima.co placeholder email — Paystack receipt suppression needed later
+  - Admin panel has not been manually tested against a live Supabase instance yet
 ```
 
 ---

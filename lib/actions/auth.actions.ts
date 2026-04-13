@@ -45,6 +45,8 @@ export async function signupAction(
   }
   if (!email) {
     fieldErrors.email = 'Please enter your email.';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    fieldErrors.email = 'Please enter a valid email.';
   }
   if (!password) {
     fieldErrors.password = 'Please enter a password.';
@@ -55,14 +57,6 @@ export async function signupAction(
   if (Object.keys(fieldErrors).length > 0) {
     return { fieldErrors };
   }
-
-  // Env check — log whether keys are present (never log the values)
-  console.log('[signupAction] env check:', {
-    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-  });
-  console.log('[signupAction] step 1 — creating auth user for:', email);
 
   const supabase = createClient();
 
@@ -89,16 +83,12 @@ export async function signupAction(
   }
 
   if (!authData.user) {
-    console.error('[signupAction] auth.signUp returned no user and no error — unexpected state');
     return { error: 'Something went wrong — try again.' };
   }
-
-  console.log('[signupAction] step 2 — auth user created, id:', authData.user.id, '| has session:', !!authData.session);
 
   const admin = createAdminClient();
 
   // 2. Insert the creator profile
-  console.log('[signupAction] step 3 — inserting profile row');
   const { error: profileError } = await admin.from('profiles').insert({
     id: authData.user.id,
     username,
@@ -123,8 +113,6 @@ export async function signupAction(
 
   // Default "Buy me a coffee ☕" tag is inserted automatically by the
   // on_profile_created_insert_default_tag database trigger (migration 002).
-
-  console.log('[signupAction] step 4 — done. emailConfirmationRequired:', !authData.session);
 
   // If Supabase email confirmation is enabled, there is no session yet.
   // The profile is created; the user must confirm their email to log in.

@@ -77,4 +77,16 @@ export interface PlatformSettings {
 // Profile extended with admin flag — only used in admin context
 export interface ProfileWithAdmin extends Profile {
   is_admin: boolean;
+  suspended: boolean;
+}
+
+export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'youtube' | 'linkedin' | 'website';
+
+export interface SocialLink {
+  id: string;
+  user_id: string;
+  platform: SocialPlatform;
+  url: string;
+  display_order: number;
+  created_at: string;
 }

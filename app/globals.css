@@ -8,6 +8,7 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
   font-family: var(--font-body);
+  overflow-x: hidden; /* prevent horizontal scroll on mobile */
 }
 
 /* ─── Shared form input ───────────────────────────────── */
@@ -121,7 +122,8 @@ body {
 /* ─── Currency pill selector ──────────────────────────── */
 .k-currency-pill {
   flex: 1;
-  padding: 8px var(--space-sm);
+  padding: 12px var(--space-sm);
+  min-height: 44px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   background: var(--color-surface);
@@ -147,7 +149,8 @@ body {
 .k-tag-pill {
   display: inline-flex;
   align-items: center;
-  padding: 8px var(--space-md);
+  padding: 10px var(--space-md);
+  min-height: 44px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   background: var(--color-surface);
@@ -217,6 +220,21 @@ body {
 }
 @media (max-width: 768px) {
   .k-dash-main { padding-left: 20px; padding-right: 20px; }
+}
+
+/* Auth page centering — switches to top-aligned on small screens */
+.k-auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+@media (max-height: 700px) {
+  .k-auth-page {
+    align-items: flex-start;
+    padding-top: var(--space-2xl);
+  }
 }
 
 /* Responsive horizontal padding for public pages */

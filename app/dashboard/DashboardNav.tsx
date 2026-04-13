@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: '/dashboard',              label: 'Overview',     tabLabel: 'Home'  },
   { href: '/dashboard/transactions', label: 'Transactions', tabLabel: 'Gifts' },
   { href: '/dashboard/tags',         label: 'Gift Tags',    tabLabel: 'Tags'  },
+  { href: '/dashboard/links',        label: 'Links',        tabLabel: 'Links' },
   { href: '/dashboard/pools',        label: 'Pools',        tabLabel: 'Pools' },
 ];
 

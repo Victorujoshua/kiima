@@ -140,10 +140,9 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
 
         {amountMissing && (
           <p style={{ ...hintStyle, textAlign: 'center' }}>
-            Choose a tag or enter an amount to continue.
+            Please enter an amount to continue.
           </p>
         )}
-
       </form>
     </div>
   );

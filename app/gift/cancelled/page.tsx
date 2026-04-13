@@ -19,7 +19,7 @@ export default function GiftCancelledPage({ searchParams }: Props) {
         </p>
 
         {from ? (
-          <Link href={`/${from}`} style={backLinkStyle}>
+          <Link href={`/${from}?payment_failed=1`} style={backLinkStyle}>
             ← Try again
           </Link>
         ) : (

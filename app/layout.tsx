@@ -17,8 +17,13 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Kiima",
-  description: "A soft, modern digital space where giving feels natural.",
+  title: "Kiima — Send love, support dreams",
+  description: "Gift your favourite creators. Support pools. Give in love.",
+  openGraph: {
+    siteName: "Kiima",
+    title: "Kiima — Send love, support dreams",
+    description: "Gift your favourite creators. Support pools. Give in love.",
+  },
 };
 
 export default function RootLayout({

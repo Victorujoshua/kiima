@@ -29,15 +29,7 @@ export default function LoginPage() {
   }, [state, router]);
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--space-xl)',
-      }}
-    >
+    <main className="k-auth-page">
       <div
         style={{
           background: 'var(--color-surface)',
@@ -113,7 +105,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 required
                 className="k-input"
-                style={{ paddingRight: '40px' }}
+                style={{ paddingRight: '48px' }}
               />
               <button
                 type="button"
@@ -159,16 +151,18 @@ export default function LoginPage() {
 
 const eyeBtnStyle: React.CSSProperties = {
   position: 'absolute',
-  right: '12px',
+  right: '0',
   top: '50%',
   transform: 'translateY(-50%)',
   background: 'none',
   border: 'none',
   cursor: 'pointer',
-  padding: '2px',
-  color: 'var(--color-text-muted)',
+  minWidth: '44px',
+  minHeight: '44px',
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
+  color: 'var(--color-text-muted)',
 };
 
 function EyeIcon() {

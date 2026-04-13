@@ -42,7 +42,7 @@ export default function SignupPage() {
   // ── Email confirmation screen ──────────────────────────────────────────
   if (state?.success && state.emailConfirmationRequired) {
     return (
-      <main style={pageStyle}>
+      <main className="k-auth-page">
         <div style={cardStyle}>
           <div
             style={{
@@ -96,7 +96,7 @@ export default function SignupPage() {
   const fe = state?.fieldErrors ?? {};
 
   return (
-    <main style={pageStyle}>
+    <main className="k-auth-page">
       <div style={cardStyle}>
         {/* Wordmark */}
         <h1
@@ -215,7 +215,7 @@ export default function SignupPage() {
                 autoComplete="new-password"
                 placeholder="8 characters minimum"
                 className={`k-input${fe.password ? ' k-input--error' : ''}`}
-                style={{ paddingRight: '40px' }}
+                style={{ paddingRight: '48px' }}
               />
               <button
                 type="button"
@@ -291,14 +291,6 @@ export default function SignupPage() {
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
-const pageStyle: React.CSSProperties = {
-  minHeight: '100vh',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 'var(--space-xl)',
-};
-
 const cardStyle: React.CSSProperties = {
   background: 'var(--color-surface)',
   borderRadius: 'var(--radius-lg)',
@@ -311,16 +303,18 @@ const cardStyle: React.CSSProperties = {
 
 const eyeBtnStyle: React.CSSProperties = {
   position: 'absolute',
-  right: '12px',
+  right: '0',
   top: '50%',
   transform: 'translateY(-50%)',
   background: 'none',
   border: 'none',
   cursor: 'pointer',
-  padding: '2px',
-  color: 'var(--color-text-muted)',
+  minWidth: '44px',
+  minHeight: '44px',
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
+  color: 'var(--color-text-muted)',
 };
 
 function EyeIcon() {

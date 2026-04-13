@@ -191,7 +191,7 @@ function OpenForm({
 
         {amountMissing && (
           <p style={{ ...hintStyle, textAlign: 'center' }}>
-            Choose an amount or enter a custom one to continue.
+            Please enter an amount to continue.
           </p>
         )}
       </form>
@@ -238,7 +238,8 @@ const tierPillStyle: React.CSSProperties = {
   fontWeight: 600,
   fontSize: '13px',
   borderRadius: 'var(--radius-full)',
-  padding: '6px 16px',
+  padding: '12px 16px',
+  minHeight: '44px',
   border: '1.5px solid var(--color-border)',
   background: 'var(--color-surface)',
   color: 'var(--color-text-secondary)',

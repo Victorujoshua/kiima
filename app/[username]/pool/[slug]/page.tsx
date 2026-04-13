@@ -1,9 +1,56 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import SupportPoolCard from '@/components/cards/SupportPoolCard';
 import ContributionFeedCard from '@/components/cards/ContributionFeedCard';
 import ContributeForm from '@/components/forms/ContributeForm';
+import { formatCurrency } from '@/lib/utils/currency';
 import type { Contribution, Currency, SupportPool } from '@/types';
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.co';
+
+export async function generateMetadata({ params }: { params: { username: string; slug: string } }): Promise<Metadata> {
+  const supabase = createClient();
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, display_name, username, currency')
+    .eq('username', params.username)
+    .single();
+
+  if (!profile) return { title: 'Kiima' };
+
+  const { data: pool } = await supabase
+    .from('support_pools')
+    .select('title, description, goal_amount')
+    .eq('user_id', profile.id)
+    .eq('slug', params.slug)
+    .single();
+
+  if (!pool) return { title: 'Kiima' };
+
+  const title = `${pool.title} — Support ${profile.display_name}`;
+  const description = pool.description
+    ? pool.description.slice(0, 160)
+    : `Help ${profile.display_name} reach their goal of ${formatCurrency(pool.goal_amount, profile.currency as Currency)}.`;
+  const url = `${APP_URL}/${profile.username}/pool/${params.slug}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Kiima',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+  };
+}
 
 interface PageProps {
   params: { username: string; slug: string };

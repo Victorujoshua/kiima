@@ -29,6 +29,7 @@ export default function AnonymousToggle({
       >
         <span style={labelStyle}>Give anonymously</span>
 
+        {/* Outer button has transparent padding to reach 44px tap target */}
         <button
           type="button"
           role="switch"
@@ -36,31 +37,42 @@ export default function AnonymousToggle({
           aria-label="Toggle anonymous"
           onClick={() => onChange(!isAnon)}
           style={{
-            width: '44px',
-            height: '24px',
-            borderRadius: 'var(--radius-full)',
+            background: 'none',
             border: 'none',
             cursor: 'pointer',
-            padding: '2px',
-            background: isAnon ? 'var(--color-accent)' : 'rgba(28, 25, 22, 0.14)',
-            transition: 'background 0.2s ease',
+            padding: '10px 0',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: isAnon ? 'flex-end' : 'flex-start',
             flexShrink: 0,
           }}
         >
+          {/* Visual track */}
           <span
             style={{
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              background: '#ffffff',
-              boxShadow: '0 1px 4px rgba(28, 25, 22, 0.20)',
-              display: 'block',
-              flexShrink: 0,
+              width: '44px',
+              height: '24px',
+              borderRadius: 'var(--radius-full)',
+              padding: '2px',
+              background: isAnon ? 'var(--color-accent)' : 'rgba(28, 25, 22, 0.14)',
+              transition: 'background 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: isAnon ? 'flex-end' : 'flex-start',
             }}
-          />
+          >
+            {/* Thumb */}
+            <span
+              style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: '#ffffff',
+                boxShadow: '0 1px 4px rgba(28, 25, 22, 0.20)',
+                display: 'block',
+                flexShrink: 0,
+              }}
+            />
+          </span>
         </button>
       </div>
 
