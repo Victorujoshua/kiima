@@ -10,7 +10,7 @@ export async function suspendCreator(creatorId: string): Promise<{ error?: strin
     .from('profiles')
     .update({ suspended: true })
     .eq('id', creatorId);
-  if (error) return { error: error.message };
+  if (error) return { error: 'Could not suspend creator — try again.' };
   return {};
 }
 
@@ -20,7 +20,7 @@ export async function unsuspendCreator(creatorId: string): Promise<{ error?: str
     .from('profiles')
     .update({ suspended: false })
     .eq('id', creatorId);
-  if (error) return { error: error.message };
+  if (error) return { error: 'Could not unsuspend creator — try again.' };
   return {};
 }
 
@@ -37,7 +37,7 @@ export async function forceClosePool(poolId: string): Promise<{ error?: string }
     .from('support_pools')
     .update({ status: 'closed' })
     .eq('id', poolId);
-  if (error) return { error: error.message };
+  if (error) return { error: 'Could not close pool — try again.' };
   return {};
 }
 
@@ -55,7 +55,7 @@ export async function deleteCustomTag(tagId: string): Promise<{ error?: string }
     .delete()
     .eq('id', tagId)
     .eq('is_default', false); // double guard
-  if (error) return { error: error.message };
+  if (error) return { error: 'Could not delete tag — try again.' };
   return {};
 }
 
@@ -76,7 +76,7 @@ export async function updatePlatformSettings(
     .from('platform_settings')
     .update({ ...settings, updated_at: new Date().toISOString() })
     .not('id', 'is', null); // matches the single row
-  if (error) return { error: error.message };
+  if (error) return { error: 'Could not save settings — try again.' };
   return {};
 }
 
@@ -94,7 +94,7 @@ export async function recheckPaystackPayment(paystackRef: string): Promise<{
     const admin = createAdminClient();
     const { data: contribution } = await admin
       .from('contributions')
-      .select('id, pool_id, net_amount, status')
+      .select('id, pool_id, gift_amount, status')
       .eq('paystack_ref', paystackRef)
       .single();
 
@@ -106,7 +106,7 @@ export async function recheckPaystackPayment(paystackRef: string): Promise<{
       .update({ status: 'confirmed' })
       .eq('id', contribution.id);
 
-    if (updateError) return { error: updateError.message };
+    if (updateError) return { error: 'Could not confirm payment — try again.' };
 
     // Increment pool raised if this was a pool contribution
     if (contribution.pool_id) {
@@ -118,7 +118,7 @@ export async function recheckPaystackPayment(paystackRef: string): Promise<{
       if (pool) {
         await admin
           .from('support_pools')
-          .update({ raised: pool.raised + contribution.net_amount })
+          .update({ raised: pool.raised + contribution.gift_amount })
           .eq('id', contribution.pool_id);
       }
     }

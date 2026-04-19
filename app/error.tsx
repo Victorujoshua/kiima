@@ -12,7 +12,7 @@ export default function GlobalError({
         <p style={emojiStyle}>🌧️</p>
         <h1 style={headingStyle}>Something went wrong</h1>
         <p style={bodyStyle}>
-          Something went wrong — try again, or come back in a moment.
+          Try refreshing — if the problem keeps happening, come back in a moment.
         </p>
         <button onClick={reset} style={btnStyle}>
           Try again

@@ -170,6 +170,7 @@ export default async function PoolDetailPage({ params }: PageProps) {
 
 const pageStyle: React.CSSProperties = {
   maxWidth: '720px',
+  margin: '0 auto',
   padding: 'var(--space-xl) 0',
   display: 'flex',
   flexDirection: 'column',
@@ -337,6 +338,9 @@ const rowLineStyle: React.CSSProperties = {
   fontSize: '14px',
   color: 'var(--color-text-secondary)',
   display: 'block',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 };
 
 const rowDateStyle: React.CSSProperties = {

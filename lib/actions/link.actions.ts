@@ -66,7 +66,7 @@ export async function upsertSocialLink(
       { onConflict: 'user_id,platform' }
     );
 
-  if (error) return { error: error.message };
+  if (error) return { error: 'Could not save link — try again.' };
   return {};
 }
 
@@ -81,6 +81,6 @@ export async function deleteSocialLink(
     .eq('user_id', userId)
     .eq('platform', platform);
 
-  if (error) return { error: error.message };
+  if (error) return { error: 'Could not remove link — try again.' };
   return {};
 }

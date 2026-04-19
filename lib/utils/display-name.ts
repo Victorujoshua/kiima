@@ -34,6 +34,6 @@ export function formatContributionLine(contribution: Contribution): string {
   }
 
   const name = resolveDisplayName(contribution.display_name, contribution.is_anonymous);
-  const amount = formatCurrency(contribution.amount, contribution.currency);
+  const amount = formatCurrency(contribution.gift_amount, contribution.currency);
   return `${name} sent ${amount}`;
 }

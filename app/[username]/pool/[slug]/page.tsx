@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import SupportPoolCard from '@/components/cards/SupportPoolCard';
 import ContributionFeedCard from '@/components/cards/ContributionFeedCard';
 import ContributeForm from '@/components/forms/ContributeForm';
@@ -79,7 +80,16 @@ export default async function PoolPage({ params }: PageProps) {
   if (!poolData) notFound();
   const pool = poolData as SupportPool;
 
-  // 3. Fetch confirmed contributor count (always) + recent contributions (if show_contributors)
+  // 3. Fetch fee percent for ContributeForm live breakdown
+  const admin = createAdminClient();
+  const { data: settings } = await admin
+    .from('platform_settings')
+    .select('platform_fee_percent')
+    .limit(1)
+    .single();
+  const feePercent = settings?.platform_fee_percent ?? 3;
+
+  // 4. Fetch confirmed contributor count (always) + recent contributions (if show_contributors)
   const countQuery = supabase
     .from('contributions')
     .select('id', { count: 'exact', head: true })
@@ -130,6 +140,7 @@ export default async function PoolPage({ params }: PageProps) {
             recipientId={profile.id}
             currency={profile.currency as Currency}
             isClosed={pool.status === 'closed'}
+            feePercent={feePercent}
           />
         </div>
       </div>

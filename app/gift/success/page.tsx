@@ -20,7 +20,7 @@ export default async function GiftSuccessPage({ searchParams }: Props) {
   // Contributions are publicly readable per RLS
   const { data } = await supabase
     .from('contributions')
-    .select('amount, currency, recipient:profiles!recipient_id(display_name, username)')
+    .select('gift_amount, currency, recipient:profiles!recipient_id(display_name, username)')
     .eq('paystack_ref', reference)
     .single();
 
@@ -32,7 +32,7 @@ export default async function GiftSuccessPage({ searchParams }: Props) {
   const recipient = Array.isArray(data.recipient) ? data.recipient[0] : data.recipient;
   const displayName  = (recipient as { display_name: string; username: string } | null)?.display_name ?? null;
   const username     = (recipient as { display_name: string; username: string } | null)?.username ?? null;
-  const amount       = Number(data.amount);
+  const amount       = Number(data.gift_amount);
   const currency     = (data.currency ?? 'NGN') as Currency;
 
   return (

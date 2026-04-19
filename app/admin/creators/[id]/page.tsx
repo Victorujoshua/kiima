@@ -85,7 +85,7 @@ export default async function AdminCreatorDetailPage({
       .order('created_at', { ascending: false }),
     admin
       .from('contributions')
-      .select('id, amount, fee, net_amount, currency, display_name, is_anonymous, paystack_ref, status, created_at, pool_id')
+      .select('id, gift_amount, kiima_fee, creator_amount, currency, display_name, is_anonymous, paystack_ref, status, created_at, pool_id')
       .eq('recipient_id', params.id)
       .order('created_at', { ascending: false })
       .limit(30),
@@ -327,9 +327,9 @@ export default async function AdminCreatorDetailPage({
                     <tr key={c.id} style={{ opacity: c.status === 'pending' ? 0.65 : 1 }}>
                       <td style={{ ...td, color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>{formatDate(c.created_at)}</td>
                       <td style={td}>{gifterName}</td>
-                      <td style={{ ...td, fontWeight: 600 }}>{formatCurrency(c.amount, c.currency as Currency)}</td>
-                      <td style={{ ...td, color: 'var(--color-text-muted)' }}>{formatCurrency(c.fee, c.currency as Currency)}</td>
-                      <td style={{ ...td, color: 'var(--color-success)', fontWeight: 600 }}>{formatCurrency(c.net_amount, c.currency as Currency)}</td>
+                      <td style={{ ...td, fontWeight: 600 }}>{formatCurrency(c.gift_amount, c.currency as Currency)}</td>
+                      <td style={{ ...td, color: 'var(--color-text-muted)' }}>{formatCurrency(c.kiima_fee, c.currency as Currency)}</td>
+                      <td style={{ ...td, color: 'var(--color-success)', fontWeight: 600 }}>{formatCurrency(c.creator_amount, c.currency as Currency)}</td>
                       <td style={td}>
                         <span style={{
                           background: c.status === 'confirmed' ? 'var(--color-success-soft)' : 'var(--color-bg)',

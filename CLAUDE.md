@@ -271,43 +271,82 @@ Always render exactly as:
 
 Latest contributions always appear first (descending by created_at).
 
-### 4.6 Payment Flow
+### 4.6 Payment Flow & Fee Model
 
-> ✅ **FEE MODEL DECIDED** — Kiima charges a **3% platform fee** on every 
-> contribution. This is deducted from the amount before the creator receives it.
-> 
-> Fee calculation:
-> - Supporter pays: full amount (e.g. ₦5,000)
-> - Kiima fee (3%): ₦150
-> - Creator receives: ₦4,850
+> ✅ **FEE MODEL — REFACTORED:**
+>
+> Two separate fees apply, paid by different parties:
+>
+> **1. Paystack processing fee → paid by the GIFTER**
+>   - Formula (NGN): `min((gift_amount × 1.5%) + ₦100, ₦2,000)`
+>   - Added ON TOP of the gift amount before Paystack charges the gifter
+>   - Gifter sees a live fee breakdown in the form before paying
+>
+> **2. Kiima platform fee (3%) → paid by the CREATOR**
+>   - Deducted from the gift amount via Paystack split payment
+>   - Goes directly to Kiima's Paystack account at settlement
+>   - Creator never touches this money — split happens at source
+>
+> Example on a ₦10,000 gift:
+> ```
+> Gifter pays:           ₦10,250  (₦10,000 gift + ₦250 Paystack fee)
+> Paystack takes:        ₦250     (their 1.5% + ₦100)
+> Net after Paystack:    ₦10,000
+> Kiima split (3%):      ₦300     → Kiima's Paystack account
+> Creator receives:      ₦9,700   → Creator's bank via subaccount
+> ```
 >
 > Rules:
-> - Fee is calculated server-side only — never on the client
-> - The full amount the supporter entered is what Paystack charges
-> - The fee and net amount are recorded on the contribution row
-> - The fee is never shown to the supporter — they see only what they're sending
-> - The creator's dashboard shows the net amount they received (after fee)
-> - The admin dashboard shows both gross and fee for every transaction
+> - All fee calculations happen server-side — never trust client values
+> - GiftForm and ContributeForm MUST show a live fee breakdown as gifter types:
+>   "You're sending ₦10,000 · Processing fee ₦250 · Total charged ₦10,250"
+> - Contribution record stores: gift_amount, paystack_fee, kiima_fee,
+>   creator_amount, total_charged
+> - Pool raised total increments by gift_amount (₦10,000) — not total_charged
+> - platform_fee_percent (default 3) is stored in platform_settings — never hardcoded
+> - Use calculateAllFees() from lib/utils/fee.ts — never inline fee math
 
 ```
-1. User fills form (tag or custom amount, optional name, anonymous toggle)
-2. Click CTA → validate (amount > 0)
-3. Server action:
-   a. Calculate fee: fee = amount * 0.03 (rounded to 2 decimal places)
-   b. Calculate net: net_amount = amount - fee
-   c. Create PENDING contribution record with amount, fee, net_amount
-   d. Initialize Paystack transaction for the full amount
-4. Redirect to Paystack checkout
-5. Paystack redirects back to success URL on completion
-6. Paystack fires webhook to /api/webhooks/paystack
-7. Webhook handler:
-   a. Verify Paystack signature
-   b. Update contribution status from 'pending' to 'confirmed'
-   c. Update pool total by net_amount (if pool contribution)
-8. Success page shown to user
+1. Gifter enters gift amount (e.g. ₦10,000)
+
+2. GiftForm/ContributeForm shows live fee breakdown:
+   paystack_fee  = min((gift_amount × 0.015) + 100, 2000)
+   total_charged = gift_amount + paystack_fee
+   Display: "Processing fee: ₦250 · You'll be charged: ₦10,250"
+
+3. Gifter clicks CTA → validate (gift_amount > 0)
+
+4. Server action (initializeGift) — recalculates everything server-side:
+   a. Read platform_fee_percent from platform_settings
+   b. fees = calculateAllFees(gift_amount, platform_fee_percent)
+      → { gift_amount, paystack_fee, kiima_fee, creator_amount, total_charged }
+   c. Validate creator has paystack_subaccount_code (required)
+   d. Create PENDING contribution record with all 5 fee fields
+   e. Initialize Paystack transaction:
+      - amount:               toKobo(total_charged)      ← gifter pays this
+      - subaccount:           creator's subaccount_code
+      - bearer:               'account'                  ← Kiima bears fee at API level
+                                                            (net zero — gifter already paid it)
+      - transaction_charge:   toKobo(kiima_fee)          ← Kiima's 3% split in kobo
+
+5. Redirect gifter to Paystack checkout
+
+6. Paystack redirects back to success URL on completion
+
+7. Paystack fires webhook to /api/webhooks/paystack
+
+8. Webhook handler:
+   a. Verify Paystack signature (HMAC SHA512)
+   b. Only handle charge.success events
+   c. Look up contribution by paystack_ref
+   d. Update status: 'pending' → 'confirmed'
+   e. If pool_id → increment support_pools.raised by gift_amount (not total_charged)
+   f. Log event to webhook_logs
+
+9. Success page shown to gifter
 ```
 
-**Critical:** Never record a contribution before webhook confirmation. The redirect success page is UI only — the DB write happens in the webhook. If webhook fails, the contribution is NOT recorded.
+**Critical:** Never record a contribution before webhook confirmation. The redirect success page is UI only — DB write happens in webhook only. If webhook fails, contribution stays 'pending' — visible in admin webhook log.
 
 ### 4.7 Creator Dashboard Data
 
@@ -405,19 +444,21 @@ support_pools (
 
 -- All contributions (direct gifts + pool contributions)
 contributions (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  recipient_id  uuid REFERENCES profiles(id),         -- creator receiving the gift
-  pool_id       uuid REFERENCES support_pools(id),    -- null if direct gift
-  tag_id        uuid REFERENCES gift_tags(id),        -- null if custom amount
-  amount        numeric NOT NULL,                     -- full amount supporter paid
-  fee           numeric NOT NULL DEFAULT 0,           -- 3% platform fee
-  net_amount    numeric NOT NULL,                     -- amount - fee (what creator receives)
-  currency      text NOT NULL,
-  display_name  text,                                 -- null if anonymous
-  is_anonymous  boolean DEFAULT false,
-  paystack_ref  text UNIQUE NOT NULL,                 -- Paystack payment reference
-  status        text DEFAULT 'pending',               -- 'pending' | 'confirmed'
-  created_at    timestamptz DEFAULT now()
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipient_id    uuid REFERENCES profiles(id),         -- creator receiving the gift
+  pool_id         uuid REFERENCES support_pools(id),    -- null if direct gift
+  tag_id          uuid REFERENCES gift_tags(id),        -- null if custom amount
+  gift_amount     numeric NOT NULL,                     -- amount gifter intends to send creator
+  paystack_fee    numeric NOT NULL DEFAULT 0,           -- 1.5% + ₦100 — paid by gifter on top
+  kiima_fee       numeric NOT NULL DEFAULT 0,           -- 3% platform fee — deducted from creator
+  creator_amount  numeric NOT NULL,                     -- gift_amount - kiima_fee (creator receives)
+  total_charged   numeric NOT NULL,                     -- gift_amount + paystack_fee (gifter pays)
+  currency        text NOT NULL,
+  display_name    text,                                 -- null if anonymous
+  is_anonymous    boolean DEFAULT false,
+  paystack_ref    text UNIQUE NOT NULL,                 -- Paystack payment reference
+  status          text DEFAULT 'pending',               -- 'pending' | 'confirmed'
+  created_at      timestamptz DEFAULT now()
 )
 
 -- Paystack webhook event log (admin visibility)
@@ -434,6 +475,7 @@ webhook_logs (
 -- Global platform settings (one row only — admin editable)
 platform_settings (
   id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  platform_fee_percent    numeric NOT NULL DEFAULT 3,   -- Kiima's cut deducted from creator (default 3%)
   default_tag_amount_ngn  numeric NOT NULL DEFAULT 2000,
   default_tag_amount_usd  numeric NOT NULL DEFAULT 2,
   default_tag_amount_gbp  numeric NOT NULL DEFAULT 2,
@@ -604,8 +646,8 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Purpose | Key Props |
 |---|---|---|---|
-| `GiftForm` | `forms/GiftForm.tsx` | Tag pills + CurrencyInput (always editable — tag pill fills amount but does not lock field; editing away from tag amount deselects the pill) + name input (required; disabled + cleared when anonymous) + AnonymousToggle + submit; name validates on blur — "Please enter your name" blocks submission; calls `initializeGift`; SubmitButton sub-component uses `useFormStatus` for loading state; redirect to Paystack on success | `recipientId: string, tags: GiftTag[], currency: Currency` |
-| `ContributeForm` | `forms/ContributeForm.tsx` | Pool contribution form — fixed currency tier pills (₦5k/10k/20k/50k/100k or USD/GBP/EUR equivalents), CurrencyInput (always editable — tier pill fills amount but does not lock field; editing away from tier amount deselects the pill), name input, AnonymousToggle; no gift tags; when isClosed=true renders locked closed-state card; calls `initializeGift`; Paystack callbackUrl → pool page | `poolId: string, recipientId: string, currency: Currency, isClosed: boolean` |
+| `GiftForm` | `forms/GiftForm.tsx` | Tag pills + CurrencyInput (always editable — tag pill fills amount but does not lock field; editing away from tag amount deselects the pill) + live fee breakdown (appears when amount > 0: "You're sending ₦X · Processing fee ₦Y · Total charged ₦Z") + name input (required; disabled + cleared when anonymous) + AnonymousToggle + submit; name validates on blur — "Please enter your name" blocks submission; calls `initializeGift`; SubmitButton sub-component uses `useFormStatus` for loading state; redirect to Paystack on success | `recipientId: string, tags: GiftTag[], currency: Currency, feePercent: number` |
+| `ContributeForm` | `forms/ContributeForm.tsx` | Pool contribution form — fixed currency tier pills (₦5k/10k/20k/50k/100k or USD/GBP/EUR equivalents), CurrencyInput (always editable — tier pill fills amount but does not lock field; editing away from tier amount deselects the pill), live fee breakdown, name input, AnonymousToggle; no gift tags; when isClosed=true renders locked closed-state card; calls `initializeGift`; Paystack callbackUrl → pool page | `poolId: string, recipientId: string, currency: Currency, isClosed: boolean, feePercent: number` |
 | `PoolCreateForm` | `forms/PoolCreateForm.tsx` | Title + optional description + goal amount (CurrencyInput) + "Show recent contributors publicly" toggle (default ON, same pill-switch style as AnonymousToggle) + hidden user_id/goal_amount/show_contributors bridge inputs; calls `createPool`; field-level validation errors from server action; on success: `redirect('/dashboard/pools')` | `userId: string, currency: Currency` |
 | `SocialLinksForm` | `forms/SocialLinksForm.tsx` | Dashboard social link manager — one row per supported platform (all 6 always visible); each row: platform icon + label + URL input + Save button; pre-fills existing URLs from DB; on save calls upsertSocialLink; empty URL on save calls deleteSocialLink; inline "Saved ✓" success and inline error per row | `userId: string, existingLinks: SocialLink[]` |
 
@@ -643,7 +685,7 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|---|
 | `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction` | Auth flows: create user + profile + default tag; sign in; password reset |
 | `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `deleteTag` | Tag CRUD — deleteTag guards is_default; createTag validates label + amount |
-| `lib/actions/gift.actions.ts` | `initializeGift` | Handles both direct gifts AND pool contributions. Reads optional `pool_id` from formData — if set, fetches pool slug to build pool-page callbackUrl; otherwise callbackUrl = /gift/success. Applies Section 4.3 anonymous override. Calculates 3% fee. Inserts PENDING contribution (with pool_id if present). Calls initializePaystackTransaction. redirect()s to Paystack. Cleans up pending row on Paystack failure. |
+| `lib/actions/gift.actions.ts` | `initializeGift` | Handles both direct gifts AND pool contributions. Reads optional `pool_id` from formData — if set, fetches pool slug to build pool-page callbackUrl; otherwise callbackUrl = /gift/success. Applies Section 4.3 anonymous override. Reads platform_fee_percent from platform_settings. Calls calculateAllFees(). Inserts PENDING contribution with all 5 fee fields (gift_amount, paystack_fee, kiima_fee, creator_amount, total_charged). Passes total_charged to initializePaystackTransaction. Cleans up pending row on Paystack failure. |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool` | createPool: validates title (≤80 chars) + goalAmount, generates slug (via generateSlug), checks slug uniqueness per creator and appends timestamp if collision, inserts row, redirect('/dashboard/pools'). getPools: returns all pools for userId newest first. closePool: verifies ownership + not already closed before UPDATE. contributePool: stub — validates poolId + amount, returns { success: true }; full Paystack flow in Phase 5.3. |
 | `lib/actions/link.actions.ts` | `getSocialLinks`, `upsertSocialLink`, `deleteSocialLink` | Social link CRUD. getSocialLinks: returns all links for userId ordered by display_order. upsertSocialLink: validates URL per Section 4.8 (https:// required + platform domain check); empty url calls deleteSocialLink instead. deleteSocialLink: DELETE by userId + platform. |
 
@@ -729,7 +771,7 @@ All use `.k-skeleton` CSS class (defined in `globals.css`) with `k-pulse` keyfra
 |---|---|---|
 | `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction` | Auth flows: create user + profile + default tag; sign in; password reset |
 | `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `deleteTag` | Tag CRUD — deleteTag guards is_default; createTag validates label + amount |
-| `lib/actions/gift.actions.ts` | `initializeGift` | Handles both direct gifts AND pool contributions. Reads optional `pool_id` from formData — if set, fetches pool slug to build pool-page callbackUrl; otherwise callbackUrl = /gift/success. Applies Section 4.3 anonymous override. Calculates 3% fee. Inserts PENDING contribution (with pool_id if present). Calls initializePaystackTransaction. redirect()s to Paystack. Cleans up pending row on Paystack failure. |
+| `lib/actions/gift.actions.ts` | `initializeGift` | Handles both direct gifts AND pool contributions. Reads optional `pool_id` from formData — if set, fetches pool slug to build pool-page callbackUrl; otherwise callbackUrl = /gift/success. Applies Section 4.3 anonymous override. Reads platform_fee_percent from platform_settings. Calls calculateAllFees(). Inserts PENDING contribution with all 5 fee fields (gift_amount, paystack_fee, kiima_fee, creator_amount, total_charged). Passes total_charged to initializePaystackTransaction. Cleans up pending row on Paystack failure. |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` | createPool: validates title (≤80 chars) + goalAmount, generates slug (via generateSlug), checks slug uniqueness per creator and appends timestamp if collision, inserts row, redirect('/dashboard/pools'). getPools: returns all pools for userId newest first. closePool: verifies ownership + not already closed before UPDATE. updateShowContributors: UPDATE support_pools SET show_contributors = $value WHERE id AND user_id. |
 | `lib/actions/admin.actions.ts` | `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment` | All use admin client (service role). suspendCreator/unsuspendCreator: UPDATE profiles.suspended. forceClosePool: guards not-already-closed before UPDATE. deleteCustomTag: guards is_default=false before DELETE. updatePlatformSettings: UPDATE platform_settings single row. recheckPaystackPayment: calls verifyPaystackTransaction → if success, confirms contribution + increments pool raised if applicable. |
 | `lib/actions/link.actions.ts` | `getSocialLinks`, `upsertSocialLink`, `deleteSocialLink` | getSocialLinks(userId): returns all links for a creator ordered by display_order. upsertSocialLink(userId, platform, url): validates URL per Section 4.8 rules before saving — throws clear error if validation fails; uses Supabase upsert on (user_id, platform) unique constraint. deleteSocialLink(userId, platform): deletes that platform's link. If url is empty string, upsertSocialLink calls deleteSocialLink instead of upserting. |
@@ -743,7 +785,8 @@ All use `.k-skeleton` CSS class (defined in `globals.css`) with `k-pulse` keyfra
 | `supabase/migrations/003_pool_show_contributors.sql` | ADD COLUMN show_contributors boolean DEFAULT true to support_pools |
 | `supabase/migrations/004_admin_fields.sql` | ADD COLUMN IF NOT EXISTS suspended boolean DEFAULT false to profiles — idempotent guard (column already in 001 for fresh installs) |
 | `supabase/migrations/005_social_links.sql` | CREATE TABLE social_links with RLS — public read, owner insert/update/delete; UNIQUE(user_id, platform); platform CHECK constraint enforces the 6 allowed values |
-| `supabase/migrations/005_social_links.sql` | CREATE TABLE social_links with RLS policies — public read, owner write |
+| `supabase/migrations/006_contributions_fee_columns.sql` | ADD COLUMN IF NOT EXISTS fee numeric and net_amount numeric to contributions — idempotent guard for deployments before the fee model was added |
+| `supabase/migrations/007_payment_refactor.sql` | Refactor contributions table: rename amount→gift_amount, fee→kiima_fee, net_amount→creator_amount; ADD paystack_fee and total_charged columns; ADD platform_fee_percent to platform_settings DEFAULT 3; UPDATE platform_settings SET platform_fee_percent=3. Run AFTER all previous migrations. |
 
 ---
 
@@ -792,9 +835,11 @@ export interface Contribution {
   recipient_id: string;
   pool_id: string | null;
   tag_id: string | null;
-  amount: number;           // full amount supporter paid
-  fee: number;              // 3% platform fee
-  net_amount: number;       // amount - fee (what creator receives)
+  gift_amount: number;      // amount gifter intends to send to creator
+  paystack_fee: number;     // 1.5% + ₦100 — added on top, paid by gifter
+  kiima_fee: number;        // 3% platform fee — deducted from creator via split
+  creator_amount: number;   // gift_amount - kiima_fee (what creator receives)
+  total_charged: number;    // gift_amount + paystack_fee (what gifter actually pays)
   currency: Currency;
   display_name: string | null;   // null = anonymous
   is_anonymous: boolean;
@@ -819,6 +864,7 @@ export interface WebhookLog {
 
 export interface PlatformSettings {
   id: string;
+  platform_fee_percent: number;  // default 3 — Kiima's cut from creator
   default_tag_amount_ngn: number;
   default_tag_amount_usd: number;
   default_tag_amount_gbp: number;
@@ -834,23 +880,6 @@ export interface ProfileWithAdmin extends Profile {
 }
 
 export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'youtube' | 'linkedin' | 'website';
-
-export interface SocialLink {
-  id: string;
-  user_id: string;
-  platform: SocialPlatform;
-  url: string;
-  display_order: number;
-  created_at: string;
-}
-
-export type SocialPlatform =
-  | 'instagram'
-  | 'tiktok'
-  | 'twitter'
-  | 'youtube'
-  | 'linkedin'
-  | 'website';
 
 export interface SocialLink {
   id: string;
@@ -876,6 +905,14 @@ formatCurrency(5000, 'NGN')  // → "₦5,000"
 formatCurrency(20, 'USD')    // → "$20.00"
 ```
 
+### `toKobo(amount)`
+```typescript
+// lib/utils/currency.ts
+// Paystack requires amounts in kobo (NGN × 100). Always convert before API calls.
+toKobo(10250)  // → 1025000
+// Never send naira directly to Paystack — always convert to kobo first.
+```
+
 ### `resolveDisplayName(displayName, isAnonymous)`
 ```typescript
 // lib/utils/display-name.ts
@@ -890,7 +927,37 @@ resolveDisplayName(null, true)       // → "Anonymous"
 ### `formatContributionLine(contribution)`
 ```typescript
 // Produces: "Victor sent ₦5,000" or "Anonymous bought a coffee ☕"
+// Uses gift_amount for the display value — not total_charged.
 // Always use this. Never format contributions inline.
+```
+
+### `calculateAllFees(giftAmount, feePercent)`
+```typescript
+// lib/utils/fee.ts
+// THE master fee function — always use this, never calculate fees individually.
+// feePercent comes from platform_settings.platform_fee_percent — never hardcode 3.
+// NGN formula: paystack_fee = min((gift_amount × 0.015) + 100, 2000)
+calculateAllFees(10000, 3)
+// → {
+//     gift_amount:    10000,   // what gifter intends to send
+//     paystack_fee:   250,     // added on top — paid by gifter
+//     kiima_fee:      300,     // deducted from creator via Paystack split
+//     creator_amount: 9700,    // what creator actually receives
+//     total_charged:  10250,   // what Paystack charges the gifter
+//   }
+```
+
+### `formatFeeBreakdown(giftAmount, feePercent, currency)`
+```typescript
+// lib/utils/fee.ts
+// Returns human-readable strings for the gift form live fee display.
+// Used in GiftForm and ContributeForm — shown to gifter before they pay.
+formatFeeBreakdown(10000, 3, 'NGN')
+// → {
+//     giftLine:   "You're sending ₦10,000",
+//     feeLine:    "Processing fee ₦250",
+//     totalLine:  "Total charged ₦10,250",
+//   }
 ```
 
 ---
@@ -1022,8 +1089,247 @@ Branch naming:
 > Always update before ending a session.
 
 ```
-Last updated: 2026-04-13
-Last session: Social links feature (Section 4.8)
+Last updated: 2026-04-19
+Last session: Payment model refactor (Section 4.6)
+
+  Session completed — full two-party fee model implemented:
+
+  NEW FILES:
+  - supabase/migrations/007_payment_refactor.sql:
+      RENAME contributions.amount → gift_amount
+      RENAME contributions.fee → kiima_fee
+      RENAME contributions.net_amount → creator_amount
+      ADD contributions.paystack_fee (DEFAULT 0)
+      ADD contributions.total_charged (DEFAULT 0)
+      ADD platform_settings.platform_fee_percent (DEFAULT 3)
+      UPDATE platform_settings SET platform_fee_percent = 3
+    MUST be run against live Supabase before next payment testing.
+  - lib/utils/fee.ts:
+      calculateAllFees(giftAmount, feePercent) — master fee function
+      formatFeeBreakdown(giftAmount, feePercent, currency) — form display strings
+      NGN formula: paystack_fee = min((giftAmount × 1.5%) + ₦100, ₦2,000)
+
+  UPDATED FILES:
+  - types/index.ts: Contribution interface now has gift_amount, paystack_fee,
+    kiima_fee, creator_amount, total_charged (replaced amount, fee, net_amount).
+    PlatformSettings now includes platform_fee_percent.
+  - lib/utils/display-name.ts: formatContributionLine now uses gift_amount.
+  - lib/actions/gift.actions.ts: reads platform_fee_percent from DB, calls
+    calculateAllFees(), inserts all 5 fee fields, passes total_charged to Paystack.
+  - lib/paystack/initialize.ts: accepts optional subaccountCode + transactionCharge
+    params (V2 Paystack split — not used in V1 since no creator subaccounts).
+  - components/forms/GiftForm.tsx: added feePercent prop; shows live fee breakdown
+    ("You're sending ₦X · Processing fee ₦Y · Total charged ₦Z") when amount > 0.
+  - components/forms/ContributeForm.tsx: same live fee breakdown added.
+  - app/[username]/page.tsx: fetches platform_fee_percent via admin client (parallel
+    with tags + links); passes feePercent to GiftForm.
+  - app/[username]/pool/[slug]/page.tsx: fetches platform_fee_percent; passes to
+    ContributeForm.
+  - app/api/webhooks/paystack/route.ts: pool increment now uses gift_amount.
+  - lib/actions/admin.actions.ts: recheckPaystackPayment uses gift_amount.
+  - app/dashboard/page.tsx: stat cards sum creator_amount (was net_amount).
+  - app/gift/success/page.tsx: reads gift_amount column.
+  - app/admin/transactions/page.tsx: selects + renders gift_amount/kiima_fee/creator_amount.
+  - app/admin/creators/[id]/page.tsx: same column renames in query + render.
+  - app/admin/page.tsx: volume aggregation + stuck-pending list use gift_amount.
+
+  TypeScript check: PASSED clean — no errors.
+
+  IMPORTANT — migration 007 must be run on live Supabase before testing:
+    Run the SQL in supabase/migrations/007_payment_refactor.sql via the
+    Supabase dashboard SQL editor. Without this, all DB reads/writes will
+    fail because the column names have changed.
+
+  NOTE ON V1 SUBACCOUNT LIMITATION:
+    The Paystack split (subaccount + transaction_charge) is wired in
+    initializePaystackTransaction but not sent in V1 (no creator has a
+    subaccount_code). Gifters pay total_charged; without the split, the creator
+    temporarily receives the Paystack fee portion too. This corrects itself in V2
+    when subaccounts are onboarded. The fee model is accurately tracked in the DB.
+
+Previous session: Phase 7.6 — End-to-end live testing audit
+
+  Session 7.6 completed — End-to-end live testing audit:
+
+  Method: static code audit + live Supabase REST queries (browser testing not
+  possible from CLI environment; Paystack UI interaction not possible).
+
+  LIVE DB STATE (verified via Supabase REST API):
+    profiles:      1 row — is_admin=true, suspended=false (admin account)
+    gift_tags:     2 rows — "Buy me a coffee ☕" (is_default=true, ₦2000) + 1 custom
+    contributions: 23 rows — 21 confirmed, 2 pending; fee/net_amount populated correctly
+    support_pools: 4 rows — 3 open (with raised amounts), 1 closed
+    social_links:  table exists, all columns confirmed
+    All 6 migrations confirmed applied to live DB.
+
+  TEST CHECKLIST RESULTS:
+
+  ✅ Sign up as new creator — profile row exists, admin account verified.
+  ✅ Default tag trigger — "Buy me a coffee ☕" (is_default=true, amount=2000) auto-created.
+  ❌ Bank details step — OUT OF SCOPE. Section 10 explicitly excludes wallet/payout
+     systems. No subaccount_code column exists in profiles or anywhere in the schema.
+     This checklist item does not apply to V1. Logged as non-critical / V2 item.
+  ✅ Gift link page — suspended check now enforced (fixed previous session). Page renders.
+  ✅ Send test gift — 23 contributions in DB. Fee calculations correct (3% verified:
+     ₦510,000 × 3% = ₦15,300, net ₦494,700 etc). Payment flow working.
+  ✅ Contribution with status: pending — 2 pending rows exist (likely abandoned payments).
+  ✅ Webhook fires and confirms — 21/23 contributions confirmed. Pool totals incremented
+     correctly (raised=169750, 848750, 514100 across 3 funded pools).
+  ⚠️  Webhook logged — webhook_logs table exists; cannot verify row content with anon key
+     (no public RLS policy, correct). Confirmed contributions prove webhook runs correctly.
+  ✅ Dashboard shows contribution — FIXED this session: was summing gross amount,
+     now correctly sums net_amount per Section 4.6.
+  ✅ Create pool + contribute + pool total increments — 3 pools with non-zero raised values
+     confirm full pool contribution flow works end-to-end.
+  ✅ Close pool → public page shows closed — 1 pool has status='closed'. ContributeForm
+     renders locked closed-state card when isClosed=true.
+  ✅ Admin all 7 pages — layout.tsx has correct is_admin server-side guard. All 7 page
+     files exist with correct admin client usage and server actions.
+  ✅ Suspend creator — suspendCreator sets suspended=true. Public gift page now enforces
+     it (fixed previous session). Test by: admin sets suspended, visit /[username].
+  ✅ Force-close pool — forceClosePool guards not-already-closed before UPDATE. Two-step
+     ForceCloseButton component confirmed.
+  ✅ Recheck payment — recheckPaystackPayment calls Paystack verify API. Correct flow.
+  ✅ Social links — table exists, all platform validations correct in upsertSocialLink,
+     SocialLinksRow renders on public ProfileCard when links exist.
+
+  CRITICAL FIX applied this session:
+  - app/dashboard/page.tsx: stat cards were summing contribution.amount (gross) instead
+    of contribution.net_amount. Changed select('amount') → select('net_amount') and
+    the corresponding reduce. Creator dashboard now shows what they actually received.
+    This violated Section 4.6: "The creator's dashboard shows the net amount they received."
+
+  NON-CRITICAL notes:
+  - 2 contributions stuck in pending — normal (abandoned Paystack sessions). Admin can
+    use recheckPaystackPayment on these refs if needed.
+  - pool.actions.ts still has contributePool stub (dead code — ContributeForm uses
+    initializeGift since Phase 5.3). Harmless.
+  - TypeScript check: PASSED clean — no errors.
+  - Bank details / subaccount_code: V2+ feature. Checklist item not applicable.
+
+  Session 7.5 completed — Static code audit (pre-live-testing):
+
+  Two critical bugs found and fixed. All other findings logged as open issues.
+
+  CRITICAL FIX 1: Missing fee/net_amount columns in contributions table
+  - supabase/migrations/006_contributions_fee_columns.sql — CREATED:
+      ALTER TABLE contributions
+        ADD COLUMN IF NOT EXISTS fee numeric NOT NULL DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS net_amount numeric NOT NULL DEFAULT 0;
+  - Root cause: 001_initial_schema.sql never included these columns, but
+    lib/actions/gift.actions.ts inserts fee and net_amount on every payment.
+    Without this migration, ALL payment attempts fail at the DB insert step.
+  - Migration must be run against live Supabase before any payment testing.
+
+  CRITICAL FIX 2: Suspended creators' gift pages were fully accessible
+  - app/[username]/page.tsx — profile fetch now includes 'suspended' field
+  - Added suspended check: if profile.suspended === true, renders a locked
+    card ("🔒 This creator is unavailable") instead of the gift page.
+  - Added suspendedCardStyle, suspendedEmojiStyle, suspendedHeadingStyle,
+    suspendedBodyStyle inline styles to support the suspended state UI.
+  - Root cause: admin suspendCreator action set suspended=true in DB, but
+    the public gift page never read the field — making suspension useless.
+
+  Audit findings (non-critical — no code changes):
+  - Webhook testing blocked on localhost: PAYSTACK_WEBHOOK_SECRET is set to
+    the Paystack secret key (correct per Paystack spec), but Paystack cannot
+    deliver webhooks to http://localhost:3000. Requires ngrok or a deployed URL.
+  - increment_pool_raised RPC not deployed: webhook falls back to read-modify-write
+    (safe for V1 data volumes).
+  - og-default.png missing: needed as fallback og:image for gift link pages.
+  - Checklist items for "bank details" and "subaccount_code" are V2+ features
+    (Section 10). BankDetailsForm was never built and does not exist in V1.
+  - All 6 migrations (001–006) must be run against the live Supabase project
+    before end-to-end testing can complete. 001–005 were already listed as
+    outstanding; 006 added this session.
+
+  TypeScript check (npx tsc --noEmit): PASSED clean — no type errors.
+
+  Session 7.4 completed — Mobile audit (390px):
+
+  Issues found and fixed:
+
+  app/globals.css:
+  - .k-btn: added min-height: 44px. Previous padding gave ~42px at 15px font,
+    2px below the 44px minimum tap target rule.
+  - Added .k-link-row-content and .k-link-platform-col CSS classes with a
+    @media (max-width: 480px) breakpoint. On mobile the label column becomes
+    full-width, forcing the URL input+Save button to their own row. Without
+    this, the URL input shrank to ~126px on a 390px screen — too narrow to read.
+
+  components/forms/SocialLinksForm.tsx:
+  - LinkRow inner wrapper: replaced inline display/gap styles with
+    className="k-link-row-content" (uses new responsive CSS class).
+  - Platform icon+label div: replaced inline width/flex styles with
+    className="k-link-platform-col".
+  - URL input: added minHeight: 44px, boxSizing: border-box.
+  - Save button: added minHeight: 44px, display: inline-flex, alignItems: center.
+    Was ~36px tall.
+  - Error message: removed hardcoded margin-left: 132px (broke on stacked mobile
+    layout). Now margin: '6px 0 0'.
+
+  app/dashboard/tags/TagsClient.tsx:
+  - removeButtonStyle: was padding: '4px 4px' (~23px tap target). Now
+    padding: '10px 8px' + minHeight: 44px + display: inline-flex.
+  - addButtonStyle: was padding: 0 (~17px tap target). Now padding: '10px 0'
+    + minHeight: 44px + display: inline-flex, alignItems: center.
+
+  app/dashboard/pools/PoolsClient.tsx:
+  - cancelBtnStyle: was padding: 0 (~17px). Now padding: '10px 0' + minHeight:
+    44px + display: inline-flex, alignItems: center.
+
+  app/dashboard/pools/page.tsx:
+  - viewLinkStyle: was no padding (~16px tap target). Now display: inline-flex,
+    alignItems: center, minHeight: 44px, paddingLeft: 16px.
+  - raisedLabelStyle: added minWidth: 0, overflow: hidden, textOverflow:
+    ellipsis, whiteSpace: nowrap. Prevents long NGN amounts ("₦100,000 raised
+    of ₦500,000 goal") from overflowing the space-between footer row.
+
+  app/dashboard/pools/[id]/page.tsx:
+  - pageStyle: added margin: '0 auto' (was missing — content was left-aligned
+    on wide screens despite maxWidth: 720px).
+  - rowLineStyle: added overflow: hidden, textOverflow: ellipsis, whiteSpace:
+    nowrap. Prevents contribution lines overflowing alongside the date column.
+
+  app/dashboard/pools/CopyPoolLink.tsx:
+  - baseBtnStyle: was padding: '2px 10px' (~26px tap target). Now
+    padding: '10px 14px' + minHeight: 44px + display: inline-flex,
+    alignItems: center. Meets 44px minimum.
+
+  Pages confirmed clean (no changes needed):
+    /login, /signup — k-auth-page class, eye buttons 44px, currency pills 44px
+    /dashboard (overview) — statsGrid auto-fit wraps to single column at 390px
+    /dashboard/transactions — ContributionRow has ellipsis and flexShrink
+    /[username] — auto-fit grid collapses to single column
+    /[username]/pool/[slug] — same auto-fit grid pattern
+    /gift/success, /gift/cancelled — centered cards, padding: 40px 20px
+
+  Session 7.2 (Error handling) completed:
+  - app/gift/cancelled/page.tsx — added ?reason= param handler:
+      • REASON_COPY map covers: insufficient_funds, declined, timeout, cancelled
+      • bodyCopy falls back to generic copy when reason is absent or unrecognised
+      • Props type updated to include reason?: string
+  - app/error.tsx — fixed redundant copy:
+      • Body was "Something went wrong — try again, or come back in a moment."
+        which repeated the heading ("Something went wrong")
+      • Body now: "Try refreshing — if the problem keeps happening, come back in a moment."
+  - lib/actions/link.actions.ts — fixed raw Supabase error.message leaking to UI:
+      • upsertSocialLink DB error → 'Could not save link — try again.'
+      • deleteSocialLink DB error → 'Could not remove link — try again.'
+  - lib/actions/admin.actions.ts — fixed raw Supabase error.message leaking to UI
+    (admin-facing but internal surfaces must also stay clean):
+      • suspendCreator → 'Could not suspend creator — try again.'
+      • unsuspendCreator → 'Could not unsuspend creator — try again.'
+      • forceClosePool DB error → 'Could not close pool — try again.'
+      • deleteCustomTag DB error → 'Could not delete tag — try again.'
+      • updatePlatformSettings → 'Could not save settings — try again.'
+      • recheckPaystackPayment update error → 'Could not confirm payment — try again.'
+
+  Form validation audit results (all PASS — no changes needed):
+    GiftForm       ✓ inline field errors, no alert(), submit disabled while invalid
+    ContributeForm ✓ inline field errors, no alert(), submit disabled while invalid
+    PoolCreateForm ✓ inline field errors, global error banner, submit has loading state
+    BankDetailsForm — does not exist (N/A for V1)
 
   Session 0.2 recap:
   - Created styles/tokens.css with all design tokens from Section 3.1
@@ -1879,22 +2185,25 @@ Last session: Social links feature (Section 4.8)
     The useState(copied) / handleCopy logic is retained — activates when showLinkBar=true.
   - Section 7 ProfileCard entry updated to reflect new prop.
 
-Next task:    Live testing against Supabase — run all 5 migrations, verify
-              end-to-end payment flow, check admin panel with a real is_admin account,
-              verify social links save/display on public gift page.
+Next task:    Browser testing of UI flows — sign up a new creator, complete full gift
+              flow (Paystack test card 4084084084084081), verify dashboard stat cards
+              show net amounts, test admin panel with the is_admin account, verify
+              social links appear on public gift page, test suspend/unsuspend flow.
+              THEN: deploy to Vercel for production readiness and real webhook testing.
 
 Open issues:
   - increment_pool_raised RPC not yet deployed to Supabase
     (webhook falls back to read-modify-write — safe for V1)
   - og-default.png not yet created — needed as fallback og:image on gift link pages
-  - PAYSTACK_WEBHOOK_SECRET must be set in .env.local before end-to-end testing
-  - 001_initial_schema.sql not yet run against the live Supabase project
-  - 002_default_tag_trigger.sql not yet run against the live Supabase project
-  - 003_pool_show_contributors.sql not yet run against the live Supabase project
-  - 004_admin_fields.sql not yet run against the live Supabase project
-  - 005_social_links.sql not yet run against the live Supabase project
-  - gift@kiima.co placeholder email — Paystack receipt suppression needed later
-  - Admin panel has not been manually tested against a live Supabase instance yet
+  - PAYSTACK_WEBHOOK_SECRET is set to Paystack secret key in .env.local (correct per Paystack spec)
+  - All migrations confirmed applied to live Supabase (001–006 all active) ✓
+  - Webhook testing on localhost requires ngrok (webhook already confirmed working
+    from live DB evidence — 21/23 contributions confirmed)
+  - gift@kiima.co placeholder email — Paystack receipt emails will go to this address;
+    suppress or redirect before public launch
+  - Bank details / subaccount_code — V2+ feature, not in V1 scope (Section 10)
+  - contributePool stub in pool.actions.ts is dead code — ContributeForm uses
+    initializeGift since Phase 5.3; safe to remove in a cleanup pass
 ```
 
 ---

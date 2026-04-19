@@ -102,23 +102,9 @@ function LinkRow({ userId, platform, label, placeholder, initialUrl }: LinkRowPr
         borderBottom: '1px solid var(--color-border)',
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-        }}
-      >
+      <div className="k-link-row-content">
         {/* Icon + label */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            width: '120px',
-            flexShrink: 0,
-          }}
-        >
+        <div className="k-link-platform-col">
           <PlatformIcon platform={platform} />
           <span
             style={{
@@ -154,6 +140,8 @@ function LinkRow({ userId, platform, label, placeholder, initialUrl }: LinkRowPr
             outline: 'none',
             transition: 'border-color 0.15s ease, background 0.15s ease',
             minWidth: 0,
+            minHeight: '44px',
+            boxSizing: 'border-box',
           }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = 'var(--color-accent)';
@@ -175,6 +163,10 @@ function LinkRow({ userId, platform, label, placeholder, initialUrl }: LinkRowPr
             fontSize: '13px',
             fontWeight: 600,
             padding: '10px 18px',
+            minHeight: '44px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             borderRadius: 'var(--radius-sm)',
             border: 'none',
             background: status === 'saved'
@@ -199,7 +191,7 @@ function LinkRow({ userId, platform, label, placeholder, initialUrl }: LinkRowPr
             fontFamily: 'var(--font-body)',
             fontSize: '13px',
             color: 'var(--color-danger)',
-            margin: '8px 0 0 132px',
+            margin: '6px 0 0',
           }}
         >
           {errorMsg}

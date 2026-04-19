@@ -32,18 +32,18 @@ export default async function DashboardPage() {
     { count: totalCount },
     { data: recentData },
   ] = await Promise.all([
-    // Direct gift amounts (pool_id IS NULL)
+    // Direct gift net amounts (pool_id IS NULL) — creator sees what they received
     supabase
       .from('contributions')
-      .select('amount')
+      .select('creator_amount')
       .eq('recipient_id', userId)
       .eq('status', 'confirmed')
       .is('pool_id', null),
 
-    // Pool contribution amounts (pool_id IS NOT NULL)
+    // Pool contribution net amounts (pool_id IS NOT NULL)
     supabase
       .from('contributions')
-      .select('amount')
+      .select('creator_amount')
       .eq('recipient_id', userId)
       .eq('status', 'confirmed')
       .not('pool_id', 'is', null),
@@ -66,10 +66,10 @@ export default async function DashboardPage() {
   ]);
 
   const totalDirectGifts = (directGiftsData ?? []).reduce(
-    (sum, r) => sum + Number(r.amount), 0
+    (sum, r) => sum + Number(r.creator_amount), 0
   );
   const totalPoolGifts = (poolGiftsData ?? []).reduce(
-    (sum, r) => sum + Number(r.amount), 0
+    (sum, r) => sum + Number(r.creator_amount), 0
   );
   const giftCount     = totalCount ?? 0;
   const contributions = (recentData ?? []) as Contribution[];

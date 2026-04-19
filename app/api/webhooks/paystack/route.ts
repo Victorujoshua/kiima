@@ -66,7 +66,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 5a. Look up contribution by paystack_ref
     const { data: contribution, error: lookupError } = await supabase
       .from('contributions')
-      .select('id, pool_id, net_amount, status')
+      .select('id, pool_id, gift_amount, status')
       .eq('paystack_ref', paystackRef)
       .single();
 
@@ -101,17 +101,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     if (updateError) throw new Error(`Failed to confirm contribution: ${updateError.message}`);
 
-    // 5c. If pool contribution → increment support_pools.raised by net_amount
+    // 5c. If pool contribution → increment support_pools.raised by gift_amount
     if (contribution.pool_id) {
-      // Fetch current raised to compute new total (Supabase JS v2 has no atomic increment
-      // via RPC by default — use a raw RPC call for atomicity)
       const { error: rpcError } = await supabase.rpc('increment_pool_raised', {
         p_pool_id:   contribution.pool_id,
-        p_increment: contribution.net_amount,
+        p_increment: contribution.gift_amount,
       });
 
-      // Fallback: if the RPC doesn't exist yet, do a read-modify-write
-      // (acceptable for V1 — no concurrent writes in practice)
+      // Fallback read-modify-write if RPC not yet deployed
       if (rpcError) {
         const { data: pool } = await supabase
           .from('support_pools')
@@ -122,7 +119,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         if (pool) {
           await supabase
             .from('support_pools')
-            .update({ raised: Number(pool.raised) + Number(contribution.net_amount) })
+            .update({ raised: Number(pool.raised) + Number(contribution.gift_amount) })
             .eq('id', contribution.pool_id);
         }
       }

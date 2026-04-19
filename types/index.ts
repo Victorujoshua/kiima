@@ -39,9 +39,11 @@ export interface Contribution {
   recipient_id: string;
   pool_id: string | null;
   tag_id: string | null;
-  amount: number;
-  fee: number;          // 3% platform fee
-  net_amount: number;   // amount - fee
+  gift_amount: number;      // amount gifter intends to send to creator
+  paystack_fee: number;     // 1.5% + ₦100 — added on top, paid by gifter
+  kiima_fee: number;        // 3% platform fee — deducted from creator via split
+  creator_amount: number;   // gift_amount - kiima_fee (what creator receives)
+  total_charged: number;    // gift_amount + paystack_fee (what gifter pays)
   currency: Currency;
   display_name: string | null;   // null = anonymous
   is_anonymous: boolean;
@@ -66,6 +68,7 @@ export interface WebhookLog {
 
 export interface PlatformSettings {
   id: string;
+  platform_fee_percent: number;  // default 3 — Kiima's cut from creator
   default_tag_amount_ngn: number;
   default_tag_amount_usd: number;
   default_tag_amount_gbp: number;

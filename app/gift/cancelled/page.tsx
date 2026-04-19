@@ -1,11 +1,23 @@
 import Link from 'next/link';
 
+const REASON_COPY: Record<string, string> = {
+  insufficient_funds: "Looks like there weren't enough funds — try a different card or amount.",
+  declined:           'Your card was declined — try a different payment method.',
+  timeout:            "The payment timed out — nothing was charged. Try again when you're ready.",
+  cancelled:          "No worries — nothing was charged. Try again whenever you're ready.",
+};
+
 interface Props {
-  searchParams: { from?: string };  // optional creator username passed in URL
+  searchParams: { from?: string; reason?: string };
 }
 
 export default function GiftCancelledPage({ searchParams }: Props) {
-  const from = searchParams.from ?? null;
+  const from   = searchParams.from   ?? null;
+  const reason = searchParams.reason ?? null;
+
+  const bodyCopy =
+    (reason && REASON_COPY[reason]) ??
+    "No worries — nothing was charged. You can try again whenever you're ready.";
 
   return (
     <div style={pageStyle}>
@@ -14,9 +26,7 @@ export default function GiftCancelledPage({ searchParams }: Props) {
 
         <h1 style={headingStyle}>Payment didn&apos;t go through</h1>
 
-        <p style={bodyStyle}>
-          No worries — nothing was charged. You can try again whenever you&apos;re ready.
-        </p>
+        <p style={bodyStyle}>{bodyCopy}</p>
 
         {from ? (
           <Link href={`/${from}?payment_failed=1`} style={backLinkStyle}>

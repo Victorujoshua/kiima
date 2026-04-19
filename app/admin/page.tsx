@@ -58,7 +58,7 @@ export default async function AdminPage() {
       .eq('status', 'open'),
     admin
       .from('contributions')
-      .select('amount, currency')
+      .select('gift_amount, currency')
       .eq('status', 'confirmed'),
     admin
       .from('profiles')
@@ -67,7 +67,7 @@ export default async function AdminPage() {
       .order('created_at', { ascending: false }),
     admin
       .from('contributions')
-      .select('id, amount, currency, paystack_ref')
+      .select('id, gift_amount, currency, paystack_ref')
       .eq('status', 'pending')
       .lt('created_at', hourAgo),
   ]);
@@ -76,7 +76,7 @@ export default async function AdminPage() {
   const volumeByCurrency: Partial<Record<Currency, number>> = {};
   for (const row of confirmedAmounts ?? []) {
     const c = row.currency as Currency;
-    volumeByCurrency[c] = (volumeByCurrency[c] ?? 0) + row.amount;
+    volumeByCurrency[c] = (volumeByCurrency[c] ?? 0) + row.gift_amount;
   }
   const currencies = Object.keys(volumeByCurrency) as Currency[];
 
@@ -221,7 +221,7 @@ export default async function AdminPage() {
           >
             {stuckPending!.map((c) => (
               <div key={c.id}>
-                {formatCurrency(c.amount, c.currency)} — ref: {c.paystack_ref}
+                {formatCurrency(c.gift_amount, c.currency)} — ref: {c.paystack_ref}
               </div>
             ))}
           </div>

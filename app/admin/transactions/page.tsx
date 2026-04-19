@@ -46,7 +46,7 @@ export default async function AdminTransactionsPage({
   let query = admin
     .from('contributions')
     .select(
-      'id, amount, fee, net_amount, currency, display_name, is_anonymous, paystack_ref, status, created_at, pool_id, recipient_id, tag_id, profiles!recipient_id(display_name, username), support_pools!pool_id(title, slug)'
+      'id, gift_amount, kiima_fee, creator_amount, total_charged, currency, display_name, is_anonymous, paystack_ref, status, created_at, pool_id, recipient_id, tag_id, profiles!recipient_id(display_name, username), support_pools!pool_id(title, slug)'
     )
     .order('created_at', { ascending: false })
     .limit(200);
@@ -159,9 +159,9 @@ export default async function AdminTransactionsPage({
                         ) : '—'}
                       </td>
                       <td style={{ ...td, color: 'var(--color-text-secondary)' }}>{gifterName}</td>
-                      <td style={{ ...td, fontWeight: 600 }}>{formatCurrency(c.amount, c.currency as Currency)}</td>
-                      <td style={{ ...td, color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatCurrency(c.fee, c.currency as Currency)}</td>
-                      <td style={{ ...td, color: 'var(--color-success)', fontWeight: 600 }}>{formatCurrency(c.net_amount, c.currency as Currency)}</td>
+                      <td style={{ ...td, fontWeight: 600 }}>{formatCurrency(c.gift_amount, c.currency as Currency)}</td>
+                      <td style={{ ...td, color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatCurrency(c.kiima_fee, c.currency as Currency)}</td>
+                      <td style={{ ...td, color: 'var(--color-success)', fontWeight: 600 }}>{formatCurrency(c.creator_amount, c.currency as Currency)}</td>
                       <td style={{ ...td, color: 'var(--color-text-muted)', fontSize: '12px' }}>
                         {pool ? pool.title : '—'}
                       </td>

@@ -202,6 +202,10 @@ const raisedLabelStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: '12px',
   color: 'var(--color-text-muted)',
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 };
 
 const viewLinkStyle: React.CSSProperties = {
@@ -210,6 +214,11 @@ const viewLinkStyle: React.CSSProperties = {
   fontSize: '13px',
   color: 'var(--color-accent)',
   textDecoration: 'none',
+  flexShrink: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: '44px',
+  paddingLeft: 'var(--space-md)',
 };
 
 const emptyCardStyle: React.CSSProperties = {

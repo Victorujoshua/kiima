@@ -6,9 +6,10 @@ import CurrencyInput from '@/components/shared/CurrencyInput';
 import AnonymousToggle from '@/components/shared/AnonymousToggle';
 import KiimaButton from '@/components/shared/KiimaButton';
 import { initializeGift } from '@/lib/actions/gift.actions';
+import { calculateAllFees } from '@/lib/utils/fee';
+import { formatCurrency } from '@/lib/utils/currency';
 import type { Currency } from '@/types';
 
-// Fixed contribution tiers per currency
 const TIERS: Record<Currency, number[]> = {
   NGN: [5000, 10000, 20000, 50000, 100000],
   USD: [5, 10, 20, 50, 100],
@@ -24,8 +25,7 @@ const CURRENCY_SYMBOL: Record<Currency, string> = {
 };
 
 function formatTier(amount: number, currency: Currency): string {
-  const symbol = CURRENCY_SYMBOL[currency];
-  return `${symbol}${amount.toLocaleString('en')}`;
+  return `${CURRENCY_SYMBOL[currency]}${amount.toLocaleString('en')}`;
 }
 
 interface ContributeFormProps {
@@ -33,6 +33,7 @@ interface ContributeFormProps {
   recipientId: string;
   currency: Currency;
   isClosed: boolean;
+  feePercent: number;
 }
 
 export default function ContributeForm({
@@ -40,6 +41,7 @@ export default function ContributeForm({
   recipientId,
   currency,
   isClosed,
+  feePercent,
 }: ContributeFormProps) {
   if (isClosed) {
     return (
@@ -53,18 +55,19 @@ export default function ContributeForm({
     );
   }
 
-  return <OpenForm poolId={poolId} recipientId={recipientId} currency={currency} />;
+  return <OpenForm poolId={poolId} recipientId={recipientId} currency={currency} feePercent={feePercent} />;
 }
 
-// Separated so hooks are only called when the pool is open
 function OpenForm({
   poolId,
   recipientId,
   currency,
+  feePercent,
 }: {
   poolId: string;
   recipientId: string;
   currency: Currency;
+  feePercent: number;
 }) {
   const [state, formAction] = useFormState(initializeGift, null);
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
@@ -82,7 +85,6 @@ function OpenForm({
 
   function handleAmountChange(value: string) {
     setAmount(value);
-    // Deselect the active tier when the gifter edits the amount away from it
     if (selectedTier !== null && value !== String(selectedTier)) {
       setSelectedTier(null);
     }
@@ -107,8 +109,11 @@ function OpenForm({
     }
   }
 
-  const amountMissing = Number(amount) <= 0;
+  const numericAmount = Number(amount);
+  const amountMissing = numericAmount <= 0;
   const canSubmit = !amountMissing && (isAnon || displayName.trim() !== '');
+
+  const fees = numericAmount > 0 ? calculateAllFees(numericAmount, feePercent) : null;
 
   return (
     <div style={cardStyle}>
@@ -118,7 +123,6 @@ function OpenForm({
         action={formAction}
         style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}
       >
-        {/* Hidden fields */}
         <input type="hidden" name="pool_id" value={poolId} />
         <input type="hidden" name="recipient_id" value={recipientId} />
         <input type="hidden" name="is_anonymous" value={String(isAnon)} />
@@ -155,6 +159,17 @@ function OpenForm({
           />
         </div>
 
+        {/* Live fee breakdown */}
+        {fees && (
+          <div style={feeBreakdownStyle}>
+            <span>{`You're sending ${formatCurrency(fees.gift_amount, currency)}`}</span>
+            <span style={feeSepStyle}>·</span>
+            <span>{`Processing fee ${formatCurrency(fees.paystack_fee, currency)}`}</span>
+            <span style={feeSepStyle}>·</span>
+            <span style={feeTotalStyle}>{`Total charged ${formatCurrency(fees.total_charged, currency)}`}</span>
+          </div>
+        )}
+
         {/* Name */}
         <div>
           <label htmlFor="contribute-name" style={labelStyle}>Your name</label>
@@ -175,14 +190,12 @@ function OpenForm({
           )}
         </div>
 
-        {/* Anonymous toggle */}
         <AnonymousToggle
           isAnon={isAnon}
           displayName={displayName}
           onChange={handleAnonChange}
         />
 
-        {/* Global error */}
         {state?.error && (
           <p style={errorStyle} role="alert">{state.error}</p>
         )}
@@ -262,6 +275,28 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '0.08em',
   color: 'var(--color-text-faint)',
   marginBottom: 'var(--space-xs)',
+};
+
+const feeBreakdownStyle: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: '4px',
+  fontFamily: 'var(--font-body)',
+  fontSize: '12px',
+  color: 'var(--color-text-muted)',
+  background: 'var(--color-bg)',
+  borderRadius: 'var(--radius-sm)',
+  padding: '10px var(--space-md)',
+};
+
+const feeSepStyle: React.CSSProperties = {
+  color: 'var(--color-border-hover)',
+};
+
+const feeTotalStyle: React.CSSProperties = {
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
 };
 
 const hintStyle: React.CSSProperties = {

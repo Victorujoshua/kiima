@@ -7,15 +7,18 @@ import CurrencyInput from '@/components/shared/CurrencyInput';
 import AnonymousToggle from '@/components/shared/AnonymousToggle';
 import KiimaButton from '@/components/shared/KiimaButton';
 import { initializeGift } from '@/lib/actions/gift.actions';
+import { calculateAllFees } from '@/lib/utils/fee';
+import { formatCurrency } from '@/lib/utils/currency';
 import type { GiftTag, Currency } from '@/types';
 
 interface GiftFormProps {
   recipientId: string;
   tags: GiftTag[];
   currency: Currency;
+  feePercent: number;
 }
 
-export default function GiftForm({ recipientId, tags, currency }: GiftFormProps) {
+export default function GiftForm({ recipientId, tags, currency, feePercent }: GiftFormProps) {
   const [state, formAction] = useFormState(initializeGift, null);
   const [selectedTag, setSelectedTag] = useState<GiftTag | null>(null);
   const [amount, setAmount] = useState('');
@@ -30,7 +33,6 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
 
   function handleAmountChange(value: string) {
     setAmount(value);
-    // Deselect the active tag when the gifter edits the amount away from it
     if (selectedTag && value !== String(selectedTag.amount)) {
       setSelectedTag(null);
     }
@@ -47,8 +49,6 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
     }
   }
 
-  // When anonymous is toggled ON: clear the name and any error.
-  // When toggled OFF: re-enable the field (user must fill it before submitting).
   function handleAnonChange(value: boolean) {
     setIsAnon(value);
     if (value) {
@@ -57,8 +57,12 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
     }
   }
 
-  const amountMissing = Number(amount) <= 0;
+  const numericAmount = Number(amount);
+  const amountMissing = numericAmount <= 0;
   const canSubmit = !amountMissing && (isAnon || displayName.trim() !== '');
+
+  // Live fee breakdown — only shown when there's a valid amount
+  const fees = numericAmount > 0 ? calculateAllFees(numericAmount, feePercent) : null;
 
   return (
     <div style={cardStyle}>
@@ -68,7 +72,6 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
         action={formAction}
         style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}
       >
-        {/* Hidden fields — synced on every render so FormData reads current state */}
         <input type="hidden" name="recipient_id" value={recipientId} />
         <input type="hidden" name="tag_id" value={selectedTag?.id ?? ''} />
         <input type="hidden" name="is_anonymous" value={String(isAnon)} />
@@ -99,11 +102,20 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
           />
         </div>
 
-        {/* Name — required unless anonymous */}
+        {/* Live fee breakdown */}
+        {fees && (
+          <div style={feeBreakdownStyle}>
+            <span>{`You're sending ${formatCurrency(fees.gift_amount, currency)}`}</span>
+            <span style={feeSepStyle}>·</span>
+            <span>{`Processing fee ${formatCurrency(fees.paystack_fee, currency)}`}</span>
+            <span style={feeSepStyle}>·</span>
+            <span style={feeTotalStyle}>{`Total charged ${formatCurrency(fees.total_charged, currency)}`}</span>
+          </div>
+        )}
+
+        {/* Name */}
         <div>
-          <label htmlFor="gift-name" style={labelStyle}>
-            Your name
-          </label>
+          <label htmlFor="gift-name" style={labelStyle}>Your name</label>
           <input
             id="gift-name"
             name="display_name"
@@ -121,21 +133,17 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
           )}
         </div>
 
-        {/* Anonymous toggle — Section 4.3 */}
+        {/* Anonymous toggle */}
         <AnonymousToggle
           isAnon={isAnon}
           displayName={displayName}
           onChange={handleAnonChange}
         />
 
-        {/* Global error */}
         {state?.error && (
-          <p style={errorStyle} role="alert">
-            {state.error}
-          </p>
+          <p style={errorStyle} role="alert">{state.error}</p>
         )}
 
-        {/* CTA */}
         <SubmitButton disabled={!canSubmit} />
 
         {amountMissing && (
@@ -147,8 +155,6 @@ export default function GiftForm({ recipientId, tags, currency }: GiftFormProps)
     </div>
   );
 }
-
-// ─── Submit button (needs useFormStatus — must be inside <form>) ──────────────
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
@@ -192,6 +198,28 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '0.08em',
   color: 'var(--color-text-faint)',
   marginBottom: 'var(--space-xs)',
+};
+
+const feeBreakdownStyle: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: '4px',
+  fontFamily: 'var(--font-body)',
+  fontSize: '12px',
+  color: 'var(--color-text-muted)',
+  background: 'var(--color-bg)',
+  borderRadius: 'var(--radius-sm)',
+  padding: '10px var(--space-md)',
+};
+
+const feeSepStyle: React.CSSProperties = {
+  color: 'var(--color-border-hover)',
+};
+
+const feeTotalStyle: React.CSSProperties = {
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
 };
 
 const hintStyle: React.CSSProperties = {
