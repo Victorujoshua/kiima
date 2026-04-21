@@ -1,84 +1,842 @@
-export default function Home() {
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+
+export default function LandingPage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const faqs = [
+    { q: 'Do I need a website to use Kiima?', a: 'No. Kiima gives you a personal page at kiima.co/yourname. Share it in your Instagram bio, TikTok, YouTube description, or anywhere your audience finds you.' },
+    { q: 'How do I receive my money?', a: 'Funds settle directly to your Nigerian bank account via Paystack. No wallets, no waiting around — money goes straight to you.' },
+    { q: 'How much does Kiima cost?', a: 'Kiima is completely free to use. We only take a small 3% platform fee when a gift is successfully sent — so we only earn when you do.' },
+    { q: 'What is a Support Pool?', a: 'A Support Pool is a crowd-funded goal. Set a target amount, share your pool link, and let your community contribute together — perfect for projects, equipment, events, or emergencies.' },
+    { q: 'Can my supporters choose how much to give?', a: 'Yes. You can set Gift Tags as preset options (like "Buy me a coffee ☕ — ₦2,000") and supporters can also enter any custom amount they like.' },
+    { q: 'Is Kiima only for Nigerian creators?', a: 'Kiima is optimised for Nigerian creators and currently supports NGN. USD, GBP, and EUR are also supported for international creators.' },
+  ];
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "var(--space-2xl)",
-      }}
-    >
-      <div
-        style={{
-          background: "var(--color-surface)",
-          borderRadius: "var(--radius-lg)",
-          border: "1px solid var(--color-border)",
-          boxShadow: "var(--shadow-card)",
-          padding: "var(--space-xl)",
-          maxWidth: "420px",
-          width: "100%",
-        }}
-      >
-        {/* Label */}
-        <p
-          style={{
-            fontFamily: "var(--font-body)",
-            fontWeight: 700,
-            fontSize: "11px",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "var(--color-text-faint)",
-            marginBottom: "var(--space-sm)",
-          }}
-        >
-          Design system check
-        </p>
+    <>
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { overflow-x: hidden; }
 
-        {/* Display heading */}
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 400,
-            fontSize: "28px",
-            color: "var(--color-text-primary)",
-            marginBottom: "var(--space-sm)",
-          }}
-        >
-          Welcome to Kiima
-        </h1>
+        .lp-wrap { max-width: 1120px; margin: 0 auto; padding: 0 60px; }
 
-        {/* Body copy */}
-        <p
-          style={{
-            fontFamily: "var(--font-body)",
-            fontWeight: 400,
-            fontSize: "14px",
-            lineHeight: 1.65,
-            color: "var(--color-text-secondary)",
-            marginBottom: "var(--space-lg)",
-          }}
-        >
-          A soft, modern digital space where giving feels natural. Fonts, tokens, and
-          card system are loading correctly if you see this card.
-        </p>
+        /* Hero */
+        .lp-hero-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 64px;
+          align-items: center;
+          padding: 96px 0 80px;
+        }
 
-        {/* Accent pill */}
-        <span
-          style={{
-            display: "inline-block",
-            background: "var(--color-accent-soft)",
-            color: "var(--color-accent)",
-            borderRadius: "var(--radius-full)",
-            padding: "6px var(--space-md)",
-            fontFamily: "var(--font-body)",
-            fontWeight: 600,
-            fontSize: "13px",
-          }}
-        >
-          Buy me a coffee ☕
-        </span>
+        /* Feature sections */
+        .lp-feat-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 80px;
+          align-items: center;
+        }
+        .lp-feat-grid--rev { direction: rtl; }
+        .lp-feat-grid--rev > * { direction: ltr; }
+
+        /* How it works */
+        .lp-how-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 56px;
+        }
+
+        /* Testimonials */
+        .lp-testi-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 24px;
+        }
+
+        /* Pricing */
+        .lp-pricing-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+          max-width: 720px;
+          margin: 0 auto;
+        }
+
+        /* Buttons */
+        .lp-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-family: var(--font-body);
+          font-weight: 700;
+          font-size: 15px;
+          border-radius: var(--radius-full);
+          padding: 14px 28px;
+          text-decoration: none;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+          min-height: 52px;
+          cursor: pointer;
+          border: 2px solid transparent;
+        }
+        .lp-btn-dark {
+          color: #fff;
+          background: var(--color-text-primary);
+          border-color: var(--color-text-primary);
+        }
+        .lp-btn-dark:hover {
+          background: #2e2924;
+          border-color: #2e2924;
+          transform: translateY(-1px);
+          box-shadow: 0 8px 24px rgba(28,25,22,0.28);
+        }
+        .lp-btn-dark:active { transform: scale(0.98); }
+
+        .lp-btn-outline {
+          color: var(--color-text-primary);
+          background: transparent;
+          border-color: rgba(28,25,22,0.2);
+        }
+        .lp-btn-outline:hover {
+          border-color: rgba(28,25,22,0.4);
+          background: rgba(28,25,22,0.04);
+        }
+
+        .lp-btn-white {
+          color: var(--color-text-primary);
+          background: #fff;
+          border-color: #fff;
+        }
+        .lp-btn-white:hover {
+          background: rgba(255,255,255,0.9);
+          transform: translateY(-1px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .lp-btn-white:active { transform: scale(0.98); }
+
+        .lp-btn-outline-white {
+          color: #fff;
+          background: transparent;
+          border-color: rgba(255,255,255,0.4);
+        }
+        .lp-btn-outline-white:hover {
+          border-color: rgba(255,255,255,0.8);
+          background: rgba(255,255,255,0.08);
+        }
+
+        /* Nav */
+        .lp-nav-right { display: flex; align-items: center; gap: 28px; }
+        .lp-nav-mobile { display: none !important; }
+
+        /* FAQ */
+        .lp-faq-answer {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease;
+        }
+        .lp-faq-answer--open { max-height: 300px; }
+
+        /* Nav link */
+        .lp-nav-link {
+          font-family: var(--font-body);
+          font-weight: 500;
+          font-size: 14px;
+          color: var(--color-text-secondary);
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        .lp-nav-link:hover { color: var(--color-text-primary); }
+
+        /* Section headings */
+        .lp-eyebrow {
+          font-family: var(--font-body);
+          font-weight: 700;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--color-accent);
+          margin: 0 0 14px;
+        }
+
+        @media (max-width: 900px) {
+          .lp-wrap { padding: 0 28px; }
+          .lp-hero-grid {
+            grid-template-columns: 1fr;
+            gap: 48px;
+            padding: 64px 0 56px;
+          }
+          .lp-hero-phone { display: flex; justify-content: center; }
+          .lp-hero-ctas { justify-content: flex-start !important; }
+          .lp-hero-sub { max-width: 480px !important; }
+          .lp-feat-grid { grid-template-columns: 1fr; gap: 40px; }
+          .lp-feat-grid--rev { direction: ltr; }
+          .lp-feat-grid--rev .lp-feat-visual { order: -1; }
+          .lp-feat-visual { display: flex; justify-content: center; }
+          .lp-feat-text { text-align: left; }
+          .lp-feat-btn-row { justify-content: flex-start; }
+          .lp-how-grid { grid-template-columns: 1fr; gap: 36px; }
+          .lp-how-step { text-align: left; }
+          .lp-testi-grid { grid-template-columns: 1fr; gap: 16px; }
+          .lp-pricing-grid { grid-template-columns: 1fr; }
+          .lp-faq-layout { grid-template-columns: 1fr !important; gap: 36px !important; }
+          .lp-faq-sticky { position: static !important; }
+          .lp-feat-section { padding: 64px 0 !important; }
+          .lp-proof-label { flex-basis: 100%; text-align: center; }
+          .lp-proof-bar { justify-content: center; gap: 10px !important; }
+          .lp-how-header { flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
+        }
+
+        @media (max-width: 600px) {
+          .lp-wrap { padding: 0 20px; }
+          .lp-hero-headline { font-size: 40px !important; letter-spacing: -0.025em !important; }
+          .lp-section-h2 { font-size: 30px !important; }
+          .lp-feat-h2 { font-size: 32px !important; }
+          .lp-final-h2 { font-size: 36px !important; }
+          .lp-hero-ctas { flex-wrap: wrap !important; }
+          .lp-hero-ctas > * { flex: 1; min-width: 150px; text-align: center; justify-content: center; }
+          .lp-nav-right { display: none !important; }
+          .lp-nav-mobile { display: inline-flex !important; }
+          .lp-feat-btn-row { flex-direction: column; width: 100%; }
+          .lp-feat-btn-row > * { width: 100% !important; text-align: center; justify-content: center; }
+          .lp-mockup-scale { width: 100%; display: flex; justify-content: center; }
+          .lp-mockup-scale > * { max-width: 100%; }
+        }
+      `}</style>
+
+      <div style={{ background: 'var(--color-bg)', fontFamily: 'var(--font-body)' }}>
+
+        {/* ── NAVBAR ─────────────────────────────────────────────── */}
+        <nav style={{
+          position: 'sticky', top: 0, zIndex: 50,
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          background: 'rgba(246,243,238,0.92)',
+          borderBottom: '1px solid var(--color-border)',
+        }}>
+          <div className="lp-wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
+            <Link href="/" style={logoStyle}>
+              kiima<span style={{ color: 'var(--color-accent)' }}>.</span>
+            </Link>
+            <div className="lp-nav-right">
+              <a href="#features" className="lp-nav-link">Features</a>
+              <a href="#how-it-works" className="lp-nav-link">How it works</a>
+              <a href="#pricing" className="lp-nav-link">Pricing</a>
+              <a href="#faq" className="lp-nav-link">FAQ</a>
+              <Link href="/login" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--color-text-secondary)', textDecoration: 'none', marginLeft: 4 }}>Log in</Link>
+              <Link href="/signup" className="lp-btn lp-btn-dark" style={{ fontSize: 14, padding: '11px 22px', minHeight: 44 }}>Get started →</Link>
+            </div>
+            <Link href="/signup" className="lp-nav-mobile lp-btn lp-btn-dark" style={{ fontSize: 13, padding: '10px 18px', minHeight: 42 }}>Get started</Link>
+          </div>
+        </nav>
+
+        {/* ── HERO ───────────────────────────────────────────────── */}
+        <section>
+          <div className="lp-wrap">
+            <div className="lp-hero-grid">
+              {/* Left: text */}
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13,
+                  color: 'var(--color-accent)', background: 'var(--color-accent-soft)',
+                  borderRadius: 'var(--radius-full)', padding: '6px 16px', marginBottom: 28,
+                }}>🇳🇬 Built for Nigerian creators</span>
+
+                <h1 className="lp-hero-headline" style={{
+                  fontFamily: 'var(--font-display)', fontWeight: 500,
+                  fontSize: 58, color: 'var(--color-text-primary)',
+                  lineHeight: 1.08, letterSpacing: '-0.03em',
+                  margin: '0 0 24px',
+                }}>
+                  The easiest way<br />to receive gifts<br />from your fans.
+                </h1>
+
+                <p className="lp-hero-sub" style={{
+                  fontFamily: 'var(--font-body)', fontSize: 18,
+                  color: 'var(--color-text-secondary)', lineHeight: 1.65,
+                  margin: '0 0 36px', maxWidth: 400,
+                }}>
+                  A personal gift link, custom Gift Tags, and collaborative Support Pools — built for Nigerian creators, powered by Paystack.
+                </p>
+
+                <div className="lp-hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <Link href="/signup" className="lp-btn lp-btn-dark">Get started free</Link>
+                  <a href="#how-it-works" className="lp-btn lp-btn-outline">How it works ↓</a>
+                </div>
+
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-muted)', marginTop: 20 }}>
+                  Free forever · No credit card · Set up in minutes
+                </p>
+              </div>
+
+              {/* Right: phone mockup */}
+              <div className="lp-hero-phone" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute', inset: -80,
+                    background: 'radial-gradient(ellipse at center, rgba(200,123,92,0.2) 0%, transparent 65%)',
+                    borderRadius: '50%', pointerEvents: 'none',
+                  }} />
+                  <PhoneMockup />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── PROOF BAR ──────────────────────────────────────────── */}
+        <div style={{
+          background: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)',
+          borderBottom: '1px solid var(--color-border)',
+          padding: '24px 0',
+        }}>
+          <div className="lp-wrap">
+            <div className="lp-proof-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', alignItems: 'center' }}>
+              <span className="lp-proof-label" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, color: 'var(--color-text-muted)' }}>
+                Used by creators across Nigeria:
+              </span>
+              {['Content Creators', 'Musicians', 'Comedians', 'Podcasters', 'Coaches', 'Entrepreneurs'].map(c => (
+                <span key={c} style={{
+                  fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13,
+                  color: 'var(--color-text-secondary)',
+                  background: 'var(--color-bg)',
+                  border: '1.5px solid var(--color-border)',
+                  borderRadius: 'var(--radius-full)', padding: '5px 14px',
+                }}>{c}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── HOW IT WORKS ───────────────────────────────────────── */}
+        <section id="how-it-works" style={{ background: 'var(--color-surface)', padding: '88px 0' }}>
+          <div className="lp-wrap">
+            <div className="lp-how-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 60, flexWrap: 'wrap', gap: 16 }}>
+              <div>
+                <h2 className="lp-section-h2" style={{ ...sectionH2Style, margin: 0 }}>How it works</h2>
+              </div>
+              <Link href="/signup" style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--color-accent)', textDecoration: 'none' }}>
+                Get started →
+              </Link>
+            </div>
+
+            <div className="lp-how-grid">
+              {[
+                { n: '01', title: 'Create your link', body: 'Sign up, choose your username, and your gift page is live at kiima.co/yourname instantly. No setup fees. No waiting.' },
+                { n: '02', title: 'Share it everywhere', body: 'Drop your Kiima link in your Instagram bio, TikTok, YouTube description, or anywhere your audience finds you.' },
+                { n: '03', title: 'Receive gifts', body: 'Your supporters send gifts directly to you. Funds settle to your Nigerian bank account via Paystack.' },
+              ].map(step => (
+                <div key={step.n} className="lp-how-step">
+                  <div style={{
+                    width: 48, height: 48, borderRadius: '50%',
+                    background: 'var(--color-accent-soft)',
+                    border: '1.5px solid rgba(200,123,92,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 18,
+                    color: 'var(--color-accent)', marginBottom: 20,
+                  }}>{step.n}</div>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 22, color: 'var(--color-text-primary)', margin: '0 0 10px' }}>{step.title}</h3>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--color-text-secondary)', lineHeight: 1.65, margin: 0 }}>{step.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── FEATURE SECTIONS ───────────────────────────────────── */}
+        <div id="features">
+
+          {/* 1. Gift Link — forest green */}
+          <section className="lp-feat-section" style={{ background: 'var(--color-section-green)', padding: '96px 0', overflow: 'hidden' }}>
+            <div className="lp-wrap">
+              <div className="lp-feat-grid">
+                <div className="lp-feat-text">
+                  <p className="lp-eyebrow" style={{ color: 'rgba(255,255,255,0.55)' }}>Step 01</p>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: '#fff', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                    Your personal<br />gift link
+                  </h2>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(255,255,255,0.82)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
+                    Get a beautiful page at <strong style={{ color: '#fff', fontWeight: 700 }}>kiima.co/yourname</strong>. Share it anywhere — Instagram bio, TikTok, WhatsApp — and start receiving gifts instantly. No setup fees, no waiting.
+                  </p>
+                  <div className="lp-feat-btn-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <Link href="/signup" className="lp-btn lp-btn-white">Get your link free →</Link>
+                    <a href="#how-it-works" className="lp-btn lp-btn-outline-white">Learn more</a>
+                  </div>
+                </div>
+                <div className="lp-feat-visual" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div className="lp-mockup-scale"><GiftPageMockup /></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 2. Dashboard — dark */}
+          <section className="lp-feat-section" style={{ background: 'var(--color-text-primary)', padding: '96px 0', overflow: 'hidden' }}>
+            <div className="lp-wrap">
+              <div className="lp-feat-grid lp-feat-grid--rev">
+                <div className="lp-feat-text">
+                  <p className="lp-eyebrow" style={{ color: 'var(--color-accent)' }}>Step 02</p>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: '#F6F3EE', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                    A dashboard<br />that shows<br />everything
+                  </h2>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(246,243,238,0.72)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
+                    See every gift, track your pools, manage your tags, and connect your social links — all from one clean, easy-to-use creator dashboard.
+                  </p>
+                  <Link href="/signup" className="lp-btn lp-btn-white">Start tracking →</Link>
+                </div>
+                <div className="lp-feat-visual" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div className="lp-mockup-scale"><DashboardMockup /></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 3. Gift Tags — light warm */}
+          <section className="lp-feat-section" style={{ background: 'var(--color-bg)', padding: '96px 0', overflow: 'hidden' }}>
+            <div className="lp-wrap">
+              <div className="lp-feat-grid">
+                <div className="lp-feat-text">
+                  <p className="lp-eyebrow">Step 03</p>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: 'var(--color-text-primary)', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                    Gift Tags that<br />make giving easy
+                  </h2>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--color-text-secondary)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
+                    Set up preset gift options — "Buy me a coffee ☕", "Fund my next video 🎬", or whatever feels like you. Supporters pick a tag and send instantly, no awkward guessing.
+                  </p>
+                  <Link href="/signup" className="lp-btn lp-btn-dark">Add your tags →</Link>
+                </div>
+                <div className="lp-feat-visual" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div className="lp-mockup-scale"><GiftTagsMockup /></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 4. Support Pools — terracotta */}
+          <section className="lp-feat-section" style={{ background: 'var(--color-accent)', padding: '96px 0', overflow: 'hidden' }}>
+            <div className="lp-wrap">
+              <div className="lp-feat-grid lp-feat-grid--rev">
+                <div className="lp-feat-text">
+                  <p className="lp-eyebrow" style={{ color: 'rgba(255,255,255,0.6)' }}>Step 04</p>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: '#fff', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                    Support Pools<br />for your biggest<br />goals
+                  </h2>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(255,255,255,0.88)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
+                    Set a funding goal and let your community rally together. Perfect for projects, equipment, events, or anything you're working towards. Watch your pool fill up.
+                  </p>
+                  <div className="lp-feat-btn-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <Link href="/signup" className="lp-btn lp-btn-white">Create a pool →</Link>
+                    <a href="#faq" className="lp-btn lp-btn-outline-white">Learn more</a>
+                  </div>
+                </div>
+                <div className="lp-feat-visual" style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div className="lp-mockup-scale"><PoolMockup /></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        {/* ── PRICING ────────────────────────────────────────────── */}
+        <section id="pricing" style={{ background: 'var(--color-surface)', padding: '88px 0' }}>
+          <div className="lp-wrap">
+            <div style={{ textAlign: 'center', marginBottom: 52 }}>
+              <p className="lp-eyebrow" style={{ textAlign: 'center' }}>Pricing</p>
+              <h2 className="lp-section-h2" style={{ ...sectionH2Style, marginBottom: 14 }}>
+                Free to start.<br />We only earn when you do.
+              </h2>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--color-text-secondary)', lineHeight: 1.65, maxWidth: 480, margin: '0 auto' }}>
+                No monthly fees. No subscriptions. Kiima takes a small fee only when a gift is sent.
+              </p>
+            </div>
+            <div className="lp-pricing-grid">
+              {[
+                { label: '3%', sub: 'Platform fee', detail: 'Only on successful gifts. We only earn when you do.', accent: true },
+                { label: '₦0', sub: 'Monthly fee', detail: 'Kiima is completely free to use, forever.' },
+                { label: '0', sub: 'Hidden charges', detail: 'Transparent pricing, always. No surprises.' },
+              ].map(f => (
+                <div key={f.label} style={{
+                  background: f.accent ? 'var(--color-accent-soft)' : 'var(--color-bg)',
+                  border: `1.5px solid ${f.accent ? 'rgba(200,123,92,0.3)' : 'var(--color-border)'}`,
+                  borderRadius: 'var(--radius-md)',
+                  padding: '28px 24px',
+                  textAlign: 'center',
+                }}>
+                  <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 44, color: 'var(--color-accent)', margin: '0 0 8px', lineHeight: 1 }}>{f.label}</p>
+                  <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--color-text-primary)', margin: '0 0 8px' }}>{f.sub}</p>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.55, margin: 0 }}>{f.detail}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: 40 }}>
+              <Link href="/signup" className="lp-btn lp-btn-dark">Start for free →</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FAQ ────────────────────────────────────────────────── */}
+        <section id="faq" style={{ background: 'var(--color-bg)', padding: '88px 0' }}>
+          <div className="lp-wrap">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 80, alignItems: 'start' }} className="lp-faq-layout">
+              <div className="lp-faq-sticky" style={{ position: 'sticky', top: 96 }}>
+                <p className="lp-eyebrow">FAQ</p>
+                <h2 className="lp-section-h2" style={{ ...sectionH2Style, fontSize: 36, marginBottom: 16 }}>
+                  Questions?<br />We have answers.
+                </h2>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--color-text-muted)', lineHeight: 1.65, margin: '0 0 24px' }}>
+                  Still have questions? Email us at <span style={{ color: 'var(--color-accent)' }}>hello@kiima.co</span>
+                </p>
+                <Link href="/signup" className="lp-btn lp-btn-dark" style={{ fontSize: 14, padding: '11px 22px', minHeight: 44 }}>Get started →</Link>
+              </div>
+              <div>
+                {faqs.map((faq, i) => (
+                  <div key={i} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <button
+                      onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center',
+                        justifyContent: 'space-between', padding: '22px 0',
+                        background: 'none', border: 'none', cursor: 'pointer', gap: 16, textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 16, color: 'var(--color-text-primary)' }}>{faq.q}</span>
+                      <span style={{
+                        fontSize: 22, color: 'var(--color-text-muted)', flexShrink: 0, lineHeight: 1,
+                        transition: 'transform 0.2s ease',
+                        transform: openFaq === i ? 'rotate(45deg)' : 'rotate(0deg)',
+                        display: 'block',
+                      }}>+</span>
+                    </button>
+                    <div className={`lp-faq-answer${openFaq === i ? ' lp-faq-answer--open' : ''}`}>
+                      <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--color-text-secondary)', lineHeight: 1.7, paddingBottom: 22, margin: 0 }}>{faq.a}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── TESTIMONIALS ───────────────────────────────────────── */}
+        <section style={{ background: 'var(--color-surface)', padding: '88px 0' }}>
+          <div className="lp-wrap">
+            <div style={{ textAlign: 'center', marginBottom: 52 }}>
+              <p className="lp-eyebrow" style={{ textAlign: 'center' }}>Creators love Kiima</p>
+              <h2 className="lp-section-h2" style={sectionH2Style}>Real people, real support</h2>
+            </div>
+            <div className="lp-testi-grid">
+              {[
+                { quote: 'I put my Kiima link in my bio and woke up to three gifts the next morning. It felt so personal — nothing like a PayPal link.', name: 'Adeola Bello', handle: '@adeola.creates', role: 'Content Creator · Lagos' },
+                { quote: 'My fans used a support pool to help fund my EP. We hit the goal in 11 days. I was in tears. Kiima made that possible.', name: 'Emeka Okafor', handle: '@emekamusic_', role: 'Musician · Abuja' },
+                { quote: 'Setting up took five minutes. The gift tags are such a smart touch — people actually use them. It removes all the awkwardness.', name: 'Fatima Abubakar', handle: '@thefatimapod', role: 'Podcaster · Kano' },
+              ].map(t => (
+                <div key={t.name} style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-card)', padding: 32, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontSize: 32, color: 'var(--color-accent)', marginBottom: 16, fontFamily: 'Georgia, serif' }}>&ldquo;</div>
+                  <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 17, color: 'var(--color-text-primary)', lineHeight: 1.65, flex: 1, margin: '0 0 auto' }}>{t.quote}</p>
+                  <div style={{ paddingTop: 22, borderTop: '1px solid var(--color-border)', marginTop: 22 }}>
+                    <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--color-text-primary)', margin: 0 }}>{t.name}</p>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-accent)', margin: '2px 0' }}>{t.handle}</p>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-muted)', margin: 0 }}>{t.role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── FINAL CTA ──────────────────────────────────────────── */}
+        <section style={{ background: 'var(--color-text-primary)', padding: '112px 0' }}>
+          <div className="lp-wrap" style={{ textAlign: 'center' }}>
+            <h2 className="lp-final-h2" style={{
+              fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 68,
+              color: '#F6F3EE', lineHeight: 1.06, letterSpacing: '-0.03em',
+              margin: '0 0 20px',
+            }}>
+              Say goodbye to awkward<br />payment requests,<br />and start receiving<br />with grace.
+            </h2>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 18, color: 'rgba(246,243,238,0.55)', lineHeight: 1.65, marginBottom: 44 }}>
+              Join creators already earning from their passion on Kiima.
+            </p>
+            <Link href="/signup" className="lp-btn lp-btn-white" style={{ fontSize: 16, padding: '16px 40px', minHeight: 58 }}>
+              Get started free →
+            </Link>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'rgba(246,243,238,0.35)', marginTop: 18 }}>
+              Free forever · No credit card needed
+            </p>
+          </div>
+        </section>
+
+        {/* ── FOOTER ─────────────────────────────────────────────── */}
+        <footer style={{ background: 'var(--color-text-primary)', borderTop: '1px solid rgba(246,243,238,0.07)', padding: '40px 0' }}>
+          <div className="lp-wrap">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24, paddingBottom: 28, borderBottom: '1px solid rgba(246,243,238,0.07)' }}>
+              <Link href="/" style={{ ...logoStyle, color: '#F6F3EE' }}>
+                kiima<span style={{ color: 'var(--color-accent)' }}>.</span>
+              </Link>
+              <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
+                {['Product', 'Creators', 'Privacy', 'Terms'].map(l => (
+                  <a key={l} href="#" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'rgba(246,243,238,0.4)', textDecoration: 'none' }}>{l}</a>
+                ))}
+              </div>
+            </div>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'rgba(246,243,238,0.28)', marginTop: 22, textAlign: 'center' }}>
+              © 2025 Kiima · Made with ❤️ in Nigeria
+            </p>
+          </div>
+        </footer>
+
       </div>
-    </main>
+    </>
+  );
+}
+
+// ─── Shared styles ─────────────────────────────────────────────────────────────
+
+const logoStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-display)',
+  fontWeight: 500,
+  fontSize: 26,
+  color: 'var(--color-text-primary)',
+  textDecoration: 'none',
+  letterSpacing: '-0.02em',
+};
+
+const sectionH2Style: React.CSSProperties = {
+  fontFamily: 'var(--font-display)',
+  fontWeight: 400,
+  fontSize: 44,
+  color: 'var(--color-text-primary)',
+  margin: '0 0 16px',
+  lineHeight: 1.13,
+  letterSpacing: '-0.02em',
+};
+
+// ─── Phone Mockup ──────────────────────────────────────────────────────────────
+
+function PhoneMockup() {
+  return (
+    <div style={{
+      width: 280,
+      background: '#1C1916',
+      borderRadius: 48,
+      padding: 10,
+      boxShadow: '0 40px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06)',
+      flexShrink: 0,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4, paddingBottom: 8 }}>
+        <div style={{ width: 88, height: 26, background: '#000', borderRadius: 100 }} />
+      </div>
+      <div style={{ background: '#F6F3EE', borderRadius: 40, padding: '20px 16px 24px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #C87B5C 0%, #E8A07A 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 24, color: '#fff',
+            marginBottom: 10,
+          }}>A</div>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 16, color: '#1C1916', margin: 0, lineHeight: 1.2 }}>Adeola Bello</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9A9089', margin: '3px 0 0' }}>@adeola.creates</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#5A4D44', margin: '7px 0 0', textAlign: 'center', lineHeight: 1.45 }}>Content creator 🎬 · Lagos</p>
+        </div>
+        <div style={{ height: 1, background: 'rgba(28,25,22,0.06)', marginBottom: 14 }} />
+        <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', marginBottom: 10 }}>Send a gift</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 }}>
+          {[['☕', '₦2k'], ['🎬', '₦5k'], ['🌟', '₦10k']].map(([e, a]) => (
+            <span key={a} style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '4px 10px' }}>
+              {e} {a}
+            </span>
+          ))}
+        </div>
+        <div style={{ background: '#fff', border: '1.5px solid rgba(200,123,92,0.35)', borderRadius: 12, padding: '8px 12px', marginBottom: 10 }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 2px' }}>Amount</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 22, fontWeight: 700, color: '#1C1916', margin: 0 }}>₦ 2,000</p>
+        </div>
+        <div style={{ background: '#fff', border: '1.5px solid rgba(28,25,22,0.08)', borderRadius: 12, padding: '8px 12px', marginBottom: 12 }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 2px' }}>Your name</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9A9089', margin: 0 }}>Victor O.</p>
+        </div>
+        <div style={{ background: '#1C1916', borderRadius: 12, padding: '12px', textAlign: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#fff' }}>Send gift ❤️</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Gift Page Mockup ──────────────────────────────────────────────────────────
+
+function GiftPageMockup() {
+  return (
+    <div style={{
+      background: '#fff',
+      borderRadius: 16,
+      overflow: 'hidden',
+      width: 300,
+      maxWidth: '100%',
+      boxShadow: '0 32px 72px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1)',
+    }}>
+      {/* Browser chrome */}
+      <div style={{ background: '#F0EDE8', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <div style={{ display: 'flex', gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF5F57' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FEBC2E' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#28C840' }} />
+        </div>
+        <div style={{ flex: 1, background: '#fff', borderRadius: 6, padding: '4px 10px', textAlign: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#888' }}>kiima.co/adeola</span>
+        </div>
+      </div>
+      <div style={{ padding: '20px 18px 22px', background: '#F6F3EE' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{ width: 54, height: 54, borderRadius: '50%', background: 'linear-gradient(135deg, #C87B5C 0%, #E8A07A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500, marginBottom: 8 }}>A</div>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 500, color: '#1C1916', margin: 0 }}>Adeola Bello</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9A9089', margin: '3px 0 6px' }}>@adeola.creates</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#5A4D44', margin: 0, textAlign: 'center', lineHeight: 1.45 }}>Content creator 🎬 · Lifestyle · Lagos</p>
+        </div>
+        <div style={{ height: 1, background: 'rgba(28,25,22,0.06)', marginBottom: 14 }} />
+        <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', marginBottom: 10 }}>Send a gift</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+          {[['☕', '₦2k'], ['🎬', '₦5k'], ['❤️', '₦10k']].map(([e, a]) => (
+            <span key={a} style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.22)', borderRadius: 100, padding: '5px 12px' }}>{e} {a}</span>
+          ))}
+        </div>
+        <div style={{ background: '#fff', border: '1.5px solid rgba(28,25,22,0.08)', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 2px' }}>Amount</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 20, fontWeight: 700, color: '#1C1916', margin: 0 }}>₦ 2,000</p>
+        </div>
+        <div style={{ background: '#1C1916', borderRadius: 10, padding: '10px', textAlign: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#fff' }}>Send gift ❤️</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard Mockup ──────────────────────────────────────────────────────────
+
+function DashboardMockup() {
+  return (
+    <div style={{
+      width: 340,
+      maxWidth: '100%',
+      borderRadius: 16,
+      padding: '20px',
+      background: 'rgba(255,255,255,0.06)',
+      border: '1px solid rgba(255,255,255,0.1)',
+      boxShadow: '0 32px 72px rgba(0,0,0,0.4)',
+    }}>
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {[
+          { label: 'Received', value: '₦284k' },
+          { label: 'Gifts', value: '47' },
+          { label: 'Pools', value: '3' },
+        ].map(s => (
+          <div key={s.label} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(246,243,238,0.38)', margin: '0 0 5px' }}>{s.label}</p>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 18, fontWeight: 700, color: '#F6F3EE', margin: 0 }}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+      {/* Recent gifts */}
+      <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '14px' }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(246,243,238,0.3)', margin: '0 0 12px' }}>Recent gifts</p>
+        {[
+          { name: 'Chidi O.', amount: '₦5,000', tag: '🎬', time: '2h ago' },
+          { name: 'Anonymous', amount: '₦2,000', tag: '☕', time: '5h ago' },
+          { name: 'Amaka B.', amount: '₦10,000', tag: '❤️', time: '1d ago' },
+        ].map((row, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(200,123,92,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>{row.tag}</div>
+              <div>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(246,243,238,0.75)', margin: 0 }}>{row.name}</p>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'rgba(246,243,238,0.3)', margin: 0 }}>{row.time}</p>
+              </div>
+            </div>
+            <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#C87B5C', margin: 0 }}>{row.amount}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Gift Tags Mockup ──────────────────────────────────────────────────────────
+
+function GiftTagsMockup() {
+  return (
+    <div style={{
+      background: '#fff',
+      borderRadius: 20,
+      padding: '28px',
+      boxShadow: '0 20px 60px rgba(28,25,22,0.14)',
+      width: 320,
+      maxWidth: '100%',
+    }}>
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 14px' }}>Choose a gift tag</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, background: '#C87B5C', color: '#fff', borderRadius: 100, padding: '9px 16px' }}>☕ Coffee · ₦2,000</span>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '9px 16px' }}>🎬 Collab · ₦5,000</span>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '9px 16px' }}>🌟 VIP · ₦20,000</span>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, background: '#F6F3EE', color: '#9A9089', border: '1.5px dashed rgba(28,25,22,0.12)', borderRadius: 100, padding: '9px 16px' }}>+ Add tag</span>
+      </div>
+      <div style={{ background: '#F6F3EE', border: '1.5px solid rgba(200,123,92,0.3)', borderRadius: 12, padding: '12px 16px', marginBottom: 12 }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 4px' }}>Amount</p>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 26, fontWeight: 700, color: '#1C1916', margin: 0 }}>₦ 2,000</p>
+      </div>
+      <div style={{ background: '#F6F3EE', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9A9089', margin: 0, lineHeight: 1.55 }}>
+          You're sending ₦2,000 · Processing fee ₦130 · <strong style={{ color: '#1C1916' }}>Total ₦2,130</strong>
+        </p>
+      </div>
+      <div style={{ background: '#1C1916', borderRadius: 12, padding: '13px', textAlign: 'center' }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: '#fff' }}>Send gift ❤️</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Pool Mockup ───────────────────────────────────────────────────────────────
+
+function PoolMockup() {
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.18)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      border: '1px solid rgba(255,255,255,0.28)',
+      borderRadius: 20,
+      padding: '24px',
+      width: 300,
+      maxWidth: '100%',
+      boxShadow: '0 24px 60px rgba(0,0,0,0.2)',
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <p style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 500, color: '#fff', margin: 0, flex: 1, lineHeight: 1.3 }}>Fund my next film project 🎬</p>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 100, padding: '4px 10px', marginLeft: 10, whiteSpace: 'nowrap', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Open</span>
+      </div>
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,0.62)', margin: '0 0 20px', lineHeight: 1.5 }}>Help me create my first short film. Every naira counts!</p>
+      {/* Progress track */}
+      <div style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 100, height: 7, marginBottom: 10, overflow: 'hidden' }}>
+        <div style={{ width: '68%', height: '100%', background: 'linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0.6))', borderRadius: 100 }} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: '#fff', margin: 0 }}>₦340,000 raised</p>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0 }}>68% of ₦500k</p>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.14)', paddingTop: 16 }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,0.58)', margin: 0 }}>24 contributors</p>
+        <div style={{ background: 'rgba(255,255,255,0.92)', borderRadius: 10, padding: '9px 18px' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#C87B5C' }}>Support this 🤍</span>
+        </div>
+      </div>
+    </div>
   );
 }

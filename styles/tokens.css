@@ -19,6 +19,9 @@
   --color-danger:       #E07070;
   --color-danger-soft:  #FDF0F0;
 
+  /* Landing page section backgrounds */
+  --color-section-green: #2B5A3A;
+
   /* ─── Typography ──────────────────────────────────────── */
   --font-display: 'Fraunces', serif;
   --font-body:    'Plus Jakarta Sans', sans-serif;

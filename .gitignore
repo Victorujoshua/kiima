@@ -32,3 +32,7 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+scripts/screenshot-desktop.png
+scripts/screenshot-mobile.png
+scripts/screenshot-mobile-450.png
