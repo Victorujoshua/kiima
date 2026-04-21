@@ -252,11 +252,7 @@ Rule 4: The UI must always show the user how they'll appear:
 - Pool URL: `kiima.co/{username}/pool/{pool-slug}`
 - Pool states: `open` | `closed`
 - Only the creator can close a pool
-- When a pool is closed:
-  - Show banner: "This support pool is closed"
-  - Disable all contribution inputs and the CTA button
-  - Keep all contribution history visible
-  - Keep progress bar and totals visible
+- When a pool is closed: show "This support pool is closed" banner; disable inputs/CTA; keep history, progress bar, and totals visible
 - Progress is calculated: `(total_raised / goal_amount) * 100`
 - Pool totals update on page refresh — **no real-time in V1**
 
@@ -279,13 +275,10 @@ Latest contributions always appear first (descending by created_at).
 >
 > **1. Paystack processing fee → paid by the GIFTER**
 >   - Formula (NGN): `min((gift_amount × 1.5%) + ₦100, ₦2,000)`
->   - Added ON TOP of the gift amount before Paystack charges the gifter
->   - Gifter sees a live fee breakdown in the form before paying
+>   - Added ON TOP of gift amount; shown as live breakdown before payment
 >
 > **2. Kiima platform fee (3%) → paid by the CREATOR**
->   - Deducted from the gift amount via Paystack split payment
->   - Goes directly to Kiima's Paystack account at settlement
->   - Creator never touches this money — split happens at source
+>   - Deducted via Paystack split; goes to Kiima's account at settlement
 >
 > Example on a ₦10,000 gift:
 > ```
@@ -306,45 +299,13 @@ Latest contributions always appear first (descending by created_at).
 > - platform_fee_percent (default 3) is stored in platform_settings — never hardcoded
 > - Use calculateAllFees() from lib/utils/fee.ts — never inline fee math
 
-```
-1. Gifter enters gift amount (e.g. ₦10,000)
-
-2. GiftForm/ContributeForm shows live fee breakdown:
-   paystack_fee  = min((gift_amount × 0.015) + 100, 2000)
-   total_charged = gift_amount + paystack_fee
-   Display: "Processing fee: ₦250 · You'll be charged: ₦10,250"
-
-3. Gifter clicks CTA → validate (gift_amount > 0)
-
-4. Server action (initializeGift) — recalculates everything server-side:
-   a. Read platform_fee_percent from platform_settings
-   b. fees = calculateAllFees(gift_amount, platform_fee_percent)
-      → { gift_amount, paystack_fee, kiima_fee, creator_amount, total_charged }
-   c. Validate creator has paystack_subaccount_code (required)
-   d. Create PENDING contribution record with all 5 fee fields
-   e. Initialize Paystack transaction:
-      - amount:               toKobo(total_charged)      ← gifter pays this
-      - subaccount:           creator's subaccount_code
-      - bearer:               'account'                  ← Kiima bears fee at API level
-                                                            (net zero — gifter already paid it)
-      - transaction_charge:   toKobo(kiima_fee)          ← Kiima's 3% split in kobo
-
-5. Redirect gifter to Paystack checkout
-
-6. Paystack redirects back to success URL on completion
-
-7. Paystack fires webhook to /api/webhooks/paystack
-
-8. Webhook handler:
-   a. Verify Paystack signature (HMAC SHA512)
-   b. Only handle charge.success events
-   c. Look up contribution by paystack_ref
-   d. Update status: 'pending' → 'confirmed'
-   e. If pool_id → increment support_pools.raised by gift_amount (not total_charged)
-   f. Log event to webhook_logs
-
-9. Success page shown to gifter
-```
+- Gifter enters amount → GiftForm/ContributeForm shows live fee breakdown via `formatFeeBreakdown()`
+- On submit → `initializeGift` recalculates all fees server-side, creates PENDING contribution with all 5 fee fields
+- Initialises Paystack transaction: `amount = toKobo(total_charged)`, `transaction_charge = toKobo(kiima_fee)`, `bearer = 'account'`
+- Gifter redirected to Paystack checkout; on completion → redirected to `/gift/success`
+- Paystack fires webhook → verify HMAC SHA512, handle only `charge.success`
+- Webhook: update contribution `pending → confirmed`; if `pool_id` → increment `pool.raised` by `gift_amount`
+- All webhook paths log to `webhook_logs` and return 200
 
 **Critical:** Never record a contribution before webhook confirmation. The redirect success page is UI only — DB write happens in webhook only. If webhook fails, contribution stays 'pending' — visible in admin webhook log.
 
@@ -363,40 +324,23 @@ The dashboard is **read-only aggregated data**. It shows:
 Creators can add links to their social media profiles. These appear as icon buttons at the bottom of the ProfileCard on the public gift page.
 
 ```
-Supported platforms (V1):
-  instagram  → instagram.com
-  tiktok     → tiktok.com
-  twitter    → twitter.com or x.com
-  youtube    → youtube.com
-  linkedin   → linkedin.com
-  website    → any valid https:// URL
+Supported platforms (V1): instagram, tiktok, twitter, youtube, linkedin, website
 
 Rules:
-  - Max 6 links per creator (one per platform — enforced by DB unique constraint)
-  - URLs must begin with https://
-  - Platform-specific validation applied before saving:
-      instagram  → must contain instagram.com
-      tiktok     → must contain tiktok.com
-      twitter    → must contain twitter.com OR x.com
-      youtube    → must contain youtube.com
-      linkedin   → must contain linkedin.com
-      website    → any valid https:// URL
-  - Empty URL submitted = delete that platform's link, not save an empty row
-  - Zero links is valid — SocialLinksRow simply does not render on public page
-  - Links are public — anyone visiting the gift page can see them
+  - Max 6 links (one per platform — DB UNIQUE constraint)
+  - All URLs must begin with https://
+  - Platform-specific domain validation before saving (e.g. instagram → instagram.com;
+    twitter → twitter.com OR x.com; website → any valid https:// URL)
+  - Empty URL submitted = delete that link (not save empty row)
+  - Zero links valid — SocialLinksRow simply does not render
 
-Display rules:
-  - Public ProfileCard: icons ONLY, no text labels, each opens in new tab
-    (target="_blank" rel="noopener noreferrer")
-  - Dashboard links page: full URL shown with save/delete controls per platform
-  - Hover on icon: soft colour tint matching the platform's brand colour
+Display:
+  - Public ProfileCard: icons only, target="_blank" rel="noopener noreferrer"
+  - Dashboard links page: full URL with save/delete controls
+  - Hover: platform brand colour tint
 
-ProfileCard visibility rule:
-  - The kiima.co/{username} copy-link bar is ONLY shown inside the creator 
-    dashboard — NEVER on the public gift page
-  - ProfileCard accepts a showLinkBar boolean prop (default: false)
-  - Dashboard passes showLinkBar={true}
-  - Public gift page omits showLinkBar (defaults to false)
+ProfileCard copy-link bar: ONLY shown in dashboard (showLinkBar={true}).
+NEVER on public gift page (showLinkBar defaults false).
 ```
 
 ---
@@ -445,7 +389,7 @@ support_pools (
 -- All contributions (direct gifts + pool contributions)
 contributions (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  recipient_id    uuid REFERENCES profiles(id),         -- creator receiving the gift
+  recipient_id    uuid REFERENCES profiles(id),
   pool_id         uuid REFERENCES support_pools(id),    -- null if direct gift
   tag_id          uuid REFERENCES gift_tags(id),        -- null if custom amount
   gift_amount     numeric NOT NULL,                     -- amount gifter intends to send creator
@@ -456,7 +400,7 @@ contributions (
   currency        text NOT NULL,
   display_name    text,                                 -- null if anonymous
   is_anonymous    boolean DEFAULT false,
-  paystack_ref    text UNIQUE NOT NULL,                 -- Paystack payment reference
+  paystack_ref    text UNIQUE NOT NULL,
   status          text DEFAULT 'pending',               -- 'pending' | 'confirmed'
   created_at      timestamptz DEFAULT now()
 )
@@ -464,11 +408,11 @@ contributions (
 -- Paystack webhook event log (admin visibility)
 webhook_logs (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_type    text NOT NULL,                        -- e.g. 'charge.success'
-  paystack_ref  text,                                 -- payment reference if applicable
-  payload       jsonb NOT NULL,                       -- full raw webhook body
+  event_type    text NOT NULL,
+  paystack_ref  text,
+  payload       jsonb NOT NULL,
   status        text NOT NULL,                        -- 'processed' | 'failed' | 'ignored'
-  error_message text,                                 -- populated if status = 'failed'
+  error_message text,
   created_at    timestamptz DEFAULT now()
 )
 
@@ -525,104 +469,68 @@ social_links:
 
 ```
 kiima/
-├── CLAUDE.md                          ← You are here
-│
+├── CLAUDE.md                    ← You are here
 ├── app/
-│   ├── layout.tsx                     ← Root layout, fonts loaded here
-│   ├── page.tsx                       ← Marketing / landing page
-│   │
+│   ├── layout.tsx
+│   ├── page.tsx
 │   ├── (auth)/
 │   │   ├── login/page.tsx
 │   │   └── signup/page.tsx
-│   │
 │   ├── dashboard/
-│   │   ├── layout.tsx                 ← Dashboard shell (sidebar/nav)
-│   │   ├── page.tsx                   ← Overview stats
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
 │   │   ├── transactions/page.tsx
-│   │   ├── tags/page.tsx              ← Gift tag management
-│   │   ├── links/page.tsx             ← Social link management
+│   │   ├── tags/page.tsx
+│   │   ├── links/page.tsx
 │   │   └── pools/
-│   │       ├── page.tsx               ← Pool list
-│   │       └── [id]/page.tsx          ← Pool detail
-│   │
+│   │       ├── page.tsx
+│   │       └── [id]/page.tsx
 │   ├── admin/
-│   │   ├── layout.tsx                 ← Admin shell — checks is_admin, blocks all others
-│   │   ├── page.tsx                   ← Platform overview (stats, volume, signups)
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
 │   │   ├── creators/
-│   │   │   ├── page.tsx               ← All creators list, search, filters
-│   │   │   └── [id]/page.tsx          ← Individual creator detail + actions
-│   │   ├── transactions/page.tsx      ← All platform transactions, Paystack ref lookup
-│   │   ├── pools/page.tsx             ← All pools across platform, force-close
-│   │   ├── tags/page.tsx              ← Custom tag moderation across all creators
-│   │   ├── webhooks/page.tsx          ← Webhook event log
-│   │   └── settings/page.tsx          ← Platform settings (default tag amount, maintenance mode)
-│   │
+│   │   │   ├── page.tsx
+│   │   │   └── [id]/page.tsx
+│   │   ├── transactions/page.tsx
+│   │   ├── pools/page.tsx
+│   │   ├── tags/page.tsx
+│   │   ├── webhooks/page.tsx
+│   │   └── settings/page.tsx
 │   ├── [username]/
-│   │   ├── page.tsx                   ← Public gift link page
-│   │   └── pool/
-│   │       └── [slug]/page.tsx        ← Public pool page
-│   │
-│   └── api/
-│       └── webhooks/
-│           └── paystack/route.ts      ← Paystack webhook handler
-│
+│   │   ├── page.tsx
+│   │   └── pool/[slug]/page.tsx
+│   └── api/webhooks/paystack/route.ts
 ├── components/
-│   ├── ui/                            ← shadcn/ui base components (do not edit)
-│   │
-│   ├── cards/                         ← All card-based UI components
-│   │   ├── ProfileCard.tsx
-│   │   ├── GiftActionCard.tsx
-│   │   ├── SupportPoolCard.tsx
-│   │   ├── ContributionFeedCard.tsx
-│   │   └── DashboardStatCard.tsx
-│   │
-│   ├── forms/                         ← Form components
-│   │   ├── GiftForm.tsx               ← Direct gifting form
-│   │   ├── ContributeForm.tsx         ← Pool contribution form
-│   │   ├── PoolCreateForm.tsx
-│   │   └── SocialLinksForm.tsx        ← Dashboard social link manager
-│   │
-│   ├── shared/                        ← Reusable atoms
-│   │   ├── GiftTagPill.tsx
-│   │   ├── AnonymousToggle.tsx
-│   │   ├── ProgressBar.tsx
-│   │   ├── ContributionRow.tsx
-│   │   ├── CurrencyInput.tsx
-│   │   ├── KiimaButton.tsx
-│   │   └── SocialLinksRow.tsx         ← Icon row on public profile card
-│   │
+│   ├── ui/                      ← shadcn/ui base components (do not edit)
+│   ├── cards/
+│   ├── forms/
+│   ├── shared/
 │   └── layout/
-│       ├── Navbar.tsx
-│       └── PageShell.tsx
-│
 ├── lib/
 │   ├── supabase/
-│   │   ├── client.ts                  ← Browser client
-│   │   ├── server.ts                  ← Server client (server components/actions)
-│   │   └── admin.ts                   ← Admin client (webhooks only)
-│   │
+│   │   ├── client.ts
+│   │   ├── server.ts
+│   │   └── admin.ts
 │   ├── paystack/
-│   │   ├── initialize.ts              ← Create Paystack transaction
-│   │   ├── verify.ts                  ← Verify payment reference
-│   │   └── webhook.ts                 ← Signature verification + event handling
-│   │
-│   ├── actions/                       ← Next.js server actions
+│   │   ├── initialize.ts
+│   │   ├── verify.ts
+│   │   └── webhook.ts
+│   ├── actions/
 │   │   ├── gift.actions.ts
 │   │   ├── pool.actions.ts
 │   │   ├── tag.actions.ts
-│   │   └── link.actions.ts            ← Social link CRUD
-│   │
+│   │   ├── link.actions.ts
+│   │   └── admin.actions.ts
 │   └── utils/
-│       ├── currency.ts                ← formatCurrency(amount, currency)
-│       ├── display-name.ts            ← resolveDisplayName(name, isAnon)
-│       └── slug.ts                    ← generateSlug(title)
-│
+│       ├── currency.ts
+│       ├── display-name.ts
+│       ├── fee.ts
+│       └── slug.ts
 ├── styles/
 │   ├── globals.css
-│   └── tokens.css                     ← ALL design tokens live here
-│
+│   └── tokens.css               ← ALL design tokens live here
 └── types/
-    └── index.ts                       ← All shared TypeScript types
+    └── index.ts                 ← All shared TypeScript types
 ```
 
 ---
@@ -635,9 +543,9 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `ProfileCard` | `cards/ProfileCard.tsx` | `profile: Profile, showLinkBar?: boolean` — `showLinkBar` defaults `false`; pass `true` in dashboard only |
-| `GiftActionCard` | `cards/GiftActionCard.tsx` | `tags: GiftTag[], currency: Currency, selectedTag?, onTagSelect?, onAmountChange?` |
-| `SupportPoolCard` | `cards/SupportPoolCard.tsx` | `pool: SupportPool, currency: Currency, creatorName?: string, contributorCount?: number` |
+| `ProfileCard` | `cards/ProfileCard.tsx` | `profile: Profile, showLinkBar?: boolean` (default false; pass true in dashboard only) |
+| `GiftActionCard` | `cards/GiftActionCard.tsx` | `tags: GiftTag[], currency: Currency` |
+| `SupportPoolCard` | `cards/SupportPoolCard.tsx` | `pool: SupportPool, currency: Currency` |
 | `ContributionFeedCard` | `cards/ContributionFeedCard.tsx` | `contributions: Contribution[], heading?: string` |
 | `DashboardStatCard` | `cards/DashboardStatCard.tsx` | `label: string, value: string, sub: string` |
 | `AdminStatCard` | `cards/AdminStatCard.tsx` | `label: string, value: string, sub?: string` |
@@ -711,9 +619,9 @@ Keep this updated as components are built. Before building any new component, ch
 
 | File | Notes |
 |---|---|
-| `app/dashboard/layout.tsx` | Server Component shell — session guard, sidebar + mobile tab nav |
+| `app/dashboard/layout.tsx` | Session guard, sidebar + mobile tab nav |
 | `app/dashboard/DashboardNav.tsx` | `variant: 'sidebar' \| 'tabs'` |
-| `app/dashboard/LogoutButton.tsx` | Signs out, redirects to `/login` |
+| `app/dashboard/LogoutButton.tsx` | Signs out → `/login` |
 
 **Padding system:** `.k-dash-main` (dashboard) and `.k-page` (public pages) in `globals.css` — 100px desktop → 40px tablet → 20px mobile. Pages set vertical padding only.
 
@@ -746,9 +654,9 @@ Keep this updated as components are built. Before building any new component, ch
 
 | File | Notes |
 |---|---|
-| `app/admin/layout.tsx` | Server Component guard — `is_admin` check, sidebar shell. Desktop-only. |
+| `app/admin/layout.tsx` | `is_admin` server-side guard, sidebar shell. Desktop-only. |
 | `app/admin/AdminNav.tsx` | Sidebar nav for all 7 admin sections |
-| `app/admin/AdminLogoutButton.tsx` | Signs out, redirects to `/login` |
+| `app/admin/AdminLogoutButton.tsx` | Signs out → `/login` |
 
 ### Admin Pages
 
@@ -779,103 +687,19 @@ Keep this updated as components are built. Before building any new component, ch
 
 ## 8. TYPESCRIPT TYPES
 
+Full definitions live in `types/index.ts`. Non-obvious fields to know:
+
 ```typescript
-// types/index.ts
+// Contribution — the 5 fee fields are critical to understand:
+gift_amount     // what gifter intends to send the creator
+paystack_fee    // 1.5% + ₦100 — added on top, paid by gifter
+kiima_fee       // 3% platform fee — deducted from creator via split
+creator_amount  // gift_amount - kiima_fee (what creator receives)
+total_charged   // gift_amount + paystack_fee (what Paystack charges)
 
-export type Currency = 'NGN' | 'USD' | 'GBP' | 'EUR';
-export type PoolStatus = 'open' | 'closed';
-export type ContributionStatus = 'pending' | 'confirmed';
-
-export interface Profile {
-  id: string;
-  username: string;
-  display_name: string;
-  bio: string | null;
-  avatar_url: string | null;
-  currency: Currency;
-  created_at: string;
-}
-
-export interface GiftTag {
-  id: string;
-  user_id: string;
-  label: string;
-  amount: number;
-  is_default: boolean;
-  created_at: string;
-}
-
-export interface SupportPool {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string | null;
-  goal_amount: number;
-  raised: number;
-  status: PoolStatus;
-  slug: string;
-  created_at: string;
-}
-
-export interface Contribution {
-  id: string;
-  recipient_id: string;
-  pool_id: string | null;
-  tag_id: string | null;
-  gift_amount: number;      // amount gifter intends to send to creator
-  paystack_fee: number;     // 1.5% + ₦100 — added on top, paid by gifter
-  kiima_fee: number;        // 3% platform fee — deducted from creator via split
-  creator_amount: number;   // gift_amount - kiima_fee (what creator receives)
-  total_charged: number;    // gift_amount + paystack_fee (what gifter actually pays)
-  currency: Currency;
-  display_name: string | null;   // null = anonymous
-  is_anonymous: boolean;
-  paystack_ref: string;
-  status: ContributionStatus;
-  created_at: string;
-  // Joined fields
-  tag?: GiftTag;
-}
-
-export type WebhookStatus = 'processed' | 'failed' | 'ignored';
-
-export interface WebhookLog {
-  id: string;
-  event_type: string;
-  paystack_ref: string | null;
-  payload: Record<string, unknown>;
-  status: WebhookStatus;
-  error_message: string | null;
-  created_at: string;
-}
-
-export interface PlatformSettings {
-  id: string;
-  platform_fee_percent: number;  // default 3 — Kiima's cut from creator
-  default_tag_amount_ngn: number;
-  default_tag_amount_usd: number;
-  default_tag_amount_gbp: number;
-  default_tag_amount_eur: number;
-  maintenance_mode: boolean;
-  updated_at: string;
-}
-
-// Profile extended with admin flag — only used in admin context
-export interface ProfileWithAdmin extends Profile {
-  is_admin: boolean;
-  suspended: boolean;
-}
-
-export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'youtube' | 'linkedin' | 'website';
-
-export interface SocialLink {
-  id: string;
-  user_id: string;
-  platform: SocialPlatform;
-  url: string;
-  display_order: number;
-  created_at: string;
-}
+// Always display gift_amount, never total_charged, in contribution feeds.
+// PlatformSettings.platform_fee_percent — never hardcode 3.
+// ProfileWithAdmin.suspended — checked on public gift page to block suspended creators.
 ```
 
 ---
@@ -906,9 +730,7 @@ toKobo(10250)  // → 1025000
 // Always use this for contribution display.
 // Never inline the anonymous logic.
 resolveDisplayName("Victor", false)  // → "Victor"
-resolveDisplayName(null, false)      // → "Anonymous"
-resolveDisplayName("Victor", true)   // → "Anonymous"
-resolveDisplayName(null, true)       // → "Anonymous"
+resolveDisplayName(null, true)       // → "Anonymous" (all anonymous cases → "Anonymous")
 ```
 
 ### `formatContributionLine(contribution)`
@@ -920,31 +742,17 @@ resolveDisplayName(null, true)       // → "Anonymous"
 
 ### `calculateAllFees(giftAmount, feePercent)`
 ```typescript
-// lib/utils/fee.ts
-// THE master fee function — always use this, never calculate fees individually.
-// feePercent comes from platform_settings.platform_fee_percent — never hardcode 3.
-// NGN formula: paystack_fee = min((gift_amount × 0.015) + 100, 2000)
-calculateAllFees(10000, 3)
-// → {
-//     gift_amount:    10000,   // what gifter intends to send
-//     paystack_fee:   250,     // added on top — paid by gifter
-//     kiima_fee:      300,     // deducted from creator via Paystack split
-//     creator_amount: 9700,    // what creator actually receives
-//     total_charged:  10250,   // what Paystack charges the gifter
-//   }
+// lib/utils/fee.ts — always use this, never inline fee math.
+// feePercent from platform_settings — never hardcode 3.
+// NGN: paystack_fee = min((gift_amount × 0.015) + 100, 2000)
+// Returns: { gift_amount, paystack_fee, kiima_fee, creator_amount, total_charged }
 ```
 
 ### `formatFeeBreakdown(giftAmount, feePercent, currency)`
 ```typescript
-// lib/utils/fee.ts
-// Returns human-readable strings for the gift form live fee display.
-// Used in GiftForm and ContributeForm — shown to gifter before they pay.
-formatFeeBreakdown(10000, 3, 'NGN')
-// → {
-//     giftLine:   "You're sending ₦10,000",
-//     feeLine:    "Processing fee ₦250",
-//     totalLine:  "Total charged ₦10,250",
-//   }
+// lib/utils/fee.ts — live fee display strings for GiftForm / ContributeForm.
+// Returns: { giftLine, feeLine, totalLine }
+// e.g. "You're sending ₦10,000" · "Processing fee ₦250" · "Total charged ₦10,250"
 ```
 
 ---
@@ -1027,13 +835,9 @@ Run through this before every code generation. Every session.
 
 □ Does this touch social links or the ProfileCard?
   → Re-read Section 4.8 before proceeding.
-  → Confirm: showLinkBar is false on public page, URL validation 
-    is applied before saving, SocialLinksRow renders nothing if empty.
 
 □ Am I building something inside /admin?
   → Re-read Section 15 before proceeding.
-  → Confirm: is_admin check is server-side, actions are in admin.actions.ts,
-    data fetches use the admin Supabase client, no anonymous identity is exposed.
 
 □ Is my copy warm, short, and human?
   → Section 3.5
@@ -1046,7 +850,6 @@ Run through this before every code generation. Every session.
 
 □ BEFORE FINISHING: Have I updated Section 7 (Component Inventory)?
 □ BEFORE FINISHING: Have I appended this session's entry to BUILD_LOG.md?
-  → These are required. Task is not complete without them.
 ```
 
 ---
@@ -1096,92 +899,34 @@ Rule 2: Access is controlled by the is_admin boolean on the profiles table.
         - NEVER build a UI to promote a user to admin
         - NEVER check is_admin on the client — always check server-side
 
-Rule 3: The admin layout.tsx middleware must:
-        - Read the session server-side
-        - Fetch the profile and check is_admin === true
-        - Redirect non-admins to /dashboard immediately
-        - A logged-out user hitting /admin → redirect to /login
+Rule 3: `admin/layout.tsx` must verify `is_admin` server-side; redirect non-admins
+        to `/dashboard`; redirect logged-out users to `/login`.
 
-Rule 4: All admin data fetches use lib/supabase/admin.ts (service role client).
-        Regular anon or user-scoped clients are never used in admin routes.
+Rule 4: All admin data fetches use `lib/supabase/admin.ts` (service role client).
+        Never use anon or user-scoped clients in admin routes.
 
-Rule 5: Admin actions (suspend creator, force-close pool, delete tag, update 
-        settings) are server actions in lib/actions/admin.actions.ts only.
+Rule 5: All admin mutations are server actions in `lib/actions/admin.actions.ts` only.
         Never inline admin mutations in page components.
 ```
 
 ---
 
-### 15.2 Admin Pages & What Each Does
+### 15.2 Admin Pages
 
-**`/admin` — Platform Overview**
-The first thing you see when you log in as admin. Shows:
-- Total creators (all time + new this week)
-- Total platform volume — all money processed (all currencies shown separately)
-- Total contributions (count, all time)
-- Total active pools right now
-- New creator signups (last 7 days, shown as a simple list)
-- Any contributions stuck in "pending" status for more than 1 hour (warning flag)
-
-**`/admin/creators` — Creator Management**
-- Full list of all creator accounts, newest first
-- Search by username, display name, or email
-- Each row shows: avatar, name, username, currency, join date, total received, status
-- Click a creator → goes to `/admin/creators/[id]`
-
-**`/admin/creators/[id]` — Individual Creator Detail**
-- Full profile info
-- Their gift tags (all, including default)
-- Their pools (all, with status)
-- Their full contribution history (received)
-- Actions available:
-  - **Suspend account** — sets a `suspended: true` flag, blocks their gift page from loading, shows a "this creator is unavailable" message to visitors. Does not delete data.
-  - **Unsuspend account**
-  - No account deletion in V1
-
-**`/admin/transactions` — Full Transaction Log**
-- Every contribution across the entire platform
-- Columns: date, creator (recipient), gifter name, amount, currency, tag used, pool (if any), Paystack ref, status
-- Filterable by: status (pending/confirmed), date range, creator
-- Search by Paystack reference (for support queries — "I paid but it didn't show up")
-- If a contribution is stuck in "pending" → show a "re-check with Paystack" button that calls the Paystack verify endpoint and updates status if confirmed
-
-**`/admin/pools` — Pool Oversight**
-- Every pool across the platform
-- Columns: title, creator, goal, raised, % complete, contributor count, status, created date
-- Filter by: open / closed
-- Action: **Force close** any pool — same effect as creator closing it, but admin-initiated
-- Click a pool → see its full contributor list
-
-**`/admin/tags` — Tag Moderation**
-- Every custom tag across all creators (excludes system default tags)
-- Shows: label, amount, currency, creator username, created date
-- Action: **Delete tag** — removes it from the creator's tag list immediately
-- Use case: offensive or inappropriate tag labels
-
-**`/admin/webhooks` — Webhook Event Log**
-- Every event received from Paystack at /api/webhooks/paystack
-- Columns: timestamp, event type, Paystack ref, status (processed/failed/ignored), error message
-- Failed webhooks are highlighted in red — these need attention
-- Ignored webhooks (non-charge.success events) shown in muted style
-- No actions — this is read-only. It is a diagnostic tool.
-
-**`/admin/settings` — Platform Settings**
-- Default "Buy me a coffee" tag amounts per currency:
-  - NGN: ₦[amount] (default 2,000)
-  - USD: $[amount] (default 2)
-  - GBP: £[amount] (default 2)
-  - EUR: €[amount] (default 2)
-- Maintenance mode toggle:
-  - When ON: all public pages (gift links, pool pages) show a "Kiima is temporarily unavailable" message. Dashboard still accessible for creators. Admin still accessible.
-- Saving settings updates the single row in `platform_settings` table
-- Changes take effect immediately on next page load
+| Route | Purpose |
+|---|---|
+| `/admin` | Platform stats: creator count, volume (per currency), contribution count, active pools, new signups (7 days), stuck-pending warnings (>1hr) |
+| `/admin/creators` | All creator accounts list (newest first); search by username/name/email; click through to detail |
+| `/admin/creators/[id]` | Creator profile, tags, pools, contribution history; suspend/unsuspend (sets `suspended` flag, no data deletion) |
+| `/admin/transactions` | All platform contributions; filter by status/date/creator; Paystack ref search; re-check pending button |
+| `/admin/pools` | All pools; filter open/closed; force-close action; click for contributor list |
+| `/admin/tags` | All custom tags (no defaults); delete action for offensive/inappropriate labels |
+| `/admin/webhooks` | Read-only Paystack webhook log; failed events highlighted red; ignored events muted |
+| `/admin/settings` | Default tag amounts per currency (NGN/USD/GBP/EUR) + maintenance mode toggle; saves to `platform_settings` |
 
 ---
 
 ### 15.3 Admin Design Rules
-
-The admin panel follows the same Kiima design system (cards, tokens, typography) with one distinction — it has a more functional, dense layout because it is a tool, not a product surface.
 
 ```
 - Same card system, colours, and fonts as the rest of Kiima
@@ -1197,8 +942,6 @@ The admin panel follows the same Kiima design system (cards, tokens, typography)
 
 ### 15.4 Admin Component Inventory
 
-Add to Section 7 as built:
-
 | Component | File | Purpose |
 |---|---|---|
 | `AdminStatCard` | `cards/AdminStatCard.tsx` | Platform-level stat display |
@@ -1213,16 +956,7 @@ Add to Section 7 as built:
 
 ### 15.5 Admin Server Actions
 
-All live in `lib/actions/admin.actions.ts`:
-
-```typescript
-suspendCreator(creatorId: string)       // sets suspended: true on profile
-unsuspendCreator(creatorId: string)     // sets suspended: false on profile
-forceClosePool(poolId: string)          // sets pool status to 'closed'
-deleteCustomTag(tagId: string)          // validates not is_default, then deletes
-updatePlatformSettings(settings: Partial<PlatformSettings>)
-recheckPaystackPayment(paystackRef: string)  // calls Paystack verify, updates if confirmed
-```
+All in `lib/actions/admin.actions.ts`: `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment`.
 
 ---
 
@@ -1241,16 +975,10 @@ recheckPaystackPayment(paystackRef: string)  // calls Paystack verify, updates i
 ## 16. LANDING PAGE DESIGN BRIEF
 
 ### 16.1 Overview
-The landing page (app/page.tsx) must mirror the uploaded reference image 
-pixel-perfectly. Claude must use an iterative screenshot loop — taking 
-screenshots, comparing against the reference, fixing issues, and repeating 
-until the result matches exactly.
+`app/page.tsx` must mirror the reference image pixel-perfectly using an iterative screenshot loop.
 
 ### 16.2 Reference Image
-The reference image will be provided at the start of the landing page session.
-It will be uploaded directly into the Claude Code conversation.
-Treat it as the single source of truth for layout, spacing, typography, 
-colours, and component structure.
+Upload the reference image at the start of the session. It is the single source of truth for layout, spacing, typography, colours, and component structure.
 
 ### 16.3 Iterative Screenshot Loop — MANDATORY
 
@@ -1258,38 +986,7 @@ Before declaring the page done, Claude MUST run this loop:
 
 Step 1 — Write the initial page based on the reference image.
 
-Step 2 — Install Puppeteer if not already installed:
-  npm install puppeteer --save-dev
-
-Step 3 — Create and run this screenshot script after every change:
-
-  // scripts/screenshot.js
-  const puppeteer = require('puppeteer');
-  (async () => {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-    const page = await browser.newPage();
-
-    // Desktop
-    await page.setViewport({ width: 1440, height: 900 });
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
-    await page.screenshot({ 
-      path: 'scripts/screenshot-desktop.png', 
-      fullPage: true 
-    });
-
-    // Mobile
-    await page.setViewport({ width: 390, height: 844 });
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
-    await page.screenshot({ 
-      path: 'scripts/screenshot-mobile.png', 
-      fullPage: true 
-    });
-
-    await browser.close();
-    console.log('Screenshots saved.');
-  })();
-
-  Run with: node scripts/screenshot.js
+Step 2 — Run `node scripts/screenshot.js` after every change (captures 1440px desktop + 390px/450px mobile). Script is already in the repo.
 
 Step 4 — After each screenshot, compare it against the reference image:
   - Check layout, spacing, font sizes, colours, alignment section by section
@@ -1327,17 +1024,7 @@ Step 5 — Only stop iterating when ALL of the following pass:
   If after 5 iterations discrepancies remain, continue until they are resolved.
 
 ### 16.4 Design System Constraints
-Even while mirroring the reference, all of the following must hold:
-  - All colours come from styles/tokens.css CSS variables — never hardcode hex
-  - All spacing uses --space-* tokens
-  - All border radii use --radius-* tokens
-  - All shadows use --shadow-* tokens
-  - Font families must be Fraunces (display) and Plus Jakarta Sans (body)
-  - Primary accent remains #C87B5C (--color-accent)
-  - Background remains #F6F3EE (--color-bg)
-
-  Exception: if the reference image uses a colour not in the token system,
-  add it to styles/tokens.css first, then use the variable.
+Follow Section 3 in full — all colours, spacing, radii, shadows, and fonts must use CSS variables from `tokens.css`. If the reference uses a colour not in the token system, add it to `tokens.css` first.
 
 ### 16.5 Session Start Instructions
 When starting the landing page session, paste this into Claude Code:

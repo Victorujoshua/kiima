@@ -190,6 +190,48 @@ export default function LandingPage() {
           .lp-how-header { flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
         }
 
+        @media (max-width: 768px) {
+          /* Navbar: logo left, CTA right, hide nav links */
+          .lp-nav-inner { justify-content: space-between !important; }
+          .lp-nav-right { display: none !important; }
+          .lp-nav-mobile { display: inline-flex !important; }
+
+          /* Hero: center everything in the text column */
+          .lp-hero-text { display: flex; flex-direction: column; align-items: center; text-align: center; }
+          .lp-hero-headline { text-align: center; }
+          .lp-hero-sub { text-align: center !important; margin-left: auto !important; margin-right: auto !important; }
+          .lp-hero-ctas { justify-content: center !important; width: 100%; }
+          .lp-hero-ctas > * { flex: 1; text-align: center; justify-content: center; }
+          .lp-hero-note { text-align: center !important; }
+
+          /* Section headings & eyebrows */
+          .lp-eyebrow { text-align: center; display: block; }
+          .lp-section-h2 { text-align: center !important; }
+
+          /* How it works: center numbers, title, body */
+          .lp-how-header { justify-content: center !important; text-align: center !important; flex-direction: column !important; align-items: center !important; gap: 16px !important; }
+          .lp-how-header > div { text-align: center; }
+          .lp-how-step { text-align: center !important; display: flex; flex-direction: column; align-items: center; }
+          .lp-how-num { margin-left: auto; margin-right: auto; }
+
+          /* Feature sections: center text and buttons */
+          .lp-feat-text { text-align: center !important; display: flex; flex-direction: column; align-items: center; }
+          .lp-feat-h2 { text-align: center !important; }
+          .lp-feat-btn-row { justify-content: center !important; }
+          .lp-feat-btn-row > * { flex: 1; text-align: center !important; justify-content: center; }
+
+          /* Testimonials */
+          .lp-testi-card { text-align: center; }
+
+          /* FAQ sticky column */
+          .lp-faq-sticky { text-align: center; display: flex; flex-direction: column; align-items: center; }
+          .lp-faq-sticky .lp-btn { align-self: center; }
+
+          /* Footer */
+          .lp-footer-top { flex-direction: column !important; align-items: center !important; text-align: center; gap: 20px !important; }
+          .lp-footer-links { justify-content: center !important; }
+        }
+
         @media (max-width: 600px) {
           .lp-wrap { padding: 0 20px; }
           .lp-hero-headline { font-size: 40px !important; letter-spacing: -0.025em !important; }
@@ -198,8 +240,6 @@ export default function LandingPage() {
           .lp-final-h2 { font-size: 36px !important; }
           .lp-hero-ctas { flex-wrap: wrap !important; }
           .lp-hero-ctas > * { flex: 1; min-width: 150px; text-align: center; justify-content: center; }
-          .lp-nav-right { display: none !important; }
-          .lp-nav-mobile { display: inline-flex !important; }
           .lp-feat-btn-row { flex-direction: column; width: 100%; }
           .lp-feat-btn-row > * { width: 100% !important; text-align: center; justify-content: center; }
           .lp-mockup-scale { width: 100%; display: flex; justify-content: center; }
@@ -216,7 +256,7 @@ export default function LandingPage() {
           background: 'rgba(246,243,238,0.92)',
           borderBottom: '1px solid var(--color-border)',
         }}>
-          <div className="lp-wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
+          <div className="lp-wrap lp-nav-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
             <Link href="/" style={logoStyle}>
               kiima<span style={{ color: 'var(--color-accent)' }}>.</span>
             </Link>
@@ -237,7 +277,7 @@ export default function LandingPage() {
           <div className="lp-wrap">
             <div className="lp-hero-grid">
               {/* Left: text */}
-              <div>
+              <div className="lp-hero-text">
                 <span style={{
                   display: 'inline-block',
                   fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13,
@@ -267,7 +307,7 @@ export default function LandingPage() {
                   <a href="#how-it-works" className="lp-btn lp-btn-outline">How it works ↓</a>
                 </div>
 
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-muted)', marginTop: 20 }}>
+                <p className="lp-hero-note" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-muted)', marginTop: 20 }}>
                   Free forever · No credit card · Set up in minutes
                 </p>
               </div>
@@ -331,7 +371,7 @@ export default function LandingPage() {
                 { n: '03', title: 'Receive gifts', body: 'Your supporters send gifts directly to you. Funds settle to your Nigerian bank account via Paystack.' },
               ].map(step => (
                 <div key={step.n} className="lp-how-step">
-                  <div style={{
+                  <div className="lp-how-num" style={{
                     width: 48, height: 48, borderRadius: '50%',
                     background: 'var(--color-accent-soft)',
                     border: '1.5px solid rgba(200,123,92,0.25)',
@@ -535,7 +575,7 @@ export default function LandingPage() {
                 { quote: 'My fans used a support pool to help fund my EP. We hit the goal in 11 days. I was in tears. Kiima made that possible.', name: 'Emeka Okafor', handle: '@emekamusic_', role: 'Musician · Abuja' },
                 { quote: 'Setting up took five minutes. The gift tags are such a smart touch — people actually use them. It removes all the awkwardness.', name: 'Fatima Abubakar', handle: '@thefatimapod', role: 'Podcaster · Kano' },
               ].map(t => (
-                <div key={t.name} style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-card)', padding: 32, display: 'flex', flexDirection: 'column' }}>
+                <div key={t.name} className="lp-testi-card" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-card)', padding: 32, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontSize: 32, color: 'var(--color-accent)', marginBottom: 16, fontFamily: 'Georgia, serif' }}>&ldquo;</div>
                   <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 17, color: 'var(--color-text-primary)', lineHeight: 1.65, flex: 1, margin: '0 0 auto' }}>{t.quote}</p>
                   <div style={{ paddingTop: 22, borderTop: '1px solid var(--color-border)', marginTop: 22 }}>
@@ -574,11 +614,11 @@ export default function LandingPage() {
         {/* ── FOOTER ─────────────────────────────────────────────── */}
         <footer style={{ background: 'var(--color-text-primary)', borderTop: '1px solid rgba(246,243,238,0.07)', padding: '40px 0' }}>
           <div className="lp-wrap">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24, paddingBottom: 28, borderBottom: '1px solid rgba(246,243,238,0.07)' }}>
+            <div className="lp-footer-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24, paddingBottom: 28, borderBottom: '1px solid rgba(246,243,238,0.07)' }}>
               <Link href="/" style={{ ...logoStyle, color: '#F6F3EE' }}>
                 kiima<span style={{ color: 'var(--color-accent)' }}>.</span>
               </Link>
-              <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
+              <div className="lp-footer-links" style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
                 {['Product', 'Creators', 'Privacy', 'Terms'].map(l => (
                   <a key={l} href="#" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'rgba(246,243,238,0.4)', textDecoration: 'none' }}>{l}</a>
                 ))}

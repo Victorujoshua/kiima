@@ -811,3 +811,41 @@ Previous session: Phase 7.6 — End-to-end live testing audit
 - Webhook testing requires ngrok on localhost (already confirmed working from live DB evidence).
 - gift@kiima.co placeholder email — suppress/redirect before public launch.
 - contributePool stub in pool.actions.ts is dead code (ContributeForm uses initializeGift since Phase 5.3).
+
+---
+
+## Session 2026-04-21 — CLAUDE.md housekeeping trim (size reduction)
+
+### What was done
+No code changes — CLAUDE.md only.
+
+- **Section 7 (Component Inventory):** Trimmed ProfileCard/GiftActionCard/SupportPoolCard key props; stripped verbose Notes from Dashboard Shell and Admin Shell tables.
+- **Section 4.6 (Payment Flow):** Replaced 39-line annotated code block with 7 bullet points. Kept fee model table, example, and critical rules intact.
+- **Section 15.2 (Admin Pages):** Replaced 8 verbose page descriptions with a single compact table (one line per page).
+- **Section 15.3:** Removed intro paragraph (kept the 6 rule bullets).
+- **Section 15.4:** Removed "Add to Section 7 as built" preamble.
+- **Section 15.5:** Collapsed TypeScript code block to a single inline list of 6 function names.
+- **Section 6 (Architecture Tree):** Stripped all inline `← comments` except the 2 critical ones (`shadcn/ui do not edit`, `ALL design tokens live here`). Added `fee.ts` and `admin.actions.ts` which were missing from the tree.
+- **Section 8 (TypeScript Types):** Replaced full interface definitions with a brief pointer to `types/index.ts` + the 5 non-obvious Contribution fee fields.
+- **Section 9 (Utility Functions):** Condensed `calculateAllFees` and `formatFeeBreakdown` examples; trimmed `resolveDisplayName` to 2 examples.
+- **Section 16 (Landing Page Brief):** Removed embedded Puppeteer script (already in `scripts/screenshot.js`); condensed 16.1/16.2/16.4; removed Step 2 puppeteer install (already done).
+- **Section 12 (Checklist):** Removed verbose confirmation notes from 2 checklist items.
+- **Section 4.6 fee description:** Trimmed 3-bullet explanations to 1-liners.
+- **Section 4.4:** Condensed closed-pool display rules to 1 line.
+- **Section 15.1:** Condensed Rules 3, 4, 5 slightly.
+
+### Size result
+52,000 chars → **39,951 chars** (under 40,000 target).
+
+### Next tasks
+- Browser test the landing page locally (`npm run dev`).
+- Push to GitHub and deploy to Vercel.
+- After deploy: run `node scripts/screenshot.js` against live URL for final visual audit.
+
+### Open issues (unchanged)
+- increment_pool_raised RPC not yet deployed to Supabase (webhook falls back to read-modify-write — safe for V1).
+- og-default.png not yet created — needed as fallback og:image on gift link pages.
+- Migrations 001–007 all confirmed applied to live DB.
+- Webhook testing requires ngrok on localhost.
+- gift@kiima.co placeholder email — suppress/redirect before public launch.
+- contributePool stub in pool.actions.ts is dead code.
