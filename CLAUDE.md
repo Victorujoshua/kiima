@@ -570,14 +570,14 @@ Keep this updated as components are built. Before building any new component, ch
 | `CurrencyInput` | `shared/CurrencyInput.tsx` | `currency: Currency, value, onChange?, readOnly?` |
 | `KiimaButton` | `shared/KiimaButton.tsx` | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
 | `SocialLinksRow` | `shared/SocialLinksRow.tsx` | `links: SocialLink[]` |
-| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice: number, currency: Currency, selectedQty: DrinkQty, onSelect: (qty) => void` |
-| `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` |
+| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice: number, currency: Currency, selectedQty: number, onSelect: (qty: number) => void` — pills 1/3/5 + square custom input; no total display |
+| `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@` |
 
 ### Page Components
 
 | Component | File | Key Props |
 |---|---|---|
-| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, bio, links` |
+| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, bio, links` — no fee breakdown display; fee still calculated server-side |
 
 ### Auth Pages
 
@@ -627,11 +627,21 @@ Keep this updated as components are built. Before building any new component, ch
 
 | File | Notes |
 |---|---|
-| `app/dashboard/layout.tsx` | Session guard, sidebar + mobile tab nav |
-| `app/dashboard/DashboardNav.tsx` | `variant: 'sidebar' \| 'tabs'` |
+| `app/dashboard/layout.tsx` | Session guard, mobile-first 480px centred layout, renders BottomNav |
 | `app/dashboard/LogoutButton.tsx` | Signs out → `/login` |
 
-**Padding system:** `.k-dash-main` (dashboard) and `.k-page` (public pages) in `globals.css` — 100px desktop → 40px tablet → 20px mobile. Pages set vertical padding only.
+**Layout:** Mobile-first single column, `max-width: 480px`, centred. No sidebar. `padding: 20px 20px 80px` (80px clears BottomNav).
+
+### Dashboard Components (`components/dashboard/`)
+
+| Component | File | Key Props |
+|---|---|---|
+| `BottomNav` | `dashboard/BottomNav.tsx` | Fixed 4-tab nav: Home / Pools / Links / Settings |
+| `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `avatarUrl, displayName, username` — avatar + native share |
+| `LinkBar` | `dashboard/LinkBar.tsx` | `username` — shows kiima.co/username + clipboard copy |
+| `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |
+| `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
+| `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency` — last 5 with avatar, tag, relative time, amounts |
 
 ### Dashboard Pages
 
@@ -643,6 +653,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `/dashboard/pools` | `app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx` |
 | `/dashboard/pools/[id]` | `app/dashboard/pools/[id]/page.tsx` + `ClosePoolButton.tsx` + `ShowContributorsToggle.tsx` |
 | `/dashboard/links` | `app/dashboard/links/page.tsx` |
+| `/dashboard/settings` | `app/dashboard/settings/page.tsx` |
 
 ### Public Pages
 

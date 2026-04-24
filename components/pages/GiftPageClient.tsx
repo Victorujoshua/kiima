@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { initializeGift } from '@/lib/actions/gift.actions';
-import { calculateAllFees } from '@/lib/utils/fee';
 import { formatCurrency } from '@/lib/utils/currency';
 import { resolveDisplayName } from '@/lib/utils/display-name';
 import DrinkQuantitySelector, { type DrinkQty } from '@/components/shared/DrinkQuantitySelector';
@@ -91,7 +90,6 @@ export default function GiftPageClient({
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const giftAmount = defaultTag.amount * selectedQty;
-  const fees = calculateAllFees(giftAmount, feePercent);
   const tagId = selectedQty === 1 ? defaultTag.id : '';
   const displayNamePreview = isAnonymous ? 'Anonymous' : (nameValue.trim() || 'Anonymous');
 
@@ -163,11 +161,6 @@ export default function GiftPageClient({
               style={textareaStyle}
             />
           </div>
-
-          {/* Fee breakdown */}
-          <p style={feeLineStyle}>
-            Processing fee {formatCurrency(fees.paystack_fee, currency)} · Total charged {formatCurrency(fees.total_charged, currency)}
-          </p>
 
           <SubmitButton label={`Send ${formatCurrency(giftAmount, currency)} 🥤`} />
 
@@ -311,14 +304,6 @@ const textareaStyle: React.CSSProperties = {
   resize: 'vertical',
   boxSizing: 'border-box',
   lineHeight: 1.5,
-};
-
-const feeLineStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '12px',
-  color: 'var(--color-text-muted)',
-  margin: 0,
-  textAlign: 'center',
 };
 
 const avatarStyle: React.CSSProperties = {

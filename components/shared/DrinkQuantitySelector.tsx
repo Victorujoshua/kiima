@@ -1,10 +1,11 @@
 'use client';
 
-import { formatCurrency } from '@/lib/utils/currency';
+import { useState } from 'react';
 import type { Currency } from '@/types';
 
-export type DrinkQty = 1 | 3 | 5 | 10;
-const QUANTITIES: DrinkQty[] = [1, 3, 5, 10];
+export type DrinkQty = number;
+
+const FIXED_QUANTITIES = [1, 3, 5] as const;
 
 interface Props {
   drinkPrice: number;
@@ -13,33 +14,74 @@ interface Props {
   onSelect: (qty: DrinkQty) => void;
 }
 
-export default function DrinkQuantitySelector({ drinkPrice, currency, selectedQty, onSelect }: Props) {
-  const total = drinkPrice * selectedQty;
+export default function DrinkQuantitySelector({ selectedQty, onSelect }: Props) {
+
+  const [customInput, setCustomInput] = useState('');
+
+  const customNum = parseInt(customInput, 10);
+  const isValidCustom = !isNaN(customNum) && customNum >= 1;
+  const matchesPill = isValidCustom && (customNum === 1 || customNum === 3 || customNum === 5);
+  const isInputSelected = customInput !== '' && !matchesPill;
+
+  function isPillSelected(qty: number): boolean {
+    if (customInput === '') return qty === selectedQty;
+    return matchesPill && customNum === qty;
+  }
+
+  function handlePillClick(qty: number) {
+    setCustomInput('');
+    onSelect(qty);
+  }
+
+  function handleCustomChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value.replace(/[^0-9]/g, '');
+    setCustomInput(raw);
+    const num = parseInt(raw, 10);
+    if (!isNaN(num) && num >= 1) {
+      onSelect(num);
+    }
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '22px', lineHeight: 1 }}>🥤</span>
-        <span style={timesStyle}>×</span>
-        {QUANTITIES.map((qty) => {
-          const selected = qty === selectedQty;
-          return (
-            <button
-              key={qty}
-              type="button"
-              onClick={() => onSelect(qty)}
-              style={selected ? selectedPillStyle : pillStyle}
-            >
-              {qty}
-            </button>
-          );
-        })}
-      </div>
+    <div style={trayStyle}>
+      <span style={{ fontSize: '22px', lineHeight: 1 }}>🥤</span>
+      <span style={timesStyle}>×</span>
 
-      <p style={totalStyle}>= {formatCurrency(total, currency)}</p>
+      {FIXED_QUANTITIES.map((qty) => (
+        <button
+          key={qty}
+          type="button"
+          onClick={() => handlePillClick(qty)}
+          style={isPillSelected(qty) ? selectedPillStyle : pillStyle}
+        >
+          {qty}
+        </button>
+      ))}
+
+      <input
+        type="number"
+        min={1}
+        value={customInput}
+        onChange={handleCustomChange}
+        placeholder="10"
+        style={isInputSelected ? selectedInputStyle : inputStyle}
+        aria-label="Custom quantity"
+      />
     </div>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const trayStyle: React.CSSProperties = {
+  background: 'var(--color-accent-soft)',
+  borderRadius: 'var(--radius-md)',
+  padding: '12px 16px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  flexWrap: 'wrap',
+};
 
 const timesStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
@@ -75,10 +117,31 @@ const selectedPillStyle: React.CSSProperties = {
   boxShadow: '0 2px 8px rgba(200, 123, 92, 0.35)',
 };
 
-const totalStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 500,
-  fontSize: '24px',
-  color: 'var(--color-text-primary)',
-  margin: 0,
+const baseInputStyle: React.CSSProperties = {
+  width: '52px',
+  height: '44px',
+  borderRadius: '15%',
+  border: '1.5px solid var(--color-accent)',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: '15px',
+  textAlign: 'center',
+  padding: '0 4px',
+  boxSizing: 'border-box',
+  outline: 'none',
+  transition: 'all 0.15s ease',
+  cursor: 'text',
+};
+
+const inputStyle: React.CSSProperties = {
+  ...baseInputStyle,
+  background: 'var(--color-surface)',
+  color: 'var(--color-accent)',
+};
+
+const selectedInputStyle: React.CSSProperties = {
+  ...baseInputStyle,
+  background: 'var(--color-accent)',
+  color: '#fff',
+  boxShadow: '0 2px 8px rgba(200, 123, 92, 0.35)',
 };

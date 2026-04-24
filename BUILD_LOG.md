@@ -890,3 +890,75 @@ Full redesign of the creator public gift page. Replaced the two-column ProfileCa
 - Webhook testing requires ngrok on localhost
 - gift@kiima.co placeholder email — suppress before public launch
 - contributePool stub in pool.actions.ts is dead code
+
+---
+
+## Session 2026-04-24 — Dashboard redesign (mobile-first)
+
+### What was built
+Full redesign of `app/dashboard/page.tsx` to a mobile-first, mobile-app-style layout
+(max-width 480px, no sidebar, fixed bottom nav).
+
+### New files
+- `components/dashboard/BottomNav.tsx` — fixed 4-tab bottom nav: Home / Pools / Links / Settings. Uses lucide-react icons. Replaces old `DashboardNav variant="tabs"`.
+- `components/dashboard/DashboardHeader.tsx` — avatar circle (image or initials) on left, native share button (navigator.share + clipboard fallback) on right. No title text.
+- `components/dashboard/LinkBar.tsx` — `kiima.co/{username}` in terracotta text + Copy icon button with 2s "Copied ✓" state.
+- `components/dashboard/GiftTagsRow.tsx` — horizontally scrollable tag pills. Default tag is filled terracotta (no delete). Custom tags have an X button to delete. "+ Add gift tag" dashed pill opens a bottom-sheet modal (full-width, slides up) with label + amount inputs and createTag server action. Uses useTransition + router.refresh() to update without full reload.
+- `components/dashboard/StatCards.tsx` — 3-column equal-width stat grid: Gifts received / Pool support / Total earned. Fraunces font for values.
+- `components/dashboard/RecentGifts.tsx` — last 5 confirmed contributions. Each row: 38px avatar (🥤 emoji if anonymous, initials otherwise, soft rotating bg colours), name + tag label + relative time, gift amount + creator amount. "See all →" links to /dashboard/transactions. Empty state with 🥤 emoji and share prompt.
+- `app/dashboard/settings/page.tsx` — minimal placeholder: shows creator name + @username, "View page →" link, and LogoutButton. Prevents the Settings nav tab from 404-ing.
+
+### Updated files
+- `app/dashboard/page.tsx` — full rewrite. Fetches all data in a single Promise.all (profile, direct gifts, pool gifts, total count, recent 5, tags, active pools count). Uses gift_amount (not creator_amount) for stat totals per new spec.
+- `app/dashboard/layout.tsx` — stripped sidebar entirely. Now: session guard only → wraps children in 480px centred main + renders BottomNav. Old sidebar, DashboardNav, creator section removed.
+- `package.json` — added `lucide-react` dependency.
+
+### TypeScript
+PASSED clean — `npx tsc --noEmit` with no errors.
+
+### Architecture change notes
+- The sidebar is permanently removed. Dashboard is now mobile-app style at all screen sizes.
+- `DashboardNav.tsx` and its CSS classes (`.k-dash-sidebar`, `.k-nav-link`, `.k-dash-tabs`, `.k-tab-link`) remain in the codebase but are no longer used by the layout. They can be deleted in a cleanup session.
+- The Settings page at `/dashboard/settings` is a minimal placeholder — needs a full build (avatar upload, display name edit, currency selector, notification preferences) in a future session.
+
+---
+
+## Session 2026-04-24 — Gift page UI cleanup (5 targeted changes)
+
+### What was changed
+
+**`components/pages/GiftPageClient.tsx`**
+- Removed fee breakdown `<p>` element ("Processing fee ₦X · Total charged ₦X"). Fee is still calculated and applied server-side in `initializeGift` — only the display was removed.
+- Removed `fees` variable and `calculateAllFees` import (were only used for the display line).
+- Removed `feeLineStyle` constant.
+
+**`components/shared/DrinkQuantitySelector.tsx`**
+- Removed `<p>= ₦2,000</p>` total display and `totalStyle` constant (amount is already shown in the submit button — Change 2).
+- Removed `formatCurrency` import and `const total` variable (no longer needed after Change 2).
+- Wrapped the entire quantity row in a soft tray container: `background: var(--color-accent-soft)`, `border-radius: var(--radius-md)`, `padding: 12px 16px` — Change 3.
+- Changed `FIXED_QUANTITIES` from `[1, 3, 5, 10]` to `[1, 3, 5]`. Replaced the "10" circle pill with a square `<input type="number">` — `borderRadius: 15%`, same `44px` height as pills, terracotta border — Change 4.
+- Custom input logic: typing a number calls `onSelect(num)`; if the typed number matches 1/3/5, the corresponding pill highlights; if it doesn't match, the input itself gets selected (terracotta fill) styling.
+- `DrinkQty` type changed from `1 | 3 | 5 | 10` to `number` (exported, so parent `GiftPageClient.tsx` automatically picks up the change via the type import).
+
+**`components/shared/SocialHandleInput.tsx`**
+- Added `const showSocialPicker = value.startsWith('@')` — Change 5.
+- Platform picker button (icon + chevron) now conditionally rendered: only shown when `showSocialPicker` is true.
+- Dropdown now conditionally rendered: `{showSocialPicker && dropdownOpen && <div>...}`.
+- Input placeholder: `"Name or @yoursocial"` by default; `"yourusername"` when `showSocialPicker` is true.
+- Added `useEffect` to call `onDropdownClose()` when `showSocialPicker` becomes false (user deleted the `@`).
+
+### TypeScript
+PASSED clean — `npx tsc --noEmit` with no errors.
+
+### Next tasks
+- Build `/dashboard/settings` page fully (display name, bio, avatar, currency, logout)
+- Remove unused DashboardNav.tsx + stale CSS classes from globals.css
+- Add loading skeleton for new dashboard home layout
+- Consider adding `suspense` boundaries around the new dashboard components
+
+### Open issues (unchanged)
+- increment_pool_raised RPC not yet deployed to Supabase
+- og-default.png not yet created
+- Webhook testing requires ngrok on localhost
+- gift@kiima.co placeholder email — suppress before public launch
+- contributePool stub in pool.actions.ts is dead code

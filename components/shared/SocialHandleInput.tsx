@@ -59,7 +59,16 @@ export default function SocialHandleInput({
   dropdownOpen, onDropdownToggle, onDropdownClose,
 }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const showSocialPicker = value.startsWith('@');
 
+  // Close dropdown when social picker hides (user deleted the @)
+  useEffect(() => {
+    if (!showSocialPicker && dropdownOpen) {
+      onDropdownClose();
+    }
+  }, [showSocialPicker, dropdownOpen, onDropdownClose]);
+
+  // Close on click-outside when dropdown is open
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -72,7 +81,7 @@ export default function SocialHandleInput({
 
   return (
     <div ref={wrapperRef} style={{ position: 'relative' }}>
-      {/* Compound input */}
+      {/* Compound input row */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -82,39 +91,41 @@ export default function SocialHandleInput({
         overflow: 'hidden',
         transition: 'border-color 0.15s ease',
       }}>
-        {/* Platform picker button */}
-        <button
-          type="button"
-          onClick={onDropdownToggle}
-          disabled={disabled}
-          aria-expanded={dropdownOpen}
-          aria-label="Select platform"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '0 10px',
-            height: '48px',
-            background: 'transparent',
-            border: 'none',
-            borderRight: '1.5px solid var(--color-border)',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            color: 'var(--color-text-secondary)',
-            flexShrink: 0,
-          }}
-        >
-          <PlatformIcon platform={selectedPlatform} />
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
+        {/* Platform picker — only shown when value starts with @ */}
+        {showSocialPicker && (
+          <button
+            type="button"
+            onClick={onDropdownToggle}
+            disabled={disabled}
+            aria-expanded={dropdownOpen}
+            aria-label="Select platform"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '0 10px',
+              height: '48px',
+              background: 'transparent',
+              border: 'none',
+              borderRight: '1.5px solid var(--color-border)',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              color: 'var(--color-text-secondary)',
+              flexShrink: 0,
+            }}
+          >
+            <PlatformIcon platform={selectedPlatform} />
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        )}
 
         {/* Text input */}
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Name or @yoursocial"
+          placeholder={showSocialPicker ? 'yourusername' : 'Name or @yoursocial'}
           disabled={disabled}
           style={{
             flex: 1,
@@ -130,8 +141,8 @@ export default function SocialHandleInput({
         />
       </div>
 
-      {/* Dropdown */}
-      {dropdownOpen && (
+      {/* Dropdown — only rendered when social picker is visible */}
+      {showSocialPicker && dropdownOpen && (
         <div style={{
           position: 'absolute',
           top: 'calc(100% + 4px)',
