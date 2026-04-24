@@ -4,9 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTagsByUser } from '@/lib/actions/tag.actions';
 import { getSocialLinks } from '@/lib/actions/link.actions';
-import ProfileCard from '@/components/cards/ProfileCard';
-import GiftForm from '@/components/forms/GiftForm';
-import type { Profile, Currency, SocialLink } from '@/types';
+import GiftPageClient from '@/components/pages/GiftPageClient';
+import type { Profile, Currency, SocialLink, GiftTag, Contribution } from '@/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.co';
 
@@ -18,9 +17,7 @@ export async function generateMetadata({ params }: { params: { username: string 
     .eq('username', params.username)
     .single();
 
-  if (!profile) {
-    return { title: 'Kiima' };
-  }
+  if (!profile) return { title: 'Kiima' };
 
   const title = `${profile.display_name}'s Kiima`;
   const description = profile.bio
@@ -32,19 +29,8 @@ export async function generateMetadata({ params }: { params: { username: string 
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      url,
-      images: [{ url: image }],
-      siteName: 'Kiima',
-    },
-    twitter: {
-      card: 'summary',
-      title,
-      description,
-      images: [image],
-    },
+    openGraph: { title, description, url, images: [{ url: image }], siteName: 'Kiima' },
+    twitter: { card: 'summary', title, description, images: [image] },
   };
 }
 
@@ -56,7 +42,6 @@ interface PageProps {
 export default async function UserPage({ params, searchParams }: PageProps) {
   const supabase = createClient();
 
-  // Fetch creator profile (include suspended so we can gate the page)
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, username, display_name, bio, avatar_url, currency, created_at, suspended')
@@ -65,48 +50,96 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 
   if (!profile) notFound();
 
-  // Suspended creators are not visible to the public
   if ((profile as Profile & { suspended: boolean }).suspended) {
     return (
-      <main style={pageStyle} className="k-page">
+      <main style={pageStyle}>
         <div style={suspendedCardStyle}>
-          <p style={suspendedEmojiStyle}>🔒</p>
+          <p style={{ fontSize: '36px', margin: '0 0 var(--space-sm)' }}>🔒</p>
           <p style={suspendedHeadingStyle}>This creator is unavailable</p>
-          <p style={suspendedBodyStyle}>
-            This page is temporarily unavailable.
-          </p>
+          <p style={suspendedBodyStyle}>This page is temporarily unavailable.</p>
         </div>
       </main>
     );
   }
 
-  // Fetch gift tags, social links, and platform fee percent in parallel
   const admin = createAdminClient();
-  const [tags, links, settingsResult] = await Promise.all([
+  const [tags, links, settingsResult, recentResult, countResult] = await Promise.all([
     getTagsByUser(profile.id),
     getSocialLinks(profile.id),
     admin.from('platform_settings').select('platform_fee_percent').limit(1).single(),
+    supabase
+      .from('contributions')
+      .select('id, gift_amount, display_name, is_anonymous, created_at, tag_id')
+      .eq('recipient_id', profile.id)
+      .eq('status', 'confirmed')
+      .is('pool_id', null)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('contributions')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', profile.id)
+      .eq('status', 'confirmed')
+      .is('pool_id', null),
   ]);
+
   const feePercent = settingsResult.data?.platform_fee_percent ?? 3;
+  const contributions = (recentResult.data ?? []) as Contribution[];
+  const contributorCount = countResult.count ?? 0;
+
+  const defaultTag = (tags as GiftTag[]).find(t => t.is_default);
+  if (!defaultTag) notFound();
 
   const paymentFailed = searchParams.payment_failed === '1';
 
   return (
-    <main style={pageStyle} className="k-page">
+    <main style={pageStyle}>
       {paymentFailed && (
         <div style={paymentFailedBannerStyle}>
           Payment didn&apos;t go through — please try again.
         </div>
       )}
-      <div style={gridStyle}>
-        <ProfileCard profile={profile as Profile} links={links as SocialLink[]} />
-        <GiftForm
-          recipientId={profile.id}
-          tags={tags}
-          currency={profile.currency as Currency}
-          feePercent={feePercent}
-        />
+
+      {/* Section 1 — Profile header */}
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '0 20px' }}>
+        {/* Cover image */}
+        <div style={coverStyle} />
+
+        {/* Avatar overlapping cover */}
+        <div style={avatarWrapStyle}>
+          {profile.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.avatar_url}
+              alt={profile.display_name}
+              style={avatarImgStyle}
+            />
+          ) : (
+            <div style={avatarFallbackStyle}>
+              {profile.display_name.slice(0, 2).toUpperCase()}
+            </div>
+          )}
+        </div>
+
+        {/* Name + username */}
+        <div style={profileInfoStyle}>
+          <h1 style={profileNameStyle}>{profile.display_name}</h1>
+          <p style={profileUsernameStyle}>@{profile.username}</p>
+        </div>
       </div>
+
+      {/* Sections 2–4 + footer */}
+      <GiftPageClient
+        recipientId={profile.id}
+        creatorName={profile.display_name}
+        defaultTag={defaultTag}
+        feePercent={feePercent}
+        currency={profile.currency as Currency}
+        contributions={contributions}
+        contributorCount={contributorCount}
+        bio={profile.bio}
+        links={links as SocialLink[]}
+      />
     </main>
   );
 }
@@ -114,12 +147,71 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-bg)',
-  padding: '40px 0',
+  paddingBottom: '40px',
+};
+
+const coverStyle: React.CSSProperties = {
+  height: '160px',
+  borderRadius: 'var(--radius-lg)',
+  background: 'linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 60%, var(--color-accent-soft) 100%)',
+};
+
+const avatarWrapStyle: React.CSSProperties = {
+  position: 'relative',
+  display: 'flex',
+  justifyContent: 'center',
+  marginTop: '-40px',
+  marginBottom: '12px',
+};
+
+const avatarImgStyle: React.CSSProperties = {
+  width: '80px',
+  height: '80px',
+  borderRadius: '50%',
+  objectFit: 'cover',
+  border: '3px solid var(--color-bg)',
+  boxShadow: 'var(--shadow-card)',
+};
+
+const avatarFallbackStyle: React.CSSProperties = {
+  width: '80px',
+  height: '80px',
+  borderRadius: '50%',
+  background: 'var(--color-accent)',
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: '24px',
+  border: '3px solid var(--color-bg)',
+  boxShadow: 'var(--shadow-card)',
+};
+
+const profileInfoStyle: React.CSSProperties = {
+  textAlign: 'center',
+  marginBottom: '20px',
+};
+
+const profileNameStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-display)',
+  fontWeight: 500,
+  fontSize: '26px',
+  color: 'var(--color-text-primary)',
+  margin: '0 0 4px',
+};
+
+const profileUsernameStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: '14px',
+  color: 'var(--color-text-muted)',
+  margin: 0,
 };
 
 const paymentFailedBannerStyle: React.CSSProperties = {
-  maxWidth: '1080px',
-  margin: '0 auto var(--space-md)',
+  maxWidth: '480px',
+  margin: '16px auto var(--space-md)',
   fontFamily: 'var(--font-body)',
   fontSize: '14px',
   color: 'var(--color-danger)',
@@ -139,11 +231,6 @@ const suspendedCardStyle: React.CSSProperties = {
   textAlign: 'center',
 };
 
-const suspendedEmojiStyle: React.CSSProperties = {
-  fontSize: '36px',
-  margin: '0 0 var(--space-sm)',
-};
-
 const suspendedHeadingStyle: React.CSSProperties = {
   fontFamily: 'var(--font-display)',
   fontWeight: 500,
@@ -159,13 +246,3 @@ const suspendedBodyStyle: React.CSSProperties = {
   margin: 0,
   lineHeight: 1.65,
 };
-
-const gridStyle: React.CSSProperties = {
-  maxWidth: '1080px',
-  margin: '0 auto',
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-  gap: '16px',
-  alignItems: 'start',
-};
-

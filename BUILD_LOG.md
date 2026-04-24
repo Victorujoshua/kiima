@@ -849,3 +849,44 @@ No code changes — CLAUDE.md only.
 - Webhook testing requires ngrok on localhost.
 - gift@kiima.co placeholder email — suppress/redirect before public launch.
 - contributePool stub in pool.actions.ts is dead code.
+
+---
+
+## Session 2026-04-21 — Public gift page redesign (app/[username]/page.tsx)
+
+### What was built
+Full redesign of the creator public gift page. Replaced the two-column ProfileCard + GiftForm grid with a mobile-first (480px max-width) single-column layout inspired by Buy Me a Coffee.
+
+### New files
+- `components/shared/DrinkQuantitySelector.tsx` — pill selector (1/3/5/10 drinks) with live ₦ total in Fraunces font
+- `components/shared/SocialHandleInput.tsx` — compound input with Instagram/X/TikTok platform picker dropdown (SVG icons, click-outside close, useRef)
+- `components/pages/GiftPageClient.tsx` — 'use client' wrapper for Sections 2–4 + footer:
+  - Section 2: gift card with DrinkQuantitySelector + SocialHandleInput + anonymous checkbox + note textarea (UI-only, no `name` attr, V2) + live fee breakdown + submit button
+  - Section 3: recent supporters list with avatar/initials, activityLine helper ("bought X drinks" or "sent ₦X"), timeAgo helper
+  - Section 4: About section (only rendered if bio exists), SocialLinksRow below bio
+  - Footer: "Powered by Kiima"
+
+### Updated files
+- `app/[username]/page.tsx` — server component now:
+  - Fetches recent contributions (last 10, confirmed, no pool_id) + contributor count in parallel with existing data
+  - Renders Section 1 inline: warm terracotta gradient cover (no cover_image_url column exists), overlapping avatar (80px, border, shadow), display_name + @username centred
+  - Passes all data to GiftPageClient; ProfileCard and GiftForm no longer used on this page
+
+### Design decisions
+- Cover: gradient placeholder (`linear-gradient(135deg, --color-accent, --color-accent-light, --color-accent-soft)`) — no DB column for cover images in V1
+- Avatar overlap: `position: relative` wrapper with negative `marginTop: -40px`
+- Note textarea: rendered in UI (user requested it) but `name` attr omitted — server never receives value (V2 feature per Section 10)
+- tag_id logic: defaultTag.id when qty=1 (maps to single-drink default tag), empty string for qty 3/5/10 (no suitable tag, custom amount)
+- About section conditionally rendered only when bio is non-null/non-empty
+
+### Next tasks
+- Take screenshot at 390px and verify all checklist items from Section 16.3
+- Push to GitHub
+- After deploy: full visual check on mobile device
+
+### Open issues (unchanged)
+- increment_pool_raised RPC not yet deployed to Supabase
+- og-default.png not yet created
+- Webhook testing requires ngrok on localhost
+- gift@kiima.co placeholder email — suppress before public launch
+- contributePool stub in pool.actions.ts is dead code

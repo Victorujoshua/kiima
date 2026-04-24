@@ -570,6 +570,14 @@ Keep this updated as components are built. Before building any new component, ch
 | `CurrencyInput` | `shared/CurrencyInput.tsx` | `currency: Currency, value, onChange?, readOnly?` |
 | `KiimaButton` | `shared/KiimaButton.tsx` | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
 | `SocialLinksRow` | `shared/SocialLinksRow.tsx` | `links: SocialLink[]` |
+| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice: number, currency: Currency, selectedQty: DrinkQty, onSelect: (qty) => void` |
+| `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` |
+
+### Page Components
+
+| Component | File | Key Props |
+|---|---|---|
+| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, bio, links` |
 
 ### Auth Pages
 
