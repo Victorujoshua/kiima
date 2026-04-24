@@ -345,3 +345,13 @@ body {
   color: var(--color-accent);
   font-weight: 600;
 }
+
+/* ─── Bottom-sheet modal animations ──────────────────── */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

@@ -599,8 +599,8 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Action file | Exports |
 |---|---|
-| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction` |
-| `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `deleteTag` |
+| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile` |
+| `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `updateTag`, `deleteTag` |
 | `lib/actions/gift.actions.ts` | `initializeGift` |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` |
 | `lib/actions/admin.actions.ts` | `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment` |
@@ -636,12 +636,15 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `BottomNav` | `dashboard/BottomNav.tsx` | Fixed 4-tab nav: Home / Pools / Links / Settings |
+| `BottomNav` | `dashboard/BottomNav.tsx` | Fixed 4-tab nav: Home / Pools / Tags / Settings |
 | `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `avatarUrl, displayName, username` — avatar + native share |
 | `LinkBar` | `dashboard/LinkBar.tsx` | `username` — shows kiima.co/username + clipboard copy |
 | `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |
 | `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
 | `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency` — last 5 with avatar, tag, relative time, amounts |
+| `Toast` | `dashboard/Toast.tsx` | `message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s |
+| `AddTagModal` | `dashboard/AddTagModal.tsx` | `userId, currency, onClose, onSuccess(tag)` — bottom sheet, calls createTag |
+| `EditTagModal` | `dashboard/EditTagModal.tsx` | `tag, userId, currency, onClose, onSuccess(tag)` — bottom sheet, pre-filled, calls updateTag |
 
 ### Dashboard Pages
 
@@ -649,11 +652,11 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|
 | `/dashboard` | `app/dashboard/page.tsx` |
 | `/dashboard/transactions` | `app/dashboard/transactions/page.tsx` |
-| `/dashboard/tags` | `app/dashboard/tags/page.tsx` + `TagsClient.tsx` |
+| `/dashboard/tags` | `app/dashboard/tags/page.tsx` + `TagsClient.tsx` — full CRUD (add/edit/delete) with bottom-sheet modals and toast |
 | `/dashboard/pools` | `app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx` |
 | `/dashboard/pools/[id]` | `app/dashboard/pools/[id]/page.tsx` + `ClosePoolButton.tsx` + `ShowContributorsToggle.tsx` |
 | `/dashboard/links` | `app/dashboard/links/page.tsx` |
-| `/dashboard/settings` | `app/dashboard/settings/page.tsx` |
+| `/dashboard/settings` | `app/dashboard/settings/page.tsx` + `SettingsClient.tsx` — avatar upload, display name, bio, social links, logout |
 
 ### Public Pages
 

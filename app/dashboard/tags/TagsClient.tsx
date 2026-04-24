@@ -1,239 +1,244 @@
 'use client';
 
-import { useState, useEffect, useCallback, useTransition } from 'react';
-import { useFormState } from 'react-dom';
+import { useState, useEffect, useTransition, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import KiimaButton from '@/components/shared/KiimaButton';
-import { createTag, deleteTag } from '@/lib/actions/tag.actions';
+import { deleteTag } from '@/lib/actions/tag.actions';
 import { formatCurrency } from '@/lib/utils/currency';
+import AddTagModal from '@/components/dashboard/AddTagModal';
+import EditTagModal from '@/components/dashboard/EditTagModal';
+import Toast from '@/components/dashboard/Toast';
 import type { GiftTag, Currency } from '@/types';
 
-// ─── TagAddForm ───────────────────────────────────────────────────────────────
-// Isolated so it gets a fresh useFormState every time it mounts (i.e. every
-// time the "+ Add a new tag" button is clicked after a previous cancel/submit).
-
-function TagAddForm({
-  userId,
-  currency,
-  onSuccess,
-  onCancel,
-}: {
-  userId: string;
-  currency: Currency;
-  onSuccess: () => void;
-  onCancel: () => void;
-}) {
-  const [state, formAction] = useFormState(createTag, null);
-
-  useEffect(() => {
-    if (state?.success) onSuccess();
-  }, [state, onSuccess]);
-
-  const fe = state?.fieldErrors ?? {};
-
-  return (
-    <form
-      action={formAction}
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}
-    >
-      <input type="hidden" name="user_id" value={userId} />
-
-      {/* Label */}
-      <div>
-        <label htmlFor="tag-label" style={labelStyle}>
-          Tag label
-        </label>
-        <input
-          id="tag-label"
-          name="label"
-          type="text"
-          placeholder="e.g. Buy me lunch 🍜"
-          autoFocus
-          autoComplete="off"
-          className={`k-input${fe.label ? ' k-input--error' : ''}`}
-        />
-        {fe.label && <p style={fieldErrorStyle}>{fe.label}</p>}
-      </div>
-
-      {/* Amount */}
-      <div>
-        <label htmlFor="tag-amount" style={labelStyle}>
-          Amount ({currency})
-        </label>
-        <input
-          id="tag-amount"
-          name="amount"
-          type="number"
-          min="1"
-          step="1"
-          placeholder={currency === 'NGN' ? '2000' : '5'}
-          className={`k-input${fe.amount ? ' k-input--error' : ''}`}
-        />
-        {fe.amount && <p style={fieldErrorStyle}>{fe.amount}</p>}
-      </div>
-
-      {/* Global error */}
-      {state?.error && (
-        <p style={errorBoxStyle} role="alert">
-          {state.error}
-        </p>
-      )}
-
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-        <KiimaButton type="submit">Save tag</KiimaButton>
-        <KiimaButton type="button" variant="ghost" onClick={onCancel}>
-          Cancel
-        </KiimaButton>
-      </div>
-    </form>
-  );
-}
-
-// ─── TagsClient ───────────────────────────────────────────────────────────────
-
-interface TagsClientProps {
+interface Props {
   tags: GiftTag[];
   userId: string;
   currency: Currency;
 }
 
-export default function TagsClient({ tags, userId, currency }: TagsClientProps) {
+type ToastState = { message: string; variant: 'success' | 'error' } | null;
+
+export default function TagsClient({ tags: initialTags, userId, currency }: Props) {
   const router = useRouter();
-  const [showForm, setShowForm] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  const handleCreateSuccess = useCallback(() => {
-    setShowForm(false);
+  const [tags, setTags] = useState<GiftTag[]>(initialTags);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editTag, setEditTag] = useState<GiftTag | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState>(null);
+
+  // Keep local tags in sync after server refresh
+  useEffect(() => {
+    setTags(initialTags);
+  }, [initialTags]);
+
+  const dismissToast = useCallback(() => setToast(null), []);
+
+  function showToast(message: string, variant: 'success' | 'error' = 'success') {
+    setToast({ message, variant });
+  }
+
+  function handleAddSuccess(tag: GiftTag) {
+    setAddOpen(false);
+    setTags(prev => [...prev, tag]);
+    showToast('Tag added ✓');
     startTransition(() => router.refresh());
-  }, [router]);
+  }
+
+  function handleEditSuccess(updated: GiftTag) {
+    setEditTag(null);
+    setTags(prev => prev.map(t => t.id === updated.id ? updated : t));
+    showToast('Changes saved ✓');
+    startTransition(() => router.refresh());
+  }
 
   async function handleDelete(tagId: string) {
     setDeletingId(tagId);
-    setDeleteError(null);
+    setConfirmDeleteId(null);
+    // Optimistic remove
+    setTags(prev => prev.filter(t => t.id !== tagId));
     const result = await deleteTag(tagId, userId);
     setDeletingId(null);
     if (result.error) {
-      setDeleteError(result.error);
+      // Restore on failure
+      setTags(initialTags);
+      showToast(result.error, 'error');
     } else {
+      showToast('Tag removed');
       startTransition(() => router.refresh());
     }
   }
 
+  const customTags = tags.filter(t => !t.is_default);
+  const defaultTag = tags.find(t => t.is_default);
+
   return (
-    <main style={pageStyle}>
-      {/* Page header */}
-      <div style={{ marginBottom: 'var(--space-xl)' }}>
-        <h1 style={headingStyle}>Your gift tags</h1>
-        <p style={subtitleStyle}>
-          Supporters see these as quick-pick buttons on your gift page.
-        </p>
-      </div>
+    <>
+      <div style={pageStyle}>
+        {/* Header */}
+        <div style={{ marginBottom: '24px' }}>
+          <h1 style={headingStyle}>Gift tags</h1>
+          <p style={subtitleStyle}>
+            Supporters see these as quick-pick amounts on your gift page.
+          </p>
+        </div>
 
-      {/* Tags card */}
-      <div style={cardStyle}>
-        {/* Tag list */}
-        {tags.length === 0 ? (
-          <p style={emptyStyle}>No tags yet — add one below.</p>
-        ) : (
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {tags.map((tag, index) => (
-              <li key={tag.id} style={{
-                ...tagRowStyle,
-                borderBottom: index < tags.length - 1
-                  ? '1px solid var(--color-border)'
-                  : 'none',
-              }}>
-                {/* Left: badge + label + amount */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', minWidth: 0 }}>
-                  {tag.is_default && (
-                    <span style={systemBadgeStyle}>SYSTEM</span>
-                  )}
-                  <div style={{ minWidth: 0 }}>
-                    <p style={tagLabelStyle}>{tag.label}</p>
-                    <p style={tagAmountStyle}>{formatCurrency(tag.amount, currency)}</p>
-                  </div>
+        {/* Default tag */}
+        {defaultTag && (
+          <div style={cardStyle}>
+            <p style={sectionLabelStyle}>Default tag</p>
+            <div style={tagRowStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <span style={systemBadgeStyle}>SYSTEM</span>
+                <div style={{ minWidth: 0 }}>
+                  <p style={tagLabelStyle}>{defaultTag.label}</p>
+                  <p style={tagAmountStyle}>{formatCurrency(defaultTag.amount, currency)}</p>
                 </div>
+              </div>
+              <span style={lockedStyle}>Cannot be edited</span>
+            </div>
+          </div>
+        )}
 
-                {/* Right: remove button (custom tags only — Section 4.2) */}
-                {!tag.is_default && (
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(tag.id)}
-                    disabled={deletingId === tag.id}
+        {/* Custom tags */}
+        <div style={{ ...cardStyle, marginTop: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: customTags.length > 0 ? '4px' : '0' }}>
+            <p style={sectionLabelStyle}>Your tags</p>
+            <button type="button" onClick={() => setAddOpen(true)} style={addBtnStyle}>
+              + Add tag
+            </button>
+          </div>
+
+          {customTags.length === 0 ? (
+            <p style={emptyStyle}>
+              No custom tags yet.{' '}
+              <button type="button" onClick={() => setAddOpen(true)} style={emptyLinkStyle}>
+                Add one
+              </button>{' '}
+              to give supporters quick amounts to choose from.
+            </p>
+          ) : (
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {customTags.map((tag, i) => {
+                const isLast = i === customTags.length - 1;
+                const isDeleting = deletingId === tag.id;
+                const isConfirming = confirmDeleteId === tag.id;
+
+                return (
+                  <li
+                    key={tag.id}
                     style={{
-                      ...removeButtonStyle,
-                      opacity: deletingId === tag.id ? 0.5 : 1,
-                      cursor: deletingId === tag.id ? 'not-allowed' : 'pointer',
+                      ...tagRowStyle,
+                      borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
+                      opacity: isDeleting ? 0.4 : 1,
+                      transition: 'opacity 0.2s ease',
                     }}
                   >
-                    {deletingId === tag.id ? 'Removing…' : 'Remove'}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+                    {/* Left */}
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={tagLabelStyle}>{tag.label}</p>
+                      <p style={tagAmountStyle}>{formatCurrency(tag.amount, currency)}</p>
+                    </div>
 
-        {/* Delete error */}
-        {deleteError && (
-          <p style={{ ...errorBoxStyle, marginTop: 'var(--space-md)' }} role="alert">
-            {deleteError}
-          </p>
-        )}
-
-        {/* Divider */}
-        <div style={{
-          borderTop: '1px solid var(--color-border)',
-          marginTop: tags.length > 0 ? 'var(--space-md)' : 0,
-          paddingTop: 'var(--space-md)',
-        }} />
-
-        {/* Inline add form OR add button */}
-        {showForm ? (
-          <TagAddForm
-            userId={userId}
-            currency={currency}
-            onSuccess={handleCreateSuccess}
-            onCancel={() => setShowForm(false)}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowForm(true)}
-            style={addButtonStyle}
-          >
-            + Add a new tag
-          </button>
-        )}
+                    {/* Right: actions */}
+                    {isConfirming ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        <span style={confirmTextStyle}>Remove?</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(tag.id)}
+                          style={confirmYesStyle}
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          style={confirmNoStyle}
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={() => setEditTag(tag)}
+                          disabled={isDeleting}
+                          style={editBtnStyle}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(tag.id)}
+                          disabled={isDeleting}
+                          style={deleteBtnStyle}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </div>
-    </main>
+
+      {/* Modals */}
+      {addOpen && (
+        <AddTagModal
+          userId={userId}
+          currency={currency}
+          onClose={() => setAddOpen(false)}
+          onSuccess={handleAddSuccess}
+        />
+      )}
+      {editTag && (
+        <EditTagModal
+          tag={editTag}
+          userId={userId}
+          currency={currency}
+          onClose={() => setEditTag(null)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          variant={toast.variant}
+          onDismiss={dismissToast}
+        />
+      )}
+    </>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const pageStyle: React.CSSProperties = {
-  maxWidth: '900px',
-  margin: '0 auto',
-  padding: '40px 0',
+  padding: '24px 0 0',
 };
 
 const headingStyle: React.CSSProperties = {
   fontFamily: 'var(--font-display)',
   fontWeight: 500,
-  fontSize: '28px',
+  fontSize: '24px',
   color: 'var(--color-text-primary)',
-  marginBottom: 'var(--space-xs)',
+  margin: '0 0 4px',
 };
 
 const subtitleStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: '14px',
-  lineHeight: 1.65,
   color: 'var(--color-text-secondary)',
+  margin: 0,
+  lineHeight: 1.5,
 };
 
 const cardStyle: React.CSSProperties = {
@@ -241,15 +246,25 @@ const cardStyle: React.CSSProperties = {
   borderRadius: 'var(--radius-lg)',
   border: '1px solid var(--color-border)',
   boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-xl)',
+  padding: '20px',
+};
+
+const sectionLabelStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: '11px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: 'var(--color-text-faint)',
+  margin: '0 0 12px',
 };
 
 const tagRowStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 'var(--space-md)',
-  padding: 'var(--space-md) 0',
+  gap: '12px',
+  padding: '12px 0',
 };
 
 const systemBadgeStyle: React.CSSProperties = {
@@ -257,7 +272,6 @@ const systemBadgeStyle: React.CSSProperties = {
   fontWeight: 700,
   fontSize: '10px',
   letterSpacing: '0.08em',
-  textTransform: 'uppercase',
   color: 'var(--color-accent)',
   background: 'var(--color-accent-soft)',
   borderRadius: 'var(--radius-full)',
@@ -285,71 +299,102 @@ const tagAmountStyle: React.CSSProperties = {
   margin: '2px 0 0',
 };
 
-const removeButtonStyle: React.CSSProperties = {
+const lockedStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: '13px',
-  color: 'var(--color-danger)',
-  background: 'none',
-  border: 'none',
-  padding: '10px var(--space-sm)',
-  minHeight: '44px',
-  display: 'inline-flex',
-  alignItems: 'center',
-  borderRadius: 'var(--radius-sm)',
-  transition: 'background 0.15s ease',
+  fontSize: '12px',
+  color: 'var(--color-text-faint)',
   flexShrink: 0,
 };
 
-const addButtonStyle: React.CSSProperties = {
+const addBtnStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 600,
-  fontSize: '14px',
+  fontSize: '13px',
   color: 'var(--color-accent)',
   background: 'none',
   border: 'none',
-  padding: '10px 0',
-  minHeight: '44px',
-  display: 'inline-flex',
-  alignItems: 'center',
+  padding: '4px 0',
   cursor: 'pointer',
-  textAlign: 'left',
-  transition: 'opacity 0.15s ease',
-};
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: '11px',
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-  color: 'var(--color-text-faint)',
-  marginBottom: 'var(--space-xs)',
-};
-
-const fieldErrorStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '12px',
-  color: 'var(--color-danger)',
-  marginTop: 'var(--space-xs)',
-};
-
-const errorBoxStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '13px',
-  color: 'var(--color-danger)',
-  background: 'var(--color-danger-soft)',
-  borderRadius: 'var(--radius-sm)',
-  padding: '10px var(--space-md)',
-  margin: 0,
+  flexShrink: 0,
 };
 
 const emptyStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: '14px',
   color: 'var(--color-text-muted)',
-  textAlign: 'center',
-  padding: 'var(--space-lg) 0',
-  margin: 0,
+  margin: '4px 0 0',
+  lineHeight: 1.6,
+};
+
+const emptyLinkStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: '14px',
+  color: 'var(--color-accent)',
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  textDecoration: 'underline',
+};
+
+const editBtnStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: '13px',
+  color: 'var(--color-text-secondary)',
+  background: 'none',
+  border: 'none',
+  padding: '8px 10px',
+  minHeight: '40px',
+  cursor: 'pointer',
+  borderRadius: 'var(--radius-sm)',
+  transition: 'background 0.1s ease',
+};
+
+const deleteBtnStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: '13px',
+  color: 'var(--color-danger)',
+  background: 'none',
+  border: 'none',
+  padding: '8px 10px',
+  minHeight: '40px',
+  cursor: 'pointer',
+  borderRadius: 'var(--radius-sm)',
+  transition: 'background 0.1s ease',
+};
+
+const confirmTextStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: '13px',
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+};
+
+const confirmYesStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: '13px',
+  color: '#fff',
+  background: 'var(--color-danger)',
+  border: 'none',
+  borderRadius: 'var(--radius-sm)',
+  padding: '6px 12px',
+  cursor: 'pointer',
+  minHeight: '32px',
+};
+
+const confirmNoStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: '13px',
+  color: 'var(--color-text-secondary)',
+  background: 'transparent',
+  border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-sm)',
+  padding: '6px 12px',
+  cursor: 'pointer',
+  minHeight: '32px',
 };

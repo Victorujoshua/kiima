@@ -84,6 +84,70 @@ export async function createTag(
   return { success: true, tag: data as GiftTag };
 }
 
+// ─── Update tag ────────────────────────────────────────────────────────────
+// Updates label and amount on a custom tag. Section 4.2: default tag cannot
+// be edited — ever. Verifies ownership and is_default before touching the DB.
+
+export interface UpdateTagState {
+  error?: string;
+  fieldErrors?: Partial<Record<'label' | 'amount', string>>;
+  success?: boolean;
+  tag?: GiftTag;
+}
+
+export async function updateTag(
+  _prevState: UpdateTagState | null,
+  formData: FormData
+): Promise<UpdateTagState> {
+  const tagId     = (formData.get('tag_id')  as string | null)?.trim() ?? '';
+  const userId    = (formData.get('user_id') as string | null)?.trim() ?? '';
+  const label     = (formData.get('label')   as string | null)?.trim() ?? '';
+  const rawAmount = (formData.get('amount')  as string | null)?.trim() ?? '';
+
+  const fieldErrors: NonNullable<UpdateTagState['fieldErrors']> = {};
+
+  if (!label) {
+    fieldErrors.label = 'Please enter a label for this tag.';
+  } else if (label.length > 60) {
+    fieldErrors.label = 'Label must be 60 characters or fewer.';
+  }
+
+  const amount = Number(rawAmount);
+  if (!rawAmount || isNaN(amount) || amount <= 0) {
+    fieldErrors.amount = 'Please enter a valid amount greater than 0.';
+  }
+
+  if (Object.keys(fieldErrors).length > 0) return { fieldErrors };
+  if (!tagId || !userId) return { error: 'Something went wrong — try again.' };
+
+  const supabase = createClient();
+
+  const { data: existing, error: fetchError } = await supabase
+    .from('gift_tags')
+    .select('id, user_id, is_default')
+    .eq('id', tagId)
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError || !existing) return { error: 'Tag not found.' };
+  if (existing.is_default) return { error: 'The default tag cannot be edited.' };
+
+  const { data, error } = await supabase
+    .from('gift_tags')
+    .update({ label, amount })
+    .eq('id', tagId)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[updateTag] update error:', { message: error.message, code: error.code });
+    return { error: 'Something went wrong — try again.' };
+  }
+
+  return { success: true, tag: data as GiftTag };
+}
+
 // ─── Delete tag ────────────────────────────────────────────────────────────
 // Deletes a custom tag. Section 4.2: the default tag MUST NEVER be deleted.
 // This function checks is_default before touching the database, and returns

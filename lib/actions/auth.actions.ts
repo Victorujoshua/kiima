@@ -186,6 +186,46 @@ export async function forgotPasswordAction(
   return { success: true };
 }
 
+// ─── Update Profile ────────────────────────────────────────────────────────
+
+export interface UpdateProfileState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function updateProfile(
+  _prevState: UpdateProfileState | null,
+  formData: FormData
+): Promise<UpdateProfileState> {
+  const userId       = (formData.get('user_id')     as string | null)?.trim() ?? '';
+  const display_name = (formData.get('display_name') as string | null)?.trim() ?? '';
+  const bio          = (formData.get('bio')          as string | null)?.trim() ?? '';
+  const avatar_url   = (formData.get('avatar_url')   as string | null)?.trim() || null;
+
+  if (!display_name) return { error: 'Display name cannot be empty.' };
+  if (!userId)       return { error: 'Something went wrong — try again.' };
+
+  const supabase = createClient();
+
+  const updates: Record<string, unknown> = {
+    display_name,
+    bio: bio || null,
+    ...(avatar_url ? { avatar_url } : {}),
+  };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId);
+
+  if (error) {
+    console.error('[updateProfile] update error:', error.message);
+    return { error: 'Something went wrong — try again.' };
+  }
+
+  return { success: true };
+}
+
 // ─── Reset Password ────────────────────────────────────────────────────────
 
 export interface ResetPasswordState {

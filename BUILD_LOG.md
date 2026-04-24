@@ -962,3 +962,40 @@ PASSED clean — `npx tsc --noEmit` with no errors.
 - Webhook testing requires ngrok on localhost
 - gift@kiima.co placeholder email — suppress before public launch
 - contributePool stub in pool.actions.ts is dead code
+
+---
+
+## Session 11 — 2026-04-24
+
+### What was built
+**Part 1 (previous session):** BottomNav "Links" tab → "Tags" tab, pointing to `/dashboard/tags`.
+
+**Part 2 — Full Tags page rewrite:**
+- `lib/actions/tag.actions.ts` — added `updateTag` (validates ownership + not-default, updates label + amount)
+- `components/dashboard/Toast.tsx` — fixed bottom-center toast, auto-dismiss 3s, success/error variants, slide-up animation
+- `components/dashboard/AddTagModal.tsx` — bottom-sheet modal with `createTag` server action, field validation, close on backdrop click
+- `components/dashboard/EditTagModal.tsx` — same sheet pattern, pre-filled with existing tag values, calls `updateTag`
+- `app/dashboard/tags/TagsClient.tsx` — full rewrite: system tag in dedicated card (locked/cannot edit), custom tags with Edit + inline remove confirmation (no accidental one-click deletes), optimistic local state, toast on all mutations
+- `app/globals.css` — added `@keyframes slide-up` and `@keyframes fade-in` for modal animations
+
+**Part 3 — Settings page rewrite:**
+- `lib/actions/auth.actions.ts` — added `updateProfile(userId, display_name, bio, avatar_url?)` server action
+- `app/dashboard/settings/SettingsClient.tsx` — new client component: 72px avatar circle (click to upload via Supabase Storage), display name + bio form with `updateProfile`, `SocialLinksForm` reused for social links section, email display (read-only), logout button with danger colour
+- `app/dashboard/settings/page.tsx` — rewritten to fetch full profile + social links, render `SettingsClient`
+
+### TypeScript
+PASSED clean — `npx tsc --noEmit` with no errors.
+
+### What to build next
+- Remove unused `DashboardNav.tsx` + stale CSS classes (`.k-nav-link`, `.k-dash-sidebar`) from globals.css
+- Dashboard home loading skeleton for the new layout
+- Suspense boundaries around dashboard components
+- `/dashboard/links` page still exists separately — decide if it should be removed now that social links live in Settings
+
+### Open issues
+- increment_pool_raised RPC not yet deployed to Supabase
+- og-default.png not yet created
+- Webhook testing requires ngrok on localhost
+- gift@kiima.co placeholder email — suppress before public launch
+- contributePool stub in pool.actions.ts is dead code
+- Avatar hover overlay requires CSS :hover — currently opacity is always 0 in SettingsClient (inline style limitation); add onMouseEnter/Leave handler to show the "Edit" label on hover
