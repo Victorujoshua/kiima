@@ -216,7 +216,7 @@ These rules are non-negotiable. They come from the product spec. Never work arou
 
 ### 4.2 Gift Tags
 
-- The system-default tag `"Buy me a coffee ☕"` always exists for every creator
+- The system-default tag `"Buy me a drink 🥤"` always exists for every creator
 - Default tag amount: ₦2,000 (or currency equivalent — creator cannot change this)
 - The default tag **cannot be edited or deleted** — ever
 - Creators can add unlimited custom tags, each with:
@@ -249,7 +249,7 @@ Rule 4: The UI must always show the user how they'll appear:
 ### 4.4 Support Pools
 
 - Any creator can create a support pool with: title, optional description, target amount
-- Pool URL: `kiima.co/{username}/pool/{pool-slug}`
+- Pool URL: `kiima.app/{username}/pool/{pool-slug}`
 - Pool states: `open` | `closed`
 - Only the creator can close a pool
 - When a pool is closed: show "This support pool is closed" banner; disable inputs/CTA; keep history, progress bar, and totals visible
@@ -262,7 +262,7 @@ Always render exactly as:
 ```
 "{DisplayName} sent {CurrencySymbol}{Amount}"       → Victor sent ₦5,000
 "Anonymous sent {CurrencySymbol}{Amount}"           → Anonymous sent ₦2,000
-"Anonymous bought a coffee ☕"                       → when default tag + anonymous
+"Anonymous bought a drink 🥤"                        → when default tag + anonymous
 ```
 
 Latest contributions always appear first (descending by created_at).
@@ -368,7 +368,7 @@ gift_tags (
   user_id     uuid REFERENCES profiles(id) ON DELETE CASCADE,
   label       text NOT NULL,
   amount      numeric NOT NULL,
-  is_default  boolean DEFAULT false,   -- true = system "Buy me a coffee" tag
+  is_default  boolean DEFAULT false,   -- true = system "Buy me a drink 🥤" tag
   created_at  timestamptz DEFAULT now()
 )
 
@@ -637,8 +637,7 @@ Keep this updated as components are built. Before building any new component, ch
 | Component | File | Key Props |
 |---|---|---|
 | `BottomNav` | `dashboard/BottomNav.tsx` | Fixed 4-tab nav: Home / Pools / Tags / Settings |
-| `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `avatarUrl, displayName, username` — avatar + native share |
-| `LinkBar` | `dashboard/LinkBar.tsx` | `username` — shows kiima.co/username + clipboard copy |
+| `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar top-left (UserCircle fallback), share icon top-right, name + inline copy link below; no card/border |
 | `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |
 | `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
 | `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency` — last 5 with avatar, tag, relative time, amounts |
@@ -704,6 +703,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `supabase/migrations/005_social_links.sql` | CREATE social_links table with RLS |
 | `supabase/migrations/006_contributions_fee_columns.sql` | ADD fee + net_amount to contributions (idempotent) |
 | `supabase/migrations/007_payment_refactor.sql` | Rename fee columns; ADD paystack_fee, total_charged, platform_fee_percent |
+| `supabase/migrations/008_update_default_tag.sql` | UPDATE all existing default tags to "Buy me a drink 🥤" |
 
 ---
 
@@ -757,7 +757,7 @@ resolveDisplayName(null, true)       // → "Anonymous" (all anonymous cases →
 
 ### `formatContributionLine(contribution)`
 ```typescript
-// Produces: "Victor sent ₦5,000" or "Anonymous bought a coffee ☕"
+// Produces: "Victor sent ₦5,000" or "Anonymous bought a drink 🥤"
 // Uses gift_amount for the display value — not total_charged.
 // Always use this. Never format contributions inline.
 ```
@@ -818,7 +818,7 @@ PAYSTACK_SECRET_KEY=              # use test key until go-live
 PAYSTACK_WEBHOOK_SECRET=          # webhook signature verification
 
 # App
-NEXT_PUBLIC_APP_URL=              # https://kiima.co (or localhost)
+NEXT_PUBLIC_APP_URL=              # https://kiima.app (or localhost)
 ```
 
 ---

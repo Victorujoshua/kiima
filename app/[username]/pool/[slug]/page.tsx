@@ -8,7 +8,7 @@ import ContributeForm from '@/components/forms/ContributeForm';
 import { formatCurrency } from '@/lib/utils/currency';
 import type { Contribution, Currency, SupportPool } from '@/types';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.co';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
 
 export async function generateMetadata({ params }: { params: { username: string; slug: string } }): Promise<Metadata> {
   const supabase = createClient();

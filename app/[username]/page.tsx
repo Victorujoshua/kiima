@@ -7,7 +7,7 @@ import { getSocialLinks } from '@/lib/actions/link.actions';
 import GiftPageClient from '@/components/pages/GiftPageClient';
 import type { Profile, Currency, SocialLink, GiftTag, Contribution } from '@/types';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.co';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
 
 export async function generateMetadata({ params }: { params: { username: string } }): Promise<Metadata> {
   const supabase = createClient();

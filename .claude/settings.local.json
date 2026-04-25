@@ -7,7 +7,29 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(curl *)",
+      "PowerShell(npm install *)",
+      "PowerShell(ls node_modules | Where-Object { $_.Name -match 'puppeteer|playwright|screenshot' } | Select-Object Name)",
+      "PowerShell(npx tsc --noEmit 2>&1 | Select-Object -First 30)",
+      "PowerShell(npm run *)",
+      "PowerShell(Start-Sleep -Seconds 8; \\(Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 5\\).StatusCode)",
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoProfile -Command `\"cd 'C:\\\\Users\\\\HomePC\\\\Desktop\\\\kiima'; npm run dev`\"\" -WindowStyle Hidden)",
+      "PowerShell(Start-Sleep -Seconds 12; \\(Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 5\\).StatusCode)",
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "PowerShell(ls scripts *)",
+      "PowerShell(node scripts/screenshot.js)",
+      "Bash(node scripts/screenshot.js)",
+      "PowerShell(node scripts/screenshot.js 2>&1 | Select-Object -Last 10)",
+      "PowerShell(node scripts/screenshot.js 2>&1 | Select-Object -Last 5)",
+      "PowerShell(git *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\HomePC\\\\Desktop\\\\kiima\\\\CLAUDE.md\" -Raw)",
+      "Bash(Measure-Object -Character)",
+      "Bash(Select-Object -ExpandProperty Characters)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(node scripts/screenshot.js 2>&1 | Select-Object -First 40)",
+      "PowerShell(node scripts/screenshot.js 2>&1 | Select-Object -First 20)",
+      "PowerShell(node scripts/screenshot.js 2>&1)"
     ]
   }
 }

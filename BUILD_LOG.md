@@ -44,7 +44,7 @@ Open issues:
     (webhook falls back to read-modify-write — safe for V1)
   - og-default.png not yet created — needed as fallback og:image on gift link pages
   - All migrations (001–007) must be run on live Supabase before payment testing
-  - gift@kiima.co placeholder email in gift.actions.ts — redirect before public launch
+  - gift@kiima.app placeholder email in gift.actions.ts — redirect before public launch
   - Bank details / subaccount_code — V2+ feature (Section 10)
   - Webhook testing requires ngrok or deployed URL (localhost not reachable by Paystack)
 
@@ -328,7 +328,7 @@ Previous session: Phase 7.6 — End-to-end live testing audit
       loginAction: signs in with Supabase, returns success or error state
     Both return state objects (no redirect() — client handles navigation)
   - app/(auth)/signup/page.tsx: 'use client' — useFormState(signupAction),
-    controlled username input (live kiima.co/username preview, auto-strips invalid
+    controlled username input (live kiima.app/username preview, auto-strips invalid
     chars), currency pill selector (NGN default), per-field inline error display,
     email confirmation screen, redirects to /dashboard on immediate session
   - app/(auth)/login/page.tsx: 'use client' — useFormState(loginAction),
@@ -468,8 +468,8 @@ Previous session: Phase 7.6 — End-to-end live testing audit
       • Display name — Fraunces 500 26px
       • @username — body 14px muted
       • Bio — body 14px line-height 1.65, conditional render if bio exists
-      • Copy-link pill bar: shows "kiima.co/{username}" + "Copy link" / "Copied!" label;
-        writes "https://kiima.co/{username}" to clipboard; resets after 2s
+      • Copy-link pill bar: shows "kiima.app/{username}" + "Copy link" / "Copied!" label;
+        writes "https://kiima.app/{username}" to clipboard; resets after 2s
   - components/cards/GiftActionCard.tsx — implemented ('use client'):
       • "Send a gift" heading; renders all tags as GiftTagPill components
       • When tag selected: CurrencyInput filled with tag.amount, readOnly=true,
@@ -580,7 +580,7 @@ Previous session: Phase 7.6 — End-to-end live testing audit
       • Calls initializePaystackTransaction with reference, callbackUrl, metadata
       • redirect(authorizationUrl) — re-throws isRedirectError so Next.js handles it
       • On Paystack failure: deletes the pending row, returns { error: '...' }
-      • Email placeholder: 'gift@kiima.co' (gifter email not collected in V1)
+      • Email placeholder: 'gift@kiima.app' (gifter email not collected in V1)
       • callbackUrl: {NEXT_PUBLIC_APP_URL}/{username}?gift=success
   - components/forms/GiftForm.tsx — updated:
       • Imports initializeGift instead of submitGiftAction
@@ -809,7 +809,7 @@ Previous session: Phase 7.6 — End-to-end live testing audit
 - og-default.png not yet created — needed as fallback og:image on gift link pages.
 - Migrations 001–007 all confirmed applied to live DB.
 - Webhook testing requires ngrok on localhost (already confirmed working from live DB evidence).
-- gift@kiima.co placeholder email — suppress/redirect before public launch.
+- gift@kiima.app placeholder email — suppress/redirect before public launch.
 - contributePool stub in pool.actions.ts is dead code (ContributeForm uses initializeGift since Phase 5.3).
 
 ---
@@ -847,7 +847,7 @@ No code changes — CLAUDE.md only.
 - og-default.png not yet created — needed as fallback og:image on gift link pages.
 - Migrations 001–007 all confirmed applied to live DB.
 - Webhook testing requires ngrok on localhost.
-- gift@kiima.co placeholder email — suppress/redirect before public launch.
+- gift@kiima.app placeholder email — suppress/redirect before public launch.
 - contributePool stub in pool.actions.ts is dead code.
 
 ---
@@ -888,7 +888,7 @@ Full redesign of the creator public gift page. Replaced the two-column ProfileCa
 - increment_pool_raised RPC not yet deployed to Supabase
 - og-default.png not yet created
 - Webhook testing requires ngrok on localhost
-- gift@kiima.co placeholder email — suppress before public launch
+- gift@kiima.app placeholder email — suppress before public launch
 - contributePool stub in pool.actions.ts is dead code
 
 ---
@@ -902,7 +902,7 @@ Full redesign of `app/dashboard/page.tsx` to a mobile-first, mobile-app-style la
 ### New files
 - `components/dashboard/BottomNav.tsx` — fixed 4-tab bottom nav: Home / Pools / Links / Settings. Uses lucide-react icons. Replaces old `DashboardNav variant="tabs"`.
 - `components/dashboard/DashboardHeader.tsx` — avatar circle (image or initials) on left, native share button (navigator.share + clipboard fallback) on right. No title text.
-- `components/dashboard/LinkBar.tsx` — `kiima.co/{username}` in terracotta text + Copy icon button with 2s "Copied ✓" state.
+- `components/dashboard/LinkBar.tsx` — `kiima.app/{username}` in terracotta text + Copy icon button with 2s "Copied ✓" state.
 - `components/dashboard/GiftTagsRow.tsx` — horizontally scrollable tag pills. Default tag is filled terracotta (no delete). Custom tags have an X button to delete. "+ Add gift tag" dashed pill opens a bottom-sheet modal (full-width, slides up) with label + amount inputs and createTag server action. Uses useTransition + router.refresh() to update without full reload.
 - `components/dashboard/StatCards.tsx` — 3-column equal-width stat grid: Gifts received / Pool support / Total earned. Fraunces font for values.
 - `components/dashboard/RecentGifts.tsx` — last 5 confirmed contributions. Each row: 38px avatar (🥤 emoji if anonymous, initials otherwise, soft rotating bg colours), name + tag label + relative time, gift amount + creator amount. "See all →" links to /dashboard/transactions. Empty state with 🥤 emoji and share prompt.
@@ -960,7 +960,7 @@ PASSED clean — `npx tsc --noEmit` with no errors.
 - increment_pool_raised RPC not yet deployed to Supabase
 - og-default.png not yet created
 - Webhook testing requires ngrok on localhost
-- gift@kiima.co placeholder email — suppress before public launch
+- gift@kiima.app placeholder email — suppress before public launch
 - contributePool stub in pool.actions.ts is dead code
 
 ---
@@ -996,6 +996,88 @@ PASSED clean — `npx tsc --noEmit` with no errors.
 - increment_pool_raised RPC not yet deployed to Supabase
 - og-default.png not yet created
 - Webhook testing requires ngrok on localhost
-- gift@kiima.co placeholder email — suppress before public launch
+- gift@kiima.app placeholder email — suppress before public launch
 - contributePool stub in pool.actions.ts is dead code
 - Avatar hover overlay requires CSS :hover — currently opacity is always 0 in SettingsClient (inline style limitation); add onMouseEnter/Leave handler to show the "Edit" label on hover
+
+---
+
+## Session 12 — 2026-04-25
+
+### What was built
+
+**Change 1 — Default tag label: "Buy me a coffee ☕" → "Buy me a drink 🥤"**
+- `supabase/migrations/008_update_default_tag.sql` — created; run in Supabase SQL Editor to update all existing default tags in production
+- `supabase/migrations/002_default_tag_trigger.sql` — updated trigger so all new signups get "Buy me a drink 🥤"
+- `CLAUDE.md` Sections 4.2, 4.5, 9, schema comment — all updated
+- `app/page.tsx` — two occurrences updated (FAQ answer + feature description)
+- `lib/actions/auth.actions.ts` — comment updated
+- `lib/utils/slug.ts` — comment example updated
+- `app/admin/settings/SettingsForm.tsx` — heading updated
+
+**Change 2 — DashboardHeader redesign**
+- `components/dashboard/DashboardHeader.tsx` — full rewrite: 56px avatar top-left (UserCircle grey fallback if no photo), Share2 icon top-right (24px, navigator.share with clipboard fallback), display name 24px/700 weight left-aligned 16px below avatar, kiima.app/username + Copy icon (16px) on same line with "Copied!" inline tooltip for 2s, no card/border/shadow — sits on var(--color-bg) directly
+- `app/dashboard/page.tsx` — removed LinkBar import and usage; link is now embedded in DashboardHeader
+
+### TypeScript
+PASSED clean — `npx tsc --noEmit` with no errors.
+
+### What to build next
+- Remove unused `DashboardNav.tsx` + stale CSS classes from globals.css
+- Remove or redirect `/dashboard/links` page (social links now in Settings)
+- Dashboard home loading skeleton for the new layout
+
+### Open issues
+- increment_pool_raised RPC not yet deployed to Supabase
+- og-default.png not yet created
+- Webhook testing requires ngrok on localhost
+- gift@kiima.app placeholder email — suppress before public launch
+- contributePool stub in pool.actions.ts is dead code
+- Avatar hover overlay in SettingsClient — add onMouseEnter/Leave to show "Edit" label
+- Dashboard header/tags can't be screenshotted (auth-gated) — verify manually in browser
+- Migration 008 must be run manually in Supabase SQL Editor — not auto-applied
+
+---
+
+## Session 13 — 2026-04-25
+
+### What was built
+Domain rename: `kiima.co` → `kiima.app` across the entire codebase.
+
+Files updated:
+- `app/[username]/page.tsx` — fallback APP_URL
+- `app/[username]/pool/[slug]/page.tsx` — fallback APP_URL
+- `app/page.tsx` — 5 occurrences (FAQ copy, steps copy, CTA copy, contact email, browser mockup)
+- `app/(auth)/signup/page.tsx` — username preview display
+- `app/dashboard/pools/page.tsx` — fallback APP_URL + display URL
+- `lib/actions/gift.actions.ts` — placeholder email `gift@kiima.app`
+- `components/pages/GiftPageClient.tsx` — footer "Powered by Kiima" href
+- `components/dashboard/DashboardHeader.tsx` — fallback APP_URL + displayLink
+- `components/dashboard/LinkBar.tsx` — fallback APP_URL + display text
+- `components/cards/ProfileCard.tsx` — linkDisplay text
+- `CLAUDE.md` — Section 4.4 pool URL, Section 11 env var comment
+- `BUILD_LOG.md` — all historical `kiima.co` references
+- `.env.example` — created (did not exist); `NEXT_PUBLIC_APP_URL=https://kiima.app`
+
+Not changed (no `kiima.co` references):
+- `middleware.ts` — clean
+- `next.config.mjs` — empty config, no image domains
+
+Final grep: `kiima.co` → **0 results** across all .ts, .tsx, .js, .json, .md files.
+
+### TypeScript
+Not run — no logic or type changes, only string literals.
+
+### What to build next
+- Remove unused `DashboardNav.tsx` + stale CSS from globals.css
+- Remove or redirect `/dashboard/links` page
+- Dashboard home loading skeleton
+
+### Open issues
+- increment_pool_raised RPC not yet deployed to Supabase
+- og-default.png not yet created
+- Webhook testing requires ngrok on localhost
+- gift@kiima.app placeholder email — suppress before public launch
+- contributePool stub in pool.actions.ts is dead code
+- Avatar hover overlay in SettingsClient — add onMouseEnter/Leave
+- Migration 008 must be run manually in Supabase SQL Editor

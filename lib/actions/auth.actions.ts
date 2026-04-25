@@ -111,7 +111,7 @@ export async function signupAction(
     return { error: 'Something went wrong — try again.' };
   }
 
-  // Default "Buy me a coffee ☕" tag is inserted automatically by the
+  // Default "Buy me a drink 🥤" tag is inserted automatically by the
   // on_profile_created_insert_default_tag database trigger (migration 002).
 
   // If Supabase email confirmation is enabled, there is no session yet.

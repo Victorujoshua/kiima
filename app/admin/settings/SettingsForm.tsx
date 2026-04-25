@@ -97,7 +97,7 @@ export default function SettingsForm({ settings }: Props) {
             margin: '0 0 4px',
           }}
         >
-          Default "Buy me a coffee" tag amounts
+          Default "Buy me a drink 🥤" tag amounts
         </h2>
         <p
           style={{

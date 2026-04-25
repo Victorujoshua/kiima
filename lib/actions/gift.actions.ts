@@ -102,7 +102,7 @@ export async function initializeGift(
   try {
     // Charge total_charged (includes Paystack processing fee paid by gifter)
     const { authorizationUrl } = await initializePaystackTransaction({
-      email:       'gift@kiima.co',
+      email:       'gift@kiima.app',
       amount:      fees.total_charged,
       currency:    profile.currency,
       reference,

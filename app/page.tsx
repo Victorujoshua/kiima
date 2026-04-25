@@ -7,11 +7,11 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const faqs = [
-    { q: 'Do I need a website to use Kiima?', a: 'No. Kiima gives you a personal page at kiima.co/yourname. Share it in your Instagram bio, TikTok, YouTube description, or anywhere your audience finds you.' },
+    { q: 'Do I need a website to use Kiima?', a: 'No. Kiima gives you a personal page at kiima.app/yourname. Share it in your Instagram bio, TikTok, YouTube description, or anywhere your audience finds you.' },
     { q: 'How do I receive my money?', a: 'Funds settle directly to your Nigerian bank account via Paystack. No wallets, no waiting around — money goes straight to you.' },
     { q: 'How much does Kiima cost?', a: 'Kiima is completely free to use. We only take a small 3% platform fee when a gift is successfully sent — so we only earn when you do.' },
     { q: 'What is a Support Pool?', a: 'A Support Pool is a crowd-funded goal. Set a target amount, share your pool link, and let your community contribute together — perfect for projects, equipment, events, or emergencies.' },
-    { q: 'Can my supporters choose how much to give?', a: 'Yes. You can set Gift Tags as preset options (like "Buy me a coffee ☕ — ₦2,000") and supporters can also enter any custom amount they like.' },
+    { q: 'Can my supporters choose how much to give?', a: 'Yes. You can set Gift Tags as preset options (like "Buy me a drink 🥤 — ₦2,000") and supporters can also enter any custom amount they like.' },
     { q: 'Is Kiima only for Nigerian creators?', a: 'Kiima is optimised for Nigerian creators and currently supports NGN. USD, GBP, and EUR are also supported for international creators.' },
   ];
 
@@ -366,7 +366,7 @@ export default function LandingPage() {
 
             <div className="lp-how-grid">
               {[
-                { n: '01', title: 'Create your link', body: 'Sign up, choose your username, and your gift page is live at kiima.co/yourname instantly. No setup fees. No waiting.' },
+                { n: '01', title: 'Create your link', body: 'Sign up, choose your username, and your gift page is live at kiima.app/yourname instantly. No setup fees. No waiting.' },
                 { n: '02', title: 'Share it everywhere', body: 'Drop your Kiima link in your Instagram bio, TikTok, YouTube description, or anywhere your audience finds you.' },
                 { n: '03', title: 'Receive gifts', body: 'Your supporters send gifts directly to you. Funds settle to your Nigerian bank account via Paystack.' },
               ].map(step => (
@@ -400,7 +400,7 @@ export default function LandingPage() {
                     Your personal<br />gift link
                   </h2>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(255,255,255,0.82)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
-                    Get a beautiful page at <strong style={{ color: '#fff', fontWeight: 700 }}>kiima.co/yourname</strong>. Share it anywhere — Instagram bio, TikTok, WhatsApp — and start receiving gifts instantly. No setup fees, no waiting.
+                    Get a beautiful page at <strong style={{ color: '#fff', fontWeight: 700 }}>kiima.app/yourname</strong>. Share it anywhere — Instagram bio, TikTok, WhatsApp — and start receiving gifts instantly. No setup fees, no waiting.
                   </p>
                   <div className="lp-feat-btn-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <Link href="/signup" className="lp-btn lp-btn-white">Get your link free →</Link>
@@ -445,7 +445,7 @@ export default function LandingPage() {
                     Gift Tags that<br />make giving easy
                   </h2>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--color-text-secondary)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
-                    Set up preset gift options — "Buy me a coffee ☕", "Fund my next video 🎬", or whatever feels like you. Supporters pick a tag and send instantly, no awkward guessing.
+                    Set up preset gift options — "Buy me a drink 🥤", "Fund my next video 🎬", or whatever feels like you. Supporters pick a tag and send instantly, no awkward guessing.
                   </p>
                   <Link href="/signup" className="lp-btn lp-btn-dark">Add your tags →</Link>
                 </div>
@@ -529,7 +529,7 @@ export default function LandingPage() {
                   Questions?<br />We have answers.
                 </h2>
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--color-text-muted)', lineHeight: 1.65, margin: '0 0 24px' }}>
-                  Still have questions? Email us at <span style={{ color: 'var(--color-accent)' }}>hello@kiima.co</span>
+                  Still have questions? Email us at <span style={{ color: 'var(--color-accent)' }}>hello@kiima.app</span>
                 </p>
                 <Link href="/signup" className="lp-btn lp-btn-dark" style={{ fontSize: 14, padding: '11px 22px', minHeight: 44 }}>Get started →</Link>
               </div>
@@ -729,7 +729,7 @@ function GiftPageMockup() {
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#28C840' }} />
         </div>
         <div style={{ flex: 1, background: '#fff', borderRadius: 6, padding: '4px 10px', textAlign: 'center' }}>
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#888' }}>kiima.co/adeola</span>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#888' }}>kiima.app/adeola</span>
         </div>
       </div>
       <div style={{ padding: '20px 18px 22px', background: '#F6F3EE' }}>

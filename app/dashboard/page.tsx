@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTagsByUser } from '@/lib/actions/tag.actions';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import LinkBar from '@/components/dashboard/LinkBar';
 import GiftTagsRow from '@/components/dashboard/GiftTagsRow';
 import StatCards from '@/components/dashboard/StatCards';
 import RecentGifts from '@/components/dashboard/RecentGifts';
@@ -90,8 +89,6 @@ export default async function DashboardPage() {
         displayName={displayName}
         username={username}
       />
-
-      <LinkBar username={username} />
 
       <GiftTagsRow tags={tags} userId={userId} currency={currency} />
 

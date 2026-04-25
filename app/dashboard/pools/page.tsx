@@ -45,9 +45,9 @@ export default async function PoolsPage() {
       ) : (
         <div style={listStyle}>
           {pools.map((pool) => {
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.co';
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
             const poolUrl = `${appUrl}/${username}/pool/${pool.slug}`;
-            const poolUrlDisplay = `kiima.co/${username}/pool/${pool.slug}`;
+            const poolUrlDisplay = `kiima.app/${username}/pool/${pool.slug}`;
 
             return (
               <div key={pool.id} style={poolCardStyle}>

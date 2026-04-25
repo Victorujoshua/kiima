@@ -12,7 +12,7 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ profile, showLinkBar = false, links = [] }: ProfileCardProps) {
   const [copied, setCopied] = useState(false);
-  const linkDisplay = `kiima.co/${profile.username}`;
+  const linkDisplay = `kiima.app/${profile.username}`;
 
   async function handleCopy() {
     try {

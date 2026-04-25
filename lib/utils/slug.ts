@@ -2,7 +2,7 @@
  * generateSlug — converts a pool title to a URL-safe slug.
  *
  * "New Camera Fund"   → "new-camera-fund"
- * "Buy me a coffee ☕" → "buy-me-a-coffee"
+ * "Buy me a drink 🥤"  → "buy-me-a-drink"
  * "Tuition & Books!"  → "tuition-books"
  */
 export function generateSlug(title: string): string {

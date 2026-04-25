@@ -239,7 +239,7 @@ export default function GiftPageClient({
       <p style={footerStyle}>
         Powered by{' '}
         <a
-          href="https://kiima.co"
+          href="https://kiima.app"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--color-accent)', textDecoration: 'none', fontWeight: 600 }}

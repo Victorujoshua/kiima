@@ -179,7 +179,7 @@ export default function SignupPage() {
               >
                 Your link:{' '}
                 <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
-                  kiima.co/{username}
+                  kiima.app/{username}
                 </span>
               </p>
             )}

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Kiima — Default Gift Tag Trigger
 -- =============================================================================
--- Automatically inserts the "Buy me a coffee ☕" default tag whenever a new
+-- Automatically inserts the "Buy me a drink 🥤" default tag whenever a new
 -- profile row is inserted. Reads the correct default amount from
 -- platform_settings based on the creator's chosen currency so the amount
 -- stays in sync with whatever the admin has configured.
@@ -41,7 +41,7 @@ BEGIN
   END IF;
 
   INSERT INTO gift_tags (user_id, label, amount, is_default)
-  VALUES (NEW.id, 'Buy me a coffee ☕', v_amount, true);
+  VALUES (NEW.id, 'Buy me a drink 🥤', v_amount, true);
 
   RETURN NEW;
 END;

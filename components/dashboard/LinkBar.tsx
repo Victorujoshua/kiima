@@ -9,7 +9,7 @@ interface Props {
 
 export default function LinkBar({ username }: Props) {
   const [copied, setCopied] = useState(false);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.co';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
   const fullUrl = `${appUrl}/${username}`;
 
   async function handleCopy() {
@@ -24,7 +24,7 @@ export default function LinkBar({ username }: Props) {
 
   return (
     <div style={barStyle}>
-      <span style={urlStyle}>kiima.co/{username}</span>
+      <span style={urlStyle}>kiima.app/{username}</span>
       <button onClick={handleCopy} style={copyBtnStyle} aria-label="Copy link">
         {copied ? (
           <Check size={16} color="var(--color-success)" />
