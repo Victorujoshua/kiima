@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import BottomNav from '@/components/dashboard/BottomNav';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 
 export default async function DashboardLayout({
   children,
@@ -17,9 +18,15 @@ export default async function DashboardLayout({
 
   return (
     <div style={shellStyle}>
-      <main style={mainStyle}>
+      {/* Sidebar — hidden on mobile via CSS, shown on desktop */}
+      <DashboardSidebar />
+
+      {/* Main content — responsive via CSS class */}
+      <main className="k-dash-content">
         {children}
       </main>
+
+      {/* Bottom nav — hidden on desktop via CSS */}
       <BottomNav />
     </div>
   );
@@ -28,10 +35,5 @@ export default async function DashboardLayout({
 const shellStyle: React.CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-bg)',
-};
-
-const mainStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  padding: '20px 20px 80px',
+  display: 'flex',
 };

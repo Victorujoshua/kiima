@@ -14,7 +14,7 @@ const PLATFORM_COLOR: Record<SocialPlatform, string> = {
   twitter:   '#1DA1F2',
   youtube:   '#FF0000',
   linkedin:  '#0077B5',
-  website:   '#C87B5C', // matches --color-accent
+  website:   '#FF5C00', // matches --color-accent
 };
 
 // Inline SVG icons — one per platform

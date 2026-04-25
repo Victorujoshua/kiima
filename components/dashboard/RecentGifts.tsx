@@ -213,8 +213,8 @@ const amountColStyle: React.CSSProperties = {
 };
 
 const giftAmountStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
+  fontFamily: 'monospace',
+  fontWeight: 800,
   fontSize: '14px',
   color: 'var(--color-text-primary)',
 };

@@ -1081,3 +1081,184 @@ Not run — no logic or type changes, only string literals.
 - contributePool stub in pool.actions.ts is dead code
 - Avatar hover overlay in SettingsClient — add onMouseEnter/Leave
 - Migration 008 must be run manually in Supabase SQL Editor
+
+---
+
+## Session 14 — 2026-04-25
+
+### What was fixed
+**Copy link copying Vercel URL instead of kiima.app**
+
+Root cause: `NEXT_PUBLIC_APP_URL` was set to the Vercel deployment URL
+in Vercel's environment variables. Since NEXT_PUBLIC_* vars are baked
+into the bundle at build time, the Vercel value overrode the `?? 'https://kiima.app'`
+fallback in the code.
+
+The code in `DashboardHeader.tsx` and `LinkBar.tsx` was already correct
+(both use `process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app'`).
+No `window.location.origin` was found anywhere.
+
+Changes made:
+- `components/dashboard/DashboardHeader.tsx` — added warning comment above
+  appUrl construction pointing to Vercel env var requirement
+
+**Action required by Victor:**
+Go to Vercel Dashboard → kiima project → Settings → Environment Variables
+→ set `NEXT_PUBLIC_APP_URL=https://kiima.app` for Production environment
+→ redeploy (or trigger a new deployment) for the change to take effect
+
+### TypeScript
+No logic changes — comment only.
+
+### What to build next
+- Remove unused DashboardNav.tsx + stale CSS from globals.css
+- Remove or redirect /dashboard/links page
+- Dashboard home loading skeleton
+
+### Open issues
+- NEXT_PUBLIC_APP_URL must be corrected in Vercel env vars + redeploy
+- increment_pool_raised RPC not yet deployed to Supabase
+- og-default.png not yet created
+- Webhook testing requires ngrok on localhost
+- gift@kiima.app placeholder email — suppress before public launch
+- Avatar hover overlay in SettingsClient — add onMouseEnter/Leave
+- Migration 008 must be run manually in Supabase SQL Editor
+
+---
+
+## Session 13 — 2026-04-25 — Design System Sweep (Neobrutalist)
+
+### What was built
+Complete design system sweep across the Kiima codebase to implement the neobrutalist design language.
+
+**Foundation (Phase 1):**
+- `tailwind.config.ts` — added `kiima.black`, `kiima.white`, `kiima.olive`, `kiima.orange` colors; `sans` font family; `borderRadius.none`
+- `styles/tokens.css` — added `--kiima-*` CSS variables; set all `--radius-*` tokens to `0px`; updated `--font-display: var(--font-body)`; updated shadow tokens to neobrutalist hard-offset style (`4px 4px 0 0 #000000`)
+- `app/globals.css` — added `* { border-radius: 0px !important }` global reset; heartbeat animation for KiimaButton; typography scale (h1/h2/h3/p); updated all k-btn/k-tag-pill/k-currency-pill/k-input/k-nav-link CSS to use neobrutalist borders and olive/orange accents
+- `app/layout.tsx` — removed Fraunces import; updated Plus Jakarta Sans weights to 400/500/600/700/800
+- `components/shared/KiimaButton.tsx` — complete rewrite: 2-layer neobrutalist structure (wrapper + shadow span + face button); `light` and `dark` variants with olive/orange; backward-compat `ghost` and `danger` variants; heartbeat SVG; size variants `sm/md/lg/xl`
+
+**Page Sweep (Phase 2):**
+- `app/page.tsx` — replaced `lp-btn` CSS variants with neobrutalist hard-shadow style; updated proof-bar pills, pricing cards, testimonial cards to use `border: 2px solid #000; box-shadow: 4px 4px 0 0 #000`; updated how-it-works step numbers to olive/black; updated logo to `font-weight: 800`; updated h1/h2/h3 styles to `font-weight: 800` throughout
+- `components/dashboard/BottomNav.tsx` — border changed to `2px solid #000`; active color updated to black
+- `components/dashboard/DashboardHeader.tsx` — `var(--font-body)` → `var(--kiima-font)`
+- `components/dashboard/StatCards.tsx` — amount values now use `font-family: monospace; font-weight: 800`
+- `components/dashboard/RecentGifts.tsx` — gift amount column now uses `font-family: monospace; font-weight: 800`
+
+**Typography (Phase 3):**
+- Added `.k-amount` and `.k-label` utility classes to globals.css
+- Added global h1/h2/h3/p typography rules with `font-weight: 800`, clamped `font-size`, tight `letter-spacing`
+
+### What to build next
+- Visual QA pass — check all pages for broken layouts from border-radius reset
+- Avatar circles specifically: need `border-radius: 50% !important` exception or wrapper approach
+- Verify KiimaButton renders correctly at all sizes on auth pages, gift form, pool form
+- Consider adding neobrutalist borders to all card containers
+
+### Open issues (inherited)
+- NEXT_PUBLIC_APP_URL must be corrected in Vercel env vars + redeploy
+- increment_pool_raised RPC not yet deployed to Supabase
+- og-default.png not yet created
+- Avatar circles will be square due to `border-radius: 0px !important` — needs fix
+- k-spinner (loading animation) uses border-radius:50% — will be square (cosmetic bug)
+
+---
+
+## Session 15 — 2026-04-25 — Neobrutalist sweep follow-up + Phase 4 audit
+
+### What was fixed
+
+**Fixed black navbar (landing page):**
+- `app/page.tsx` — nav changed from `position: sticky` to `position: fixed, top:0, left:0, right:0, zIndex:100`
+- Background: `rgba(246,243,238,0.92)` → `#000000`
+- Logo text: warm text → `#ffffff` with olive dot
+- Nav links: new `.lp-nav-link` class (`rgba(255,255,255,0.72)`, hover `#ffffff`)
+- "Log in" link: `rgba(255,255,255,0.6)` white
+- "Get started →" CTA: new `.lp-btn-nav` class — olive bg, orange hard shadow, black text
+- Mobile nav: shows only CTA button (`.lp-nav-mobile .lp-btn-nav`)
+- Added `<div style={{ height: 68 }} />` spacer to prevent content overlap
+
+**Avatar circles + k-spinner fix:**
+- `app/globals.css` — removed `!important` from `* { border-radius: 0px }` global reset
+- Inline `borderRadius: '50%'` styles now win (higher CSS priority than `*` selector)
+- `.k-spinner { border-radius: 50% }` class also wins (higher specificity than `*`)
+- Both avatar circles and loading spinner are now correctly round
+
+### Phase 4 Audit Summary
+
+CONFIRMED WORKING:
+- Shadow tokens (`--shadow-card`, `--shadow-btn`) resolve to `4px 4px 0 0 #000` — 16 component files auto-updated
+- Font tokens: `--font-display: var(--font-body)` resolves to PJS — no components need changes
+- Border-radius tokens: all `--radius-*` are `0px` — zero `rounded-*` Tailwind classes found
+- KiimaButton: light/dark/ghost/danger variants all correct
+- Landing page navbar: fixed black, olive CTA, white links
+
+STILL PENDING:
+- Card borders throughout the app: still `1px solid var(--color-border)` (soft rgba). Need `2px solid #000000` per neobrutalist spec. 30+ files affected — large blast radius, deferred.
+- Visual QA: no browser test run yet across dashboard, gift page, pool page, admin pages
+- Admin pages: no neobrutalist sweep — deferred pending user decision
+
+### What to build next
+- Update card borders to `2px solid #000000` across all components
+- Visual QA pass in browser across all pages
+- KiimaButton size check on auth, gift form, pool form
+
+### Open issues
+- NEXT_PUBLIC_APP_URL must be set in Vercel env vars
+- increment_pool_raised RPC not yet deployed
+- og-default.png not yet created
+- Card borders need neobrutalist update (30+ files)
+- No browser visual QA performed yet
+
+---
+
+## Session 16 — 2026-04-25 — Hero redesign: floating coins + centered layout
+
+### What was changed
+
+**`app/page.tsx` — hero section:**
+- Removed 2-column `lp-hero-grid` layout and phone mockup
+- Replaced with centered single-column `.lp-hero-center` layout
+- Hero text now centered (`text-align: center`, `align-items: center`, `max-width` on h1 and sub)
+- Headline font size increased: `clamp(44px, 6vw, 72px)` (was 64px max)
+- Added 4 floating `KiimaCoin` elements positioned absolutely around the section edges (Gumroad-style)
+- Hero section: `position: relative; overflow: hidden`
+- Removed `PhoneMockup` function (dead code after hero redesign)
+- Added `KiimaCoin` component: SVG coin with olive `#D7D744` face, dark olive `#7a7a00` depth layer, black heart icon
+- Coin positions: top-left (210px, -25°), top-right (148px, +18°), left-mid (245px, -10°), bottom-right (172px, +28°)
+- CSS: `.lp-hero-grid` → `.lp-hero-center`; 900px breakpoint updated; `lp-hero-phone` CSS removed
+
+TypeScript: PASSED clean.
+
+### What to build next
+- Visual QA the hero on desktop + mobile (coins should clip at edges, text should be centered)
+- Card borders neobrutalist sweep
+
+### Open issues
+- NEXT_PUBLIC_APP_URL must be set in Vercel env vars
+- increment_pool_raised RPC not yet deployed
+- og-default.png not yet created
+- Card borders need neobrutalist update (30+ files)
+
+
+---
+
+## Session 17 — 2026-04-25 — Desktop dashboard sidebar layout
+
+### What was built
+
+NEW FILE: `components/dashboard/DashboardSidebar.tsx` — black sidebar (200px), olive active state, logo + 4 nav items. Client component, hidden on mobile via `.k-dash-sidebar` CSS class.
+
+MODIFIED:
+- `app/dashboard/layout.tsx` — added DashboardSidebar; shell is now display:flex; main uses `.k-dash-content`.
+- `components/dashboard/BottomNav.tsx` — added className="k-bottom-nav" for hide on desktop.
+- `app/dashboard/page.tsx` — DashboardHeader wrapped in `.k-dash-header-mobile`; "Dashboard" h1 added (desktop only).
+- `app/globals.css` — updated `.k-dash-sidebar` to black/olive; added `.k-dash-content`, `.k-bottom-nav`, `.k-dash-page-title`, `.k-dash-header-mobile`.
+- `CLAUDE.md` Section 7 — updated component table and layout description.
+
+RESPONSIVE: Mobile: BottomNav + centred 480px. Desktop: sidebar + wide content.
+TypeScript: PASSED clean.
+
+### Open issues
+- NEXT_PUBLIC_APP_URL must be set in Vercel env vars
+- Card borders need neobrutalist update (30+ files)

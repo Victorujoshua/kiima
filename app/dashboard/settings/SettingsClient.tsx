@@ -82,7 +82,7 @@ export default function SettingsClient({ profile, email, links }: Props) {
   return (
     <>
       <div style={pageStyle}>
-        <h1 style={headingStyle}>Settings</h1>
+        <h1 className="k-dash-page-title">Settings</h1>
 
         {/* ── Profile section ── */}
         <div style={cardStyle}>

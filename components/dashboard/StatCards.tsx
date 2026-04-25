@@ -65,7 +65,7 @@ const cardStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
+  fontFamily: 'var(--kiima-font)',
   fontWeight: 700,
   fontSize: '10px',
   textTransform: 'uppercase',
@@ -75,8 +75,8 @@ const labelStyle: React.CSSProperties = {
 };
 
 const valueStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 600,
+  fontFamily: 'monospace',
+  fontWeight: 800,
   fontSize: '19px',
   color: 'var(--color-text-primary)',
   lineHeight: 1.1,
@@ -86,7 +86,7 @@ const valueStyle: React.CSSProperties = {
 };
 
 const subStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
+  fontFamily: 'var(--kiima-font)',
   fontSize: '11px',
   color: 'var(--color-text-muted)',
   lineHeight: 1.3,

@@ -28,7 +28,7 @@ export default async function PoolsPage() {
     <div style={pageStyle}>
       <div style={headerStyle}>
         <div>
-          <h1 style={headingStyle}>Support pools</h1>
+          <h1 className="k-dash-page-title">Support pools</h1>
           <p style={subStyle}>Create funding goals your supporters can chip in on together.</p>
         </div>
         <PoolsClient userId={session.user.id} currency={currency} />
@@ -98,9 +98,7 @@ export default async function PoolsPage() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const pageStyle: React.CSSProperties = {
-  maxWidth: '900px',
-  margin: '0 auto',
-  padding: '40px 0',
+  padding: '0',
 };
 
 const headerStyle: React.CSSProperties = {

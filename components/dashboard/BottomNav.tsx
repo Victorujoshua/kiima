@@ -21,7 +21,7 @@ export default function BottomNav() {
   }
 
   return (
-    <nav style={navStyle}>
+    <nav className="k-bottom-nav" style={navStyle}>
       {NAV_ITEMS.map(({ href, label, Icon }) => {
         const active = isActive(href);
         return (
@@ -30,7 +30,8 @@ export default function BottomNav() {
             href={href}
             style={{
               ...tabStyle,
-              color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
+              color: active ? '#000000' : 'var(--color-text-muted)',
+              fontWeight: active ? 700 : 500,
             }}
           >
             <Icon size={22} strokeWidth={active ? 2 : 1.5} />
@@ -51,7 +52,7 @@ const navStyle: React.CSSProperties = {
   right: 0,
   height: '64px',
   background: 'var(--color-surface)',
-  borderTop: '1px solid #F2EDE7',
+  borderTop: '2px solid #000000',
   display: 'flex',
   alignItems: 'stretch',
   zIndex: 50,
