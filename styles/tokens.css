@@ -10,6 +10,7 @@
   /* ─── Colours ─────────────────────────────────────────── */
   --color-bg:           #F6F3EE;
   --color-surface:      #FFFFFF;
+  --color-surface-2:    #F6F3EE;   /* nested / inner card layer */
   --color-border:       rgba(28, 25, 22, 0.06);
   --color-border-hover: rgba(28, 25, 22, 0.12);
 
@@ -52,4 +53,33 @@
   --shadow-card:       4px 4px 0 0 #000000;
   --shadow-card-hover: 6px 6px 0 0 #000000;
   --shadow-btn:        4px 4px 0 0 #000000;
+}
+
+/* ─── Dark mode overrides ──────────────────────────────── */
+[data-theme="dark"] {
+  --color-bg:           #242423;
+  --color-surface:      #000000;   /* card = same black as nav */
+  --color-surface-2:    #D7D744;   /* nested / inner card layer = olive */
+  --color-border:       rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+
+  --color-text-primary:   #F0EDE8;
+  --color-text-secondary: #C4BAB3;
+  --color-text-muted:     #8A8078;
+  --color-text-faint:     #5E5850;
+
+  --color-accent:       #FF5C00;
+  --color-accent-soft:  #3A1E0F;
+  --color-accent-light: #FF8040;
+
+  --color-success:      #3D9B56;
+  --color-success-soft: #0F2A16;
+  --color-danger:       #E07070;
+  --color-danger-soft:  #2A0F0F;
+
+  --color-section-green: #1A3A25;
+
+  --shadow-card:       4px 4px 0 0 #D7D744;
+  --shadow-card-hover: 6px 6px 0 0 #D7D744;
+  --shadow-btn:        4px 4px 0 0 #D7D744;
 }

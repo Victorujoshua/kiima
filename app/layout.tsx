@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -26,8 +27,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* Inline script prevents flash of wrong theme before hydration */}
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var t = localStorage.getItem('kiima-theme');
+              if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            } catch(e){}
+          })();
+        `}} />
+      </head>
       <body className={plusJakartaSans.variable}>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

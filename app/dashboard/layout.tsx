@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import BottomNav from '@/components/dashboard/BottomNav';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import MobileHeader from '@/components/dashboard/MobileHeader';
 
 export default async function DashboardLayout({
   children,
@@ -21,13 +21,13 @@ export default async function DashboardLayout({
       {/* Sidebar — hidden on mobile via CSS, shown on desktop */}
       <DashboardSidebar />
 
+      {/* Mobile top header — hidden on desktop via CSS */}
+      <MobileHeader />
+
       {/* Main content — responsive via CSS class */}
       <main className="k-dash-content">
         {children}
       </main>
-
-      {/* Bottom nav — hidden on desktop via CSS */}
-      <BottomNav />
     </div>
   );
 }

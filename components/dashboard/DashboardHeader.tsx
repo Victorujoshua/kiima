@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Share2, Copy, UserCircle } from 'lucide-react';
+import { Share2, Copy } from 'lucide-react';
 
 interface DashboardHeaderProps {
   displayName: string;
@@ -47,8 +47,8 @@ export default function DashboardHeader({ displayName, username, avatarUrl }: Da
 
   return (
     <div style={wrapStyle}>
-      {/* Row 1: avatar + share icon */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Avatar */}
         <div style={avatarCircleStyle}>
           {avatarUrl ? (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -58,25 +58,28 @@ export default function DashboardHeader({ displayName, username, avatarUrl }: Da
               style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
             />
           ) : (
-            <UserCircle size={56} strokeWidth={1.5} color="#C4BCBA" />
+            <span style={initialStyle}>
+              {displayName.charAt(0).toUpperCase()}
+            </span>
           )}
         </div>
 
+        {/* Name + link */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={nameStyle}>{displayName}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}>
+            <span style={linkStyle}>{displayLink}</span>
+            <button onClick={handleCopy} style={copyBtnStyle} aria-label="Copy link">
+              <Copy size={14} strokeWidth={2} />
+            </button>
+            {copied && <span style={tooltipStyle}>Copied!</span>}
+          </div>
+        </div>
+
+        {/* Share */}
         <button onClick={handleShare} style={shareStyle} aria-label="Share my Kiima link">
-          <Share2 size={24} strokeWidth={1.75} />
+          <Share2 size={22} strokeWidth={1.75} />
         </button>
-      </div>
-
-      {/* Row 2: display name */}
-      <p style={nameStyle}>{displayName}</p>
-
-      {/* Row 3: link + copy icon */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}>
-        <span style={linkStyle}>{displayLink}</span>
-        <button onClick={handleCopy} style={copyBtnStyle} aria-label="Copy link">
-          <Copy size={16} strokeWidth={2} />
-        </button>
-        {copied && <span style={tooltipStyle}>Copied!</span>}
       </div>
     </div>
   );
@@ -90,14 +93,24 @@ const wrapStyle: React.CSSProperties = {
 };
 
 const avatarCircleStyle: React.CSSProperties = {
-  width: '56px',
-  height: '56px',
+  width: '52px',
+  height: '52px',
   borderRadius: '50%',
   overflow: 'hidden',
   flexShrink: 0,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  background: 'var(--color-accent)',
+};
+
+const initialStyle: React.CSSProperties = {
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 800,
+  fontSize: '22px',
+  color: '#ffffff',
+  lineHeight: 1,
+  userSelect: 'none',
 };
 
 const shareStyle: React.CSSProperties = {
@@ -116,18 +129,24 @@ const shareStyle: React.CSSProperties = {
 const nameStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontWeight: 700,
-  fontSize: '24px',
+  fontSize: '18px',
   color: 'var(--color-text-primary)',
-  margin: '16px 0 4px',
+  margin: '0 0 3px',
   lineHeight: 1.2,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 };
 
 const linkStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontWeight: 400,
-  fontSize: '16px',
-  color: 'var(--color-text-primary)',
+  fontSize: '13px',
+  color: 'var(--color-text-muted)',
   lineHeight: 1,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 };
 
 const copyBtnStyle: React.CSSProperties = {

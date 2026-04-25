@@ -88,7 +88,7 @@ export default function GiftTagsRow({ tags, userId, currency }: Props) {
 
           {/* Custom tags — show X to delete */}
           {customTags.map(tag => (
-            <div key={tag.id} style={customPillStyle}>
+            <div key={tag.id} className="k-inner-surface" style={customPillStyle}>
               <span style={{ lineHeight: 1 }}>{tag.label}</span>
               <button
                 onClick={() => handleDelete(tag.id)}

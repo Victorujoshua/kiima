@@ -19,7 +19,7 @@ export default function StatCards({
   const totalEarned = directTotal + poolTotal;
 
   return (
-    <div style={rowStyle}>
+    <div className="k-stat-cards" style={rowStyle}>
       <div style={cardStyle}>
         <span style={labelStyle}>Gifts received</span>
         <span style={valueStyle}>{formatCurrency(directTotal, currency)}</span>
@@ -47,7 +47,6 @@ export default function StatCards({
 
 const rowStyle: React.CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
   gap: '8px',
   marginBottom: 'var(--space-md)',
 };

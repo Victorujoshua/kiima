@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Target, Tag, Settings } from 'lucide-react';
+import { Home, Target, Tag, Settings, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const NAV_ITEMS = [
   { href: '/dashboard',          label: 'Home',     Icon: Home     },
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const { theme, toggle } = useTheme();
 
   function isActive(href: string) {
     return href === '/dashboard'
@@ -26,7 +28,7 @@ export default function DashboardSidebar() {
         kiima<span style={{ color: '#D7D744' }}>.</span>
       </Link>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 36 }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 36, flex: 1 }}>
         {NAV_ITEMS.map(({ href, label, Icon }) => {
           const active = isActive(href);
           return (
@@ -46,6 +48,16 @@ export default function DashboardSidebar() {
           );
         })}
       </nav>
+
+      {/* Theme toggle */}
+      <button onClick={toggle} style={toggleStyle} aria-label="Toggle dark mode">
+        {theme === 'dark'
+          ? <Sun size={16} strokeWidth={2} />
+          : <Moon size={16} strokeWidth={2} />}
+        <span style={{ fontSize: 13, fontWeight: 500 }}>
+          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </span>
+      </button>
     </aside>
   );
 }
@@ -70,4 +82,19 @@ const navLinkStyle: React.CSSProperties = {
   fontSize: 14,
   textDecoration: 'none',
   transition: 'background 0.15s ease, color 0.15s ease',
+};
+
+const toggleStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '10px 12px',
+  background: 'rgba(255,255,255,0.07)',
+  border: '1px solid rgba(255,255,255,0.12)',
+  cursor: 'pointer',
+  color: 'rgba(255,255,255,0.7)',
+  fontFamily: 'var(--kiima-font)',
+  width: '100%',
+  marginTop: 8,
+  transition: 'background 0.15s ease',
 };

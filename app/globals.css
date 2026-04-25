@@ -267,21 +267,32 @@ p {
   .k-dash-content { padding: 40px 60px; }
 }
 @media (max-width: 767px) {
-  /* Mobile: no sidebar, centered column, bottom nav clearance */
+  /* Mobile: no sidebar, centered column, top clearance for fixed header */
   .k-dash-content {
     max-width: 480px;
     margin: 0 auto;
-    padding: 20px 20px 80px;
+    padding: 76px 20px 32px;
     width: 100%;
   }
 }
 
-/* Bottom nav — visible on mobile, hidden on desktop */
-.k-bottom-nav {
-  display: flex; /* mobile default */
+/* Mobile top header — fixed bar with logo + hamburger */
+.k-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: #000000;
+  border-bottom: 2px solid #D7D744;
+  padding: 0 20px;
+  z-index: 100;
 }
 @media (min-width: 768px) {
-  .k-bottom-nav { display: none !important; }
+  .k-mobile-header { display: none; }
 }
 
 /* Dashboard page title — desktop only */
@@ -306,6 +317,23 @@ p {
 }
 @media (min-width: 768px) {
   .k-dash-header-mobile { display: none; }
+}
+
+/* Second-layer surfaces inside cards — olive in dark mode */
+.k-inner-surface {
+  background: var(--color-surface-2);
+}
+[data-theme="dark"] .k-inner-surface {
+  background: var(--color-surface-2) !important; /* override inline bg */
+  color: #000000 !important;                      /* ensure legibility on olive */
+}
+
+/* Stat cards — single column on mobile, 3-column on desktop */
+.k-stat-cards {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .k-stat-cards { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* Auth page centering — switches to top-aligned on small screens */
