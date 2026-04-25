@@ -94,7 +94,7 @@ export default function GiftPageClient({
   const displayNamePreview = isAnonymous ? 'Anonymous' : (nameValue.trim() || 'Anonymous');
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '0 20px 60px' }}>
+    <div style={{ width: '100%', paddingBottom: '40px' }}>
 
       {/* Section 2 — Gift card */}
       <div style={cardStyle}>
@@ -220,9 +220,9 @@ export default function GiftPageClient({
         )}
       </div>
 
-      {/* Section 4 — About (only shown if bio exists) */}
+      {/* Section 4 — About (mobile only; desktop shows in left column) */}
       {bio && (
-        <div style={{ ...cardStyle, marginTop: '16px' }}>
+        <div className="k-gift-about-mobile" style={{ ...cardStyle, marginTop: '16px' }}>
           <h3 style={sectionHeadingStyle}>About {creatorName}</h3>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
             {bio}

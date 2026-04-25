@@ -573,6 +573,12 @@ Keep this updated as components are built. Before building any new component, ch
 | `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice: number, currency: Currency, selectedQty: number, onSelect: (qty: number) => void` — pills 1/3/5 + square custom input; no total display |
 | `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@` |
 
+### Layout Components
+
+| Component | File | Notes |
+|---|---|---|
+| `PublicHeader` | `layout/PublicHeader.tsx` | Fixed black header: logo left, dark/light toggle right. Used on public gift page. |
+
 ### Page Components
 
 | Component | File | Key Props |
@@ -636,7 +642,8 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `BottomNav` | `dashboard/BottomNav.tsx` | Fixed 4-tab nav: Home / Pools / Tags / Settings. Hidden on desktop (≥768px) via `.k-bottom-nav` CSS class. |
+| `BottomNav` | `dashboard/BottomNav.tsx` | Unused — replaced by MobileHeader. File retained but not mounted. |
+| `MobileHeader` | `dashboard/MobileHeader.tsx` | No props — fixed top bar (logo + page title + hamburger) on mobile; slide-in drawer nav + dark mode toggle. Hidden on desktop (≥768px) via `.k-mobile-header` CSS class. |
 | `DashboardSidebar` | `dashboard/DashboardSidebar.tsx` | No props — reads pathname for active state. Black bg, olive active highlight, desktop only via `.k-dash-sidebar` CSS class. |
 | `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop. |
 | `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |

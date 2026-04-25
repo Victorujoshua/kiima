@@ -328,6 +328,40 @@ p {
   color: #000000 !important;                      /* ensure legibility on olive */
 }
 
+/* ─── Public gift page — desktop two-column layout ───────── */
+.k-gift-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+@media (min-width: 820px) {
+  .k-gift-shell {
+    max-width: 1060px;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 48px;
+    align-items: start;
+    padding: 32px 48px 0;
+    margin: 0 auto;
+  }
+}
+
+/* Bio + social shown in left column on desktop, hidden on mobile */
+.k-gift-profile-bio {
+  display: none;
+}
+@media (min-width: 820px) {
+  .k-gift-profile-bio { display: block; margin-top: 24px; }
+}
+
+/* Bio card inside GiftPageClient — shown on mobile, hidden on desktop */
+.k-gift-about-mobile {
+  display: block;
+}
+@media (min-width: 820px) {
+  .k-gift-about-mobile { display: none; }
+}
+
 /* Stat cards — single column on mobile, 3-column on desktop */
 .k-stat-cards {
   grid-template-columns: 1fr;

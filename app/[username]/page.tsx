@@ -5,6 +5,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getTagsByUser } from '@/lib/actions/tag.actions';
 import { getSocialLinks } from '@/lib/actions/link.actions';
 import GiftPageClient from '@/components/pages/GiftPageClient';
+import PublicHeader from '@/components/layout/PublicHeader';
+import SocialLinksRow from '@/components/shared/SocialLinksRow';
 import type { Profile, Currency, SocialLink, GiftTag, Contribution } from '@/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
@@ -94,52 +96,72 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 
   return (
     <main style={pageStyle}>
+      <PublicHeader />
+
       {paymentFailed && (
         <div style={paymentFailedBannerStyle}>
           Payment didn&apos;t go through — please try again.
         </div>
       )}
 
-      {/* Section 1 — Profile header */}
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '0 20px' }}>
-        {/* Cover image */}
-        <div style={coverStyle} />
+      <div className="k-gift-shell">
+        {/* Left column — profile */}
+        <div>
+          {/* Cover image */}
+          <div style={coverStyle} />
 
-        {/* Avatar overlapping cover */}
-        <div style={avatarWrapStyle}>
-          {profile.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.avatar_url}
-              alt={profile.display_name}
-              style={avatarImgStyle}
-            />
-          ) : (
-            <div style={avatarFallbackStyle}>
-              {profile.display_name.slice(0, 2).toUpperCase()}
+          {/* Avatar overlapping cover */}
+          <div style={avatarWrapStyle}>
+            {profile.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profile.avatar_url}
+                alt={profile.display_name}
+                style={avatarImgStyle}
+              />
+            ) : (
+              <div style={avatarFallbackStyle}>
+                {profile.display_name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+          </div>
+
+          {/* Name + username */}
+          <div style={profileInfoStyle}>
+            <h1 style={profileNameStyle}>{profile.display_name}</h1>
+            <p style={profileUsernameStyle}>@{profile.username}</p>
+          </div>
+
+          {/* Bio + social links — desktop left column only */}
+          {(profile.bio || (links as SocialLink[]).length > 0) && (
+            <div className="k-gift-profile-bio">
+              <div style={profileBioCardStyle}>
+                {profile.bio && (
+                  <p style={profileBioTextStyle}>{profile.bio}</p>
+                )}
+                {(links as SocialLink[]).length > 0 && (
+                  <div style={{ marginTop: profile.bio ? '16px' : 0 }}>
+                    <SocialLinksRow links={links as SocialLink[]} />
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Name + username */}
-        <div style={profileInfoStyle}>
-          <h1 style={profileNameStyle}>{profile.display_name}</h1>
-          <p style={profileUsernameStyle}>@{profile.username}</p>
-        </div>
+        {/* Right column — gift form, supporters, about (mobile) */}
+        <GiftPageClient
+          recipientId={profile.id}
+          creatorName={profile.display_name}
+          defaultTag={defaultTag}
+          feePercent={feePercent}
+          currency={profile.currency as Currency}
+          contributions={contributions}
+          contributorCount={contributorCount}
+          bio={profile.bio}
+          links={links as SocialLink[]}
+        />
       </div>
-
-      {/* Sections 2–4 + footer */}
-      <GiftPageClient
-        recipientId={profile.id}
-        creatorName={profile.display_name}
-        defaultTag={defaultTag}
-        feePercent={feePercent}
-        currency={profile.currency as Currency}
-        contributions={contributions}
-        contributorCount={contributorCount}
-        bio={profile.bio}
-        links={links as SocialLink[]}
-      />
     </main>
   );
 }
@@ -147,7 +169,8 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-bg)',
-  paddingBottom: '40px',
+  paddingTop: '52px',
+  paddingBottom: '60px',
 };
 
 const coverStyle: React.CSSProperties = {
@@ -229,6 +252,22 @@ const suspendedCardStyle: React.CSSProperties = {
   boxShadow: 'var(--shadow-card)',
   padding: 'var(--space-2xl)',
   textAlign: 'center',
+};
+
+const profileBioCardStyle: React.CSSProperties = {
+  background: 'var(--color-surface)',
+  border: '1px solid var(--color-border)',
+  boxShadow: 'var(--shadow-card)',
+  padding: '20px',
+};
+
+const profileBioTextStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: '14px',
+  color: 'var(--color-text-secondary)',
+  margin: 0,
+  lineHeight: 1.65,
+  whiteSpace: 'pre-wrap',
 };
 
 const suspendedHeadingStyle: React.CSSProperties = {
