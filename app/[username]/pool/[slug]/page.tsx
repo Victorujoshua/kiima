@@ -6,6 +6,7 @@ import SupportPoolCard from '@/components/cards/SupportPoolCard';
 import ContributionFeedCard from '@/components/cards/ContributionFeedCard';
 import ContributeForm from '@/components/forms/ContributeForm';
 import { formatCurrency } from '@/lib/utils/currency';
+import PublicHeader from '@/components/layout/PublicHeader';
 import type { Contribution, Currency, SupportPool } from '@/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
@@ -116,6 +117,7 @@ export default async function PoolPage({ params }: PageProps) {
 
   return (
     <main style={pageStyle} className="k-page">
+      <PublicHeader />
       <div style={gridStyle}>
         {/* Left column — pool info + optional contributor feed */}
         <div style={leftColStyle}>
@@ -153,7 +155,7 @@ export default async function PoolPage({ params }: PageProps) {
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-bg)',
-  padding: '40px 0',
+  padding: '92px 0 40px',
 };
 
 const gridStyle: React.CSSProperties = {
