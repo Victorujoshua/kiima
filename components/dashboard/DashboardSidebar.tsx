@@ -24,9 +24,9 @@ export default function DashboardSidebar() {
 
   return (
     <aside className="k-dash-sidebar">
-      <Link href="/" style={logoStyle}>
+      <span style={logoStyle}>
         kiima<span style={{ color: '#D7D744' }}>.</span>
-      </Link>
+      </span>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 36, flex: 1 }}>
         {NAV_ITEMS.map(({ href, label, Icon }) => {
@@ -67,7 +67,6 @@ const logoStyle: React.CSSProperties = {
   fontWeight: 800,
   fontSize: 22,
   color: '#ffffff',
-  textDecoration: 'none',
   letterSpacing: '-0.02em',
   display: 'block',
   padding: '0 12px',

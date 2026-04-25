@@ -40,7 +40,7 @@ const headerStyle: React.CSSProperties = {
 const logoStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontWeight: 800,
-  fontSize: '18px',
+  fontSize: '28px',
   color: '#ffffff',
   textDecoration: 'none',
   letterSpacing: '-0.02em',

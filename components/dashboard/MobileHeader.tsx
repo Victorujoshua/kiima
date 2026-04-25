@@ -50,9 +50,9 @@ export default function MobileHeader() {
     <>
       {/* Fixed top bar */}
       <header className="k-mobile-header">
-        <Link href="/" style={logoStyle}>
+        <span style={logoStyle}>
           kiima<span style={{ color: '#D7D744' }}>.</span>
-        </Link>
+        </span>
 
         <span style={pageTitleStyle}>{getPageTitle(pathname)}</span>
 
