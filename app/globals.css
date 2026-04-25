@@ -4,33 +4,91 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Global border-radius reset ─────────────────────────── */
+/* No !important — inline styles (50% avatars, etc.) still win.
+   Tailwind rounded-* classes are unused in this codebase. */
+*, *::before, *::after {
+  border-radius: 0px;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
-  font-family: var(--font-body);
+  font-family: var(--kiima-font);
   overflow-x: hidden; /* prevent horizontal scroll on mobile */
+}
+
+/* ─── Neobrutalist button heartbeat animation ─────────────── */
+.kiima-btn-group:hover .heart {
+  animation: heartbeat 0.4s ease infinite alternate;
+}
+@keyframes heartbeat {
+  to { transform: scale(1.35); }
+}
+
+/* ─── Typography scale ────────────────────────────────────── */
+h1 {
+  font-family: var(--kiima-font);
+  font-weight: 800;
+  font-size: clamp(40px, 5vw, 72px);
+  letter-spacing: -2px;
+  line-height: 1.05;
+}
+h2 {
+  font-family: var(--kiima-font);
+  font-weight: 800;
+  font-size: clamp(28px, 3vw, 48px);
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+}
+h3 {
+  font-family: var(--kiima-font);
+  font-weight: 700;
+  font-size: clamp(20px, 2vw, 24px);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+p {
+  font-family: var(--kiima-font);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* Naira / currency amounts */
+.k-amount {
+  font-family: monospace;
+  font-weight: 800;
+}
+
+/* Metadata labels */
+.k-label {
+  font-family: var(--kiima-font);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
 }
 
 /* ─── Shared form input ───────────────────────────────── */
 .k-input {
   width: 100%;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 2px solid #000000;
   padding: 12px var(--space-md);
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-family: var(--kiima-font);
+  font-size: 15px;
   line-height: 1.5;
   color: var(--color-text-primary);
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: box-shadow 0.15s ease;
   box-sizing: border-box;
 }
 .k-input::placeholder {
   color: var(--color-text-muted);
 }
 .k-input:focus {
-  border-color: var(--color-accent);
+  box-shadow: 3px 3px 0 0 #000000;
 }
 .k-input--error {
   border-color: var(--color-danger) !important;
@@ -42,65 +100,57 @@ body {
   opacity: 1;
 }
 
-/* ─── Button base ─────────────────────────────────────── */
+/* ─── Button base (legacy k-btn classes) ─────────────────── */
 .k-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  font-family: var(--font-body);
-  font-weight: 600;
+  font-family: var(--kiima-font);
+  font-weight: 700;
   font-size: 15px;
-  border-radius: var(--radius-full);
-  border: none;
+  border: 2px solid #000000;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
   padding: 12px var(--space-xl);
   min-height: 44px;
   text-decoration: none;
   white-space: nowrap;
 }
 .k-btn:disabled {
-  opacity: 0.65;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 .k-btn--primary {
-  background: var(--color-text-primary);
-  color: #ffffff;
-  box-shadow: var(--shadow-btn);
+  background: var(--kiima-olive);
+  color: #000000;
+  box-shadow: 4px 4px 0 0 #000000;
 }
 .k-btn--primary:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 #000000;
 }
 .k-btn--primary:active:not(:disabled) {
-  transform: scale(0.98);
-}
-.k-btn--primary:disabled {
-  box-shadow: none;
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 0 #000000;
 }
 .k-btn--ghost {
   background: transparent;
-  color: var(--color-accent);
-  box-shadow: none;
+  color: #000000;
+  box-shadow: 4px 4px 0 0 #000000;
 }
 .k-btn--ghost:hover:not(:disabled) {
-  background: var(--color-accent-soft);
-}
-.k-btn--ghost:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 #000000;
 }
 .k-btn--danger {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-  box-shadow: none;
-}
-.k-btn--danger:hover:not(:disabled) {
   background: var(--color-danger);
   color: #ffffff;
-  transform: translateY(-1px);
+  box-shadow: 4px 4px 0 0 #000000;
 }
-.k-btn--danger:active:not(:disabled) {
-  transform: scale(0.98);
+.k-btn--danger:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 #000000;
 }
 .k-btn--full {
   width: 100%;
@@ -125,25 +175,25 @@ body {
   flex: 1;
   padding: 12px var(--space-sm);
   min-height: 44px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border: 2px solid #000000;
   background: var(--color-surface);
-  color: var(--color-text-secondary);
-  font-family: var(--font-body);
-  font-weight: 600;
+  color: #000000;
+  font-family: var(--kiima-font);
+  font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   text-align: center;
+  box-shadow: 3px 3px 0 0 #000000;
 }
 .k-currency-pill:hover:not(.k-currency-pill--selected) {
-  border-color: var(--color-border-hover);
-  color: var(--color-text-primary);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 #000000;
 }
 .k-currency-pill--selected {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #ffffff;
+  background: var(--kiima-olive);
+  border-color: #000000;
+  color: #000000;
 }
 
 /* ─── Gift tag pill ───────────────────────────────────── */
@@ -152,31 +202,31 @@ body {
   align-items: center;
   padding: 10px var(--space-md);
   min-height: 44px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border: 2px solid #000000;
   background: var(--color-surface);
-  color: var(--color-text-secondary);
-  font-family: var(--font-body);
-  font-weight: 600;
+  color: #000000;
+  font-family: var(--kiima-font);
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
   white-space: nowrap;
   user-select: none;
+  box-shadow: 3px 3px 0 0 #000000;
 }
 .k-tag-pill:hover:not(.k-tag-pill--selected) {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  transform: translateY(-1px);
+  background: var(--kiima-olive);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 0 #000000;
 }
 .k-tag-pill:active {
-  transform: scale(0.98);
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 #000000;
 }
 .k-tag-pill--selected {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #ffffff;
+  background: var(--kiima-orange);
+  border-color: #000000;
+  color: #000000;
 }
 
 /* ─── Dashboard shell ─────────────────────────────────── */
@@ -189,38 +239,73 @@ body {
 /* Sidebar — hidden on mobile, shown on desktop */
 .k-dash-sidebar {
   display: none;
-  width: 220px;
+  width: 200px;
   flex-shrink: 0;
   position: sticky;
   top: 0;
   height: 100vh;
   overflow-y: auto;
   flex-direction: column;
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
-  padding: var(--space-xl) var(--space-md);
+  background: #000000;
+  border-right: 2px solid #D7D744;
+  padding: 28px 16px;
   gap: 0;
+  z-index: 40;
 }
 @media (min-width: 768px) {
   .k-dash-sidebar { display: flex; }
 }
 
-/* Main content */
-.k-dash-main {
+/* Main content area — responsive */
+.k-dash-content {
   flex: 1;
   min-width: 0;
-  padding-left: 100px;
-  padding-right: 100px;
-  padding-bottom: 72px; /* clear mobile tab bar */
+  padding: 40px 100px;
+  overflow: auto;
 }
-@media (max-width: 1024px) {
-  .k-dash-main { padding-left: 40px; padding-right: 40px; }
+@media (max-width: 1200px) {
+  .k-dash-content { padding: 40px 60px; }
+}
+@media (max-width: 767px) {
+  /* Mobile: no sidebar, centered column, bottom nav clearance */
+  .k-dash-content {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 20px 80px;
+    width: 100%;
+  }
+}
+
+/* Bottom nav — visible on mobile, hidden on desktop */
+.k-bottom-nav {
+  display: flex; /* mobile default */
 }
 @media (min-width: 768px) {
-  .k-dash-main { padding-bottom: 0; }
+  .k-bottom-nav { display: none !important; }
 }
-@media (max-width: 768px) {
-  .k-dash-main { padding-left: 20px; padding-right: 20px; }
+
+/* Dashboard page title — desktop only */
+.k-dash-page-title {
+  display: none;
+}
+@media (min-width: 768px) {
+  .k-dash-page-title {
+    display: block;
+    font-family: var(--kiima-font);
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--color-text-primary);
+    letter-spacing: -1px;
+    margin: 0 0 32px;
+  }
+}
+
+/* Dashboard header — hide avatar/link row on desktop (sidebar handles nav) */
+.k-dash-header-mobile {
+  display: block;
+}
+@media (min-width: 768px) {
+  .k-dash-header-mobile { display: none; }
 }
 
 /* Auth page centering — switches to top-aligned on small screens */
@@ -272,24 +357,23 @@ body {
   display: flex;
   align-items: center;
   padding: 10px var(--space-md);
-  border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-weight: 500;
+  font-family: var(--kiima-font);
+  font-weight: 600;
   font-size: 14px;
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   white-space: nowrap;
   margin-bottom: 2px;
 }
 .k-nav-link:hover {
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
+  background: var(--kiima-olive);
+  color: #000000;
 }
 .k-nav-link--active {
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-weight: 600;
+  background: var(--kiima-olive);
+  color: #000000;
+  font-weight: 700;
 }
 
 /* ─── Skeleton loader ─────────────────────────────────── */
@@ -334,16 +418,16 @@ body {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  font-family: var(--font-body);
-  font-weight: 500;
+  font-family: var(--kiima-font);
+  font-weight: 600;
   font-size: 11px;
   color: var(--color-text-muted);
   text-decoration: none;
   transition: color 0.15s ease;
 }
 .k-tab-link--active {
-  color: var(--color-accent);
-  font-weight: 600;
+  color: #000000;
+  font-weight: 700;
 }
 
 /* ─── Bottom-sheet modal animations ──────────────────── */

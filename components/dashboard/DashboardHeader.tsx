@@ -11,6 +11,9 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ displayName, username, avatarUrl }: DashboardHeaderProps) {
   const [copied, setCopied] = useState(false);
+  // IMPORTANT: NEXT_PUBLIC_APP_URL must be set to https://kiima.app
+  // in Vercel dashboard → Project → Settings → Environment Variables (Production).
+  // Without this, the copy URL will use the Vercel deployment URL instead.
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
   const link = `${appUrl}/${username}`;
   const displayLink = `kiima.app/${username}`;
@@ -111,7 +114,7 @@ const shareStyle: React.CSSProperties = {
 };
 
 const nameStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
+  fontFamily: 'var(--kiima-font)',
   fontWeight: 700,
   fontSize: '24px',
   color: 'var(--color-text-primary)',
@@ -120,7 +123,7 @@ const nameStyle: React.CSSProperties = {
 };
 
 const linkStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
+  fontFamily: 'var(--kiima-font)',
   fontWeight: 400,
   fontSize: '16px',
   color: 'var(--color-text-primary)',
@@ -139,7 +142,7 @@ const copyBtnStyle: React.CSSProperties = {
 };
 
 const tooltipStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
+  fontFamily: 'var(--kiima-font)',
   fontWeight: 600,
   fontSize: '12px',
   color: 'var(--color-surface)',

@@ -627,17 +627,18 @@ Keep this updated as components are built. Before building any new component, ch
 
 | File | Notes |
 |---|---|
-| `app/dashboard/layout.tsx` | Session guard, mobile-first 480px centred layout, renders BottomNav |
+| `app/dashboard/layout.tsx` | Session guard, renders DashboardSidebar + main content + BottomNav |
 | `app/dashboard/LogoutButton.tsx` | Signs out → `/login` |
 
-**Layout:** Mobile-first single column, `max-width: 480px`, centred. No sidebar. `padding: 20px 20px 80px` (80px clears BottomNav).
+**Layout:** Mobile: `max-width: 480px` centred, `padding: 20px 20px 80px` (clears BottomNav). Desktop (≥768px): black left sidebar 200px + main content `.k-dash-content` (`padding: 40px 48px`). BottomNav hidden on desktop.
 
 ### Dashboard Components (`components/dashboard/`)
 
 | Component | File | Key Props |
 |---|---|---|
-| `BottomNav` | `dashboard/BottomNav.tsx` | Fixed 4-tab nav: Home / Pools / Tags / Settings |
-| `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar top-left (UserCircle fallback), share icon top-right, name + inline copy link below; no card/border |
+| `BottomNav` | `dashboard/BottomNav.tsx` | Fixed 4-tab nav: Home / Pools / Tags / Settings. Hidden on desktop (≥768px) via `.k-bottom-nav` CSS class. |
+| `DashboardSidebar` | `dashboard/DashboardSidebar.tsx` | No props — reads pathname for active state. Black bg, olive active highlight, desktop only via `.k-dash-sidebar` CSS class. |
+| `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop. |
 | `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |
 | `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
 | `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency` — last 5 with avatar, tag, relative time, amounts |

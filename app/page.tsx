@@ -25,12 +25,14 @@ export default function LandingPage() {
         .lp-wrap { max-width: 1120px; margin: 0 auto; padding: 0 60px; }
 
         /* Hero */
-        .lp-hero-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 64px;
+        .lp-hero-center {
+          display: flex;
+          flex-direction: column;
           align-items: center;
-          padding: 96px 0 80px;
+          text-align: center;
+          padding: 100px 0 90px;
+          position: relative;
+          z-index: 1;
         }
 
         /* Feature sections */
@@ -66,71 +68,103 @@ export default function LandingPage() {
           margin: 0 auto;
         }
 
-        /* Buttons */
+        /* Buttons — neobrutalist */
         .lp-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-family: var(--font-body);
-          font-weight: 700;
+          font-family: var(--kiima-font);
+          font-weight: 800;
           font-size: 15px;
-          border-radius: var(--radius-full);
           padding: 14px 28px;
           text-decoration: none;
-          transition: all 0.15s ease;
           white-space: nowrap;
           min-height: 52px;
           cursor: pointer;
-          border: 2px solid transparent;
+          border: 2px solid #000000;
+          transition: transform 0.22s ease, box-shadow 0.22s ease;
+          position: relative;
         }
         .lp-btn-dark {
-          color: #fff;
-          background: var(--color-text-primary);
-          border-color: var(--color-text-primary);
+          color: #000000;
+          background: var(--kiima-olive);
+          box-shadow: 4px 4px 0 0 #000000;
         }
         .lp-btn-dark:hover {
-          background: #2e2924;
-          border-color: #2e2924;
-          transform: translateY(-1px);
-          box-shadow: 0 8px 24px rgba(28,25,22,0.28);
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0 0 #000000;
         }
-        .lp-btn-dark:active { transform: scale(0.98); }
-
+        .lp-btn-dark:active {
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0 0 #000000;
+        }
         .lp-btn-outline {
-          color: var(--color-text-primary);
+          color: #000000;
           background: transparent;
-          border-color: rgba(28,25,22,0.2);
+          border: 2px solid #000000;
+          box-shadow: 4px 4px 0 0 #000000;
         }
         .lp-btn-outline:hover {
-          border-color: rgba(28,25,22,0.4);
-          background: rgba(28,25,22,0.04);
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0 0 #000000;
         }
-
         .lp-btn-white {
-          color: var(--color-text-primary);
-          background: #fff;
-          border-color: #fff;
+          color: #000000;
+          background: var(--kiima-white);
+          border: 2px solid #000000;
+          box-shadow: 4px 4px 0 0 rgba(0,0,0,0.35);
         }
         .lp-btn-white:hover {
-          background: rgba(255,255,255,0.9);
-          transform: translateY(-1px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0 0 rgba(0,0,0,0.35);
         }
-        .lp-btn-white:active { transform: scale(0.98); }
-
+        .lp-btn-white:active {
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0 0 rgba(0,0,0,0.35);
+        }
         .lp-btn-outline-white {
           color: #fff;
           background: transparent;
-          border-color: rgba(255,255,255,0.4);
+          border: 2px solid rgba(255,255,255,0.7);
+          box-shadow: 4px 4px 0 0 rgba(255,255,255,0.25);
         }
         .lp-btn-outline-white:hover {
-          border-color: rgba(255,255,255,0.8);
-          background: rgba(255,255,255,0.08);
+          border-color: #fff;
+          box-shadow: 6px 6px 0 0 rgba(255,255,255,0.35);
+          transform: translate(-2px, -2px);
         }
 
         /* Nav */
-        .lp-nav-right { display: flex; align-items: center; gap: 28px; }
+        .lp-nav-right { display: flex; align-items: center; gap: 24px; }
         .lp-nav-mobile { display: none !important; }
+
+        /* Nav CTA button — olive on black */
+        .lp-btn-nav {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-family: var(--kiima-font);
+          font-weight: 800;
+          font-size: 14px;
+          padding: 10px 22px;
+          min-height: 44px;
+          cursor: pointer;
+          border: 2px solid var(--kiima-olive);
+          background: var(--kiima-olive);
+          color: #000000;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.15s ease;
+          box-shadow: 3px 3px 0 0 var(--kiima-orange);
+        }
+        .lp-btn-nav:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 5px 5px 0 0 var(--kiima-orange);
+        }
+        .lp-btn-nav:active {
+          transform: translate(2px, 2px);
+          box-shadow: 1px 1px 0 0 var(--kiima-orange);
+        }
 
         /* FAQ */
         .lp-faq-answer {
@@ -140,37 +174,33 @@ export default function LandingPage() {
         }
         .lp-faq-answer--open { max-height: 300px; }
 
-        /* Nav link */
+        /* Nav link — white on black header */
         .lp-nav-link {
-          font-family: var(--font-body);
+          font-family: var(--kiima-font);
           font-weight: 500;
           font-size: 14px;
-          color: var(--color-text-secondary);
+          color: rgba(255,255,255,0.72);
           text-decoration: none;
           transition: color 0.15s;
         }
-        .lp-nav-link:hover { color: var(--color-text-primary); }
+        .lp-nav-link:hover { color: #ffffff; }
 
         /* Section headings */
         .lp-eyebrow {
-          font-family: var(--font-body);
+          font-family: var(--kiima-font);
           font-weight: 700;
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          color: var(--color-accent);
+          color: #000000;
+          opacity: 0.45;
           margin: 0 0 14px;
         }
 
         @media (max-width: 900px) {
           .lp-wrap { padding: 0 28px; }
-          .lp-hero-grid {
-            grid-template-columns: 1fr;
-            gap: 48px;
-            padding: 64px 0 56px;
-          }
-          .lp-hero-phone { display: flex; justify-content: center; }
-          .lp-hero-ctas { justify-content: flex-start !important; }
+          .lp-hero-center { padding: 70px 0 60px; }
+          .lp-hero-ctas { justify-content: center !important; }
           .lp-hero-sub { max-width: 480px !important; }
           .lp-feat-grid { grid-template-columns: 1fr; gap: 40px; }
           .lp-feat-grid--rev { direction: ltr; }
@@ -233,6 +263,12 @@ export default function LandingPage() {
         }
 
         @media (max-width: 600px) {
+          /* Coins: push top-corners above text line, hide side coins */
+          .lp-coin-tl { top: -155px !important; left: -130px !important; }
+          .lp-coin-tr { top: -85px !important;  right: -80px !important; }
+          .lp-coin-ml { display: none !important; }
+          .lp-coin-br { display: none !important; }
+
           .lp-wrap { padding: 0 20px; }
           .lp-hero-headline { font-size: 40px !important; letter-spacing: -0.025em !important; }
           .lp-section-h2 { font-size: 30px !important; }
@@ -247,82 +283,77 @@ export default function LandingPage() {
         }
       `}</style>
 
-      <div style={{ background: 'var(--color-bg)', fontFamily: 'var(--font-body)' }}>
+      <div style={{ background: 'var(--color-bg)', fontFamily: 'var(--kiima-font)' }}>
 
-        {/* ── NAVBAR ─────────────────────────────────────────────── */}
+        {/* ── NAVBAR — fixed black ────────────────────────────────── */}
         <nav style={{
-          position: 'sticky', top: 0, zIndex: 50,
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          background: 'rgba(246,243,238,0.92)',
-          borderBottom: '1px solid var(--color-border)',
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+          background: '#000000',
+          borderBottom: '2px solid #000000',
         }}>
           <div className="lp-wrap lp-nav-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
             <Link href="/" style={logoStyle}>
-              kiima<span style={{ color: 'var(--color-accent)' }}>.</span>
+              kiima<span style={{ color: 'var(--kiima-olive)' }}>.</span>
             </Link>
             <div className="lp-nav-right">
               <a href="#features" className="lp-nav-link">Features</a>
               <a href="#how-it-works" className="lp-nav-link">How it works</a>
               <a href="#pricing" className="lp-nav-link">Pricing</a>
               <a href="#faq" className="lp-nav-link">FAQ</a>
-              <Link href="/login" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 14, color: 'var(--color-text-secondary)', textDecoration: 'none', marginLeft: 4 }}>Log in</Link>
-              <Link href="/signup" className="lp-btn lp-btn-dark" style={{ fontSize: 14, padding: '11px 22px', minHeight: 44 }}>Get started →</Link>
+              <Link href="/login" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 600, fontSize: 14, color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Log in</Link>
+              <Link href="/signup" className="lp-btn-nav">Get started →</Link>
             </div>
-            <Link href="/signup" className="lp-nav-mobile lp-btn lp-btn-dark" style={{ fontSize: 13, padding: '10px 18px', minHeight: 42 }}>Get started</Link>
+            <Link href="/signup" className="lp-nav-mobile lp-btn-nav" style={{ fontSize: 13, padding: '9px 16px', minHeight: 40 }}>Get started</Link>
           </div>
         </nav>
 
+        {/* Spacer for fixed navbar */}
+        <div style={{ height: 68 }} />
+
         {/* ── HERO ───────────────────────────────────────────────── */}
-        <section>
+        <section style={{ position: 'relative', overflow: 'hidden' }}>
+          {/* Floating coins */}
+          <KiimaCoin className="lp-coin-tl" size={210} style={{ top: -50, left: -75, transform: 'rotate(-25deg)' }} />
+          <KiimaCoin className="lp-coin-tr" size={148} style={{ top: -20, right: -48, transform: 'rotate(18deg)' }} />
+          <KiimaCoin className="lp-coin-ml" size={245} style={{ top: '32%', left: -115, transform: 'translateY(-50%) rotate(-10deg)' }} />
+          <KiimaCoin className="lp-coin-br" size={172} style={{ bottom: -15, right: -52, transform: 'rotate(28deg)' }} />
+
           <div className="lp-wrap">
-            <div className="lp-hero-grid">
-              {/* Left: text */}
-              <div className="lp-hero-text">
-                <span style={{
-                  display: 'inline-block',
-                  fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13,
-                  color: 'var(--color-accent)', background: 'var(--color-accent-soft)',
-                  borderRadius: 'var(--radius-full)', padding: '6px 16px', marginBottom: 28,
-                }}>🇳🇬 Built for Nigerian creators</span>
+            <div className="lp-hero-center">
+              <span style={{
+                display: 'inline-block',
+                fontFamily: 'var(--kiima-font)', fontWeight: 700, fontSize: 12,
+                color: '#000000', background: 'var(--kiima-olive)',
+                border: '2px solid #000000',
+                padding: '6px 16px', marginBottom: 28,
+                letterSpacing: '0.04em',
+              }}>🇳🇬 Built for Nigerian creators</span>
 
-                <h1 className="lp-hero-headline" style={{
-                  fontFamily: 'var(--font-display)', fontWeight: 500,
-                  fontSize: 58, color: 'var(--color-text-primary)',
-                  lineHeight: 1.08, letterSpacing: '-0.03em',
-                  margin: '0 0 24px',
-                }}>
-                  The easiest way<br />to receive gifts<br />from your fans.
-                </h1>
+              <h1 className="lp-hero-headline" style={{
+                fontFamily: 'var(--kiima-font)', fontWeight: 800,
+                fontSize: 'clamp(44px, 6vw, 72px)', color: 'var(--color-text-primary)',
+                lineHeight: 1.04, letterSpacing: '-2.5px',
+                margin: '0 0 24px', maxWidth: 720,
+              }}>
+                The easiest way to receive gifts from your fans.
+              </h1>
 
-                <p className="lp-hero-sub" style={{
-                  fontFamily: 'var(--font-body)', fontSize: 18,
-                  color: 'var(--color-text-secondary)', lineHeight: 1.65,
-                  margin: '0 0 36px', maxWidth: 400,
-                }}>
-                  A personal gift link, custom Gift Tags, and collaborative Support Pools — built for Nigerian creators, powered by Paystack.
-                </p>
+              <p className="lp-hero-sub" style={{
+                fontFamily: 'var(--kiima-font)', fontSize: 18,
+                color: 'var(--color-text-secondary)', lineHeight: 1.65,
+                margin: '0 0 36px', maxWidth: 520,
+              }}>
+                A personal gift link, custom Gift Tags, and collaborative Support Pools — built for Nigerian creators, powered by Paystack.
+              </p>
 
-                <div className="lp-hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                  <Link href="/signup" className="lp-btn lp-btn-dark">Get started free</Link>
-                  <a href="#how-it-works" className="lp-btn lp-btn-outline">How it works ↓</a>
-                </div>
-
-                <p className="lp-hero-note" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-text-muted)', marginTop: 20 }}>
-                  Free forever · No credit card · Set up in minutes
-                </p>
+              <div className="lp-hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Link href="/signup" className="lp-btn lp-btn-dark">Get started free</Link>
+                <a href="#how-it-works" className="lp-btn lp-btn-outline">How it works ↓</a>
               </div>
 
-              {/* Right: phone mockup */}
-              <div className="lp-hero-phone" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                <div style={{ position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute', inset: -80,
-                    background: 'radial-gradient(ellipse at center, rgba(200,123,92,0.2) 0%, transparent 65%)',
-                    borderRadius: '50%', pointerEvents: 'none',
-                  }} />
-                  <PhoneMockup />
-                </div>
-              </div>
+              <p className="lp-hero-note" style={{ fontFamily: 'var(--kiima-font)', fontSize: 13, color: 'var(--color-text-muted)', marginTop: 20 }}>
+                Free forever · No credit card · Set up in minutes
+              </p>
             </div>
           </div>
         </section>
@@ -341,11 +372,11 @@ export default function LandingPage() {
               </span>
               {['Content Creators', 'Musicians', 'Comedians', 'Podcasters', 'Coaches', 'Entrepreneurs'].map(c => (
                 <span key={c} style={{
-                  fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13,
-                  color: 'var(--color-text-secondary)',
-                  background: 'var(--color-bg)',
-                  border: '1.5px solid var(--color-border)',
-                  borderRadius: 'var(--radius-full)', padding: '5px 14px',
+                  fontFamily: 'var(--kiima-font)', fontWeight: 700, fontSize: 13,
+                  color: '#000000',
+                  background: 'var(--kiima-olive)',
+                  border: '2px solid #000000',
+                  padding: '5px 14px',
                 }}>{c}</span>
               ))}
             </div>
@@ -359,7 +390,7 @@ export default function LandingPage() {
               <div>
                 <h2 className="lp-section-h2" style={{ ...sectionH2Style, margin: 0 }}>How it works</h2>
               </div>
-              <Link href="/signup" style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: 'var(--color-accent)', textDecoration: 'none' }}>
+              <Link href="/signup" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 800, fontSize: 14, color: '#000000', textDecoration: 'none' }}>
                 Get started →
               </Link>
             </div>
@@ -372,14 +403,15 @@ export default function LandingPage() {
               ].map(step => (
                 <div key={step.n} className="lp-how-step">
                   <div className="lp-how-num" style={{
-                    width: 48, height: 48, borderRadius: '50%',
-                    background: 'var(--color-accent-soft)',
-                    border: '1.5px solid rgba(200,123,92,0.25)',
+                    width: 48, height: 48,
+                    background: 'var(--kiima-olive)',
+                    border: '2px solid #000000',
+                    boxShadow: '3px 3px 0 0 #000000',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 18,
-                    color: 'var(--color-accent)', marginBottom: 20,
+                    fontFamily: 'var(--kiima-font)', fontWeight: 800, fontSize: 16,
+                    color: '#000000', marginBottom: 20,
                   }}>{step.n}</div>
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 22, color: 'var(--color-text-primary)', margin: '0 0 10px' }}>{step.title}</h3>
+                  <h3 style={{ fontFamily: 'var(--kiima-font)', fontWeight: 700, fontSize: 22, letterSpacing: '-0.5px', color: 'var(--color-text-primary)', margin: '0 0 10px' }}>{step.title}</h3>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--color-text-secondary)', lineHeight: 1.65, margin: 0 }}>{step.body}</p>
                 </div>
               ))}
@@ -396,7 +428,7 @@ export default function LandingPage() {
               <div className="lp-feat-grid">
                 <div className="lp-feat-text">
                   <p className="lp-eyebrow" style={{ color: 'rgba(255,255,255,0.55)' }}>Step 01</p>
-                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: '#fff', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 800, fontSize: 44, color: '#fff', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
                     Your personal<br />gift link
                   </h2>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(255,255,255,0.82)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
@@ -420,7 +452,7 @@ export default function LandingPage() {
               <div className="lp-feat-grid lp-feat-grid--rev">
                 <div className="lp-feat-text">
                   <p className="lp-eyebrow" style={{ color: 'var(--color-accent)' }}>Step 02</p>
-                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: '#F6F3EE', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 800, fontSize: 44, color: '#F6F3EE', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
                     A dashboard<br />that shows<br />everything
                   </h2>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(246,243,238,0.72)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
@@ -441,7 +473,7 @@ export default function LandingPage() {
               <div className="lp-feat-grid">
                 <div className="lp-feat-text">
                   <p className="lp-eyebrow">Step 03</p>
-                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: 'var(--color-text-primary)', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 800, fontSize: 44, color: 'var(--color-text-primary)', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
                     Gift Tags that<br />make giving easy
                   </h2>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--color-text-secondary)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
@@ -462,7 +494,7 @@ export default function LandingPage() {
               <div className="lp-feat-grid lp-feat-grid--rev">
                 <div className="lp-feat-text">
                   <p className="lp-eyebrow" style={{ color: 'rgba(255,255,255,0.6)' }}>Step 04</p>
-                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 50, color: '#fff', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
+                  <h2 className="lp-feat-h2" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 800, fontSize: 44, color: '#fff', lineHeight: 1.08, letterSpacing: '-0.025em', margin: '0 0 20px' }}>
                     Support Pools<br />for your biggest<br />goals
                   </h2>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(255,255,255,0.88)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 380 }}>
@@ -501,9 +533,9 @@ export default function LandingPage() {
                 { label: '0', sub: 'Hidden charges', detail: 'Transparent pricing, always. No surprises.' },
               ].map(f => (
                 <div key={f.label} style={{
-                  background: f.accent ? 'var(--color-accent-soft)' : 'var(--color-bg)',
-                  border: `1.5px solid ${f.accent ? 'rgba(200,123,92,0.3)' : 'var(--color-border)'}`,
-                  borderRadius: 'var(--radius-md)',
+                  background: f.accent ? 'var(--kiima-olive)' : 'var(--color-bg)',
+                  border: '2px solid #000000',
+                  boxShadow: '4px 4px 0 0 #000000',
                   padding: '28px 24px',
                   textAlign: 'center',
                 }}>
@@ -544,7 +576,7 @@ export default function LandingPage() {
                         background: 'none', border: 'none', cursor: 'pointer', gap: 16, textAlign: 'left',
                       }}
                     >
-                      <span style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 16, color: 'var(--color-text-primary)' }}>{faq.q}</span>
+                      <span style={{ fontFamily: 'var(--kiima-font)', fontWeight: 600, fontSize: 16, color: 'var(--color-text-primary)' }}>{faq.q}</span>
                       <span style={{
                         fontSize: 22, color: 'var(--color-text-muted)', flexShrink: 0, lineHeight: 1,
                         transition: 'transform 0.2s ease',
@@ -553,7 +585,7 @@ export default function LandingPage() {
                       }}>+</span>
                     </button>
                     <div className={`lp-faq-answer${openFaq === i ? ' lp-faq-answer--open' : ''}`}>
-                      <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--color-text-secondary)', lineHeight: 1.7, paddingBottom: 22, margin: 0 }}>{faq.a}</p>
+                      <p style={{ fontFamily: 'var(--kiima-font)', fontSize: 15, color: 'var(--color-text-secondary)', lineHeight: 1.7, paddingBottom: 22, margin: 0 }}>{faq.a}</p>
                     </div>
                   </div>
                 ))}
@@ -575,7 +607,7 @@ export default function LandingPage() {
                 { quote: 'My fans used a support pool to help fund my EP. We hit the goal in 11 days. I was in tears. Kiima made that possible.', name: 'Emeka Okafor', handle: '@emekamusic_', role: 'Musician · Abuja' },
                 { quote: 'Setting up took five minutes. The gift tags are such a smart touch — people actually use them. It removes all the awkwardness.', name: 'Fatima Abubakar', handle: '@thefatimapod', role: 'Podcaster · Kano' },
               ].map(t => (
-                <div key={t.name} className="lp-testi-card" style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-card)', padding: 32, display: 'flex', flexDirection: 'column' }}>
+                <div key={t.name} className="lp-testi-card" style={{ background: 'var(--color-surface)', border: '2px solid #000000', boxShadow: '4px 4px 0 0 #000000', padding: 32, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontSize: 32, color: 'var(--color-accent)', marginBottom: 16, fontFamily: 'Georgia, serif' }}>&ldquo;</div>
                   <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 17, color: 'var(--color-text-primary)', lineHeight: 1.65, flex: 1, margin: '0 0 auto' }}>{t.quote}</p>
                   <div style={{ paddingTop: 22, borderTop: '1px solid var(--color-border)', marginTop: 22 }}>
@@ -593,8 +625,8 @@ export default function LandingPage() {
         <section style={{ background: 'var(--color-text-primary)', padding: '112px 0' }}>
           <div className="lp-wrap" style={{ textAlign: 'center' }}>
             <h2 className="lp-final-h2" style={{
-              fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 68,
-              color: '#F6F3EE', lineHeight: 1.06, letterSpacing: '-0.03em',
+              fontFamily: 'var(--kiima-font)', fontWeight: 800, fontSize: 'clamp(36px, 5vw, 64px)',
+              color: '#F6F3EE', lineHeight: 1.06, letterSpacing: '-2px',
               margin: '0 0 20px',
             }}>
               Say goodbye to awkward<br />payment requests,<br />and start receiving<br />with grace.
@@ -615,8 +647,8 @@ export default function LandingPage() {
         <footer style={{ background: 'var(--color-text-primary)', borderTop: '1px solid rgba(246,243,238,0.07)', padding: '40px 0' }}>
           <div className="lp-wrap">
             <div className="lp-footer-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24, paddingBottom: 28, borderBottom: '1px solid rgba(246,243,238,0.07)' }}>
-              <Link href="/" style={{ ...logoStyle, color: '#F6F3EE' }}>
-                kiima<span style={{ color: 'var(--color-accent)' }}>.</span>
+              <Link href="/" style={logoStyle}>
+                kiima<span style={{ color: 'var(--kiima-olive)' }}>.</span>
               </Link>
               <div className="lp-footer-links" style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
                 {['Product', 'Creators', 'Privacy', 'Terms'].map(l => (
@@ -638,73 +670,46 @@ export default function LandingPage() {
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 
 const logoStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 500,
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 800,
   fontSize: 26,
-  color: 'var(--color-text-primary)',
+  color: '#ffffff',
   textDecoration: 'none',
   letterSpacing: '-0.02em',
 };
 
 const sectionH2Style: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 400,
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 800,
   fontSize: 44,
   color: 'var(--color-text-primary)',
   margin: '0 0 16px',
-  lineHeight: 1.13,
-  letterSpacing: '-0.02em',
+  lineHeight: 1.1,
+  letterSpacing: '-1.5px',
 };
 
-// ─── Phone Mockup ──────────────────────────────────────────────────────────────
+// ─── Kiima Coin — floating neobrutalist coin decoration ───────────────────────
 
-function PhoneMockup() {
+function KiimaCoin({ size = 160, style, className }: { size?: number; style?: React.CSSProperties; className?: string }) {
   return (
-    <div style={{
-      width: 280,
-      background: '#1C1916',
-      borderRadius: 48,
-      padding: 10,
-      boxShadow: '0 40px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06)',
-      flexShrink: 0,
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4, paddingBottom: 8 }}>
-        <div style={{ width: 88, height: 26, background: '#000', borderRadius: 100 }} />
-      </div>
-      <div style={{ background: '#F6F3EE', borderRadius: 40, padding: '20px 16px 24px', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #C87B5C 0%, #E8A07A 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 24, color: '#fff',
-            marginBottom: 10,
-          }}>A</div>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 16, color: '#1C1916', margin: 0, lineHeight: 1.2 }}>Adeola Bello</p>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9A9089', margin: '3px 0 0' }}>@adeola.creates</p>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#5A4D44', margin: '7px 0 0', textAlign: 'center', lineHeight: 1.45 }}>Content creator 🎬 · Lagos</p>
-        </div>
-        <div style={{ height: 1, background: 'rgba(28,25,22,0.06)', marginBottom: 14 }} />
-        <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', marginBottom: 10 }}>Send a gift</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 }}>
-          {[['☕', '₦2k'], ['🎬', '₦5k'], ['🌟', '₦10k']].map(([e, a]) => (
-            <span key={a} style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '4px 10px' }}>
-              {e} {a}
-            </span>
-          ))}
-        </div>
-        <div style={{ background: '#fff', border: '1.5px solid rgba(200,123,92,0.35)', borderRadius: 12, padding: '8px 12px', marginBottom: 10 }}>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 2px' }}>Amount</p>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 22, fontWeight: 700, color: '#1C1916', margin: 0 }}>₦ 2,000</p>
-        </div>
-        <div style={{ background: '#fff', border: '1.5px solid rgba(28,25,22,0.08)', borderRadius: 12, padding: '8px 12px', marginBottom: 12 }}>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 2px' }}>Your name</p>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9A9089', margin: 0 }}>Victor O.</p>
-        </div>
-        <div style={{ background: '#1C1916', borderRadius: 12, padding: '12px', textAlign: 'center' }}>
-          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#fff' }}>Send gift ❤️</span>
-        </div>
-      </div>
+    <div className={className} style={{ position: 'absolute', width: size, height: size, ...style }}>
+      <svg viewBox="0 0 100 108" width={size} height={size}>
+        {/* 3D depth layer — dark olive, offset down */}
+        <circle cx="52" cy="58" r="44" fill="#7a7a00" />
+        {/* Face circle */}
+        <circle cx="50" cy="50" r="44" fill="#D7D744" stroke="#000000" strokeWidth="4" />
+        {/* Heart icon */}
+        <path
+          d="M50 67
+             C50 67 24 53 24 38
+             C24 28 31 22 40 22
+             C44 22 47 25 50 29
+             C53 25 56 22 60 22
+             C69 22 76 28 76 38
+             C76 53 50 67 50 67 Z"
+          fill="#000000"
+        />
+      </svg>
     </div>
   );
 }
@@ -734,7 +739,7 @@ function GiftPageMockup() {
       </div>
       <div style={{ padding: '20px 18px 22px', background: '#F6F3EE' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ width: 54, height: 54, borderRadius: '50%', background: 'linear-gradient(135deg, #C87B5C 0%, #E8A07A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500, marginBottom: 8 }}>A</div>
+          <div style={{ width: 54, height: 54, borderRadius: '50%', background: 'linear-gradient(135deg, #FF5C00 0%, #FF8040 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500, marginBottom: 8 }}>A</div>
           <p style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 500, color: '#1C1916', margin: 0 }}>Adeola Bello</p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9A9089', margin: '3px 0 6px' }}>@adeola.creates</p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#5A4D44', margin: 0, textAlign: 'center', lineHeight: 1.45 }}>Content creator 🎬 · Lifestyle · Lagos</p>
@@ -743,7 +748,7 @@ function GiftPageMockup() {
         <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', marginBottom: 10 }}>Send a gift</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
           {[['☕', '₦2k'], ['🎬', '₦5k'], ['❤️', '₦10k']].map(([e, a]) => (
-            <span key={a} style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.22)', borderRadius: 100, padding: '5px 12px' }}>{e} {a}</span>
+            <span key={a} style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, background: '#FFF0EB', color: '#FF5C00', border: '1.5px solid rgba(200,123,92,0.22)', borderRadius: 100, padding: '5px 12px' }}>{e} {a}</span>
           ))}
         </div>
         <div style={{ background: '#fff', border: '1.5px solid rgba(28,25,22,0.08)', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
@@ -800,7 +805,7 @@ function DashboardMockup() {
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'rgba(246,243,238,0.3)', margin: 0 }}>{row.time}</p>
               </div>
             </div>
-            <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#C87B5C', margin: 0 }}>{row.amount}</p>
+            <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#FF5C00', margin: 0 }}>{row.amount}</p>
           </div>
         ))}
       </div>
@@ -822,9 +827,9 @@ function GiftTagsMockup() {
     }}>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5AAAA', margin: '0 0 14px' }}>Choose a gift tag</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, background: '#C87B5C', color: '#fff', borderRadius: 100, padding: '9px 16px' }}>☕ Coffee · ₦2,000</span>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '9px 16px' }}>🎬 Collab · ₦5,000</span>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, background: '#FDF1EC', color: '#C87B5C', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '9px 16px' }}>🌟 VIP · ₦20,000</span>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, background: '#FF5C00', color: '#fff', borderRadius: 100, padding: '9px 16px' }}>☕ Coffee · ₦2,000</span>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, background: '#FFF0EB', color: '#FF5C00', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '9px 16px' }}>🎬 Collab · ₦5,000</span>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, background: '#FFF0EB', color: '#FF5C00', border: '1.5px solid rgba(200,123,92,0.25)', borderRadius: 100, padding: '9px 16px' }}>🌟 VIP · ₦20,000</span>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600, background: '#F6F3EE', color: '#9A9089', border: '1.5px dashed rgba(28,25,22,0.12)', borderRadius: 100, padding: '9px 16px' }}>+ Add tag</span>
       </div>
       <div style={{ background: '#F6F3EE', border: '1.5px solid rgba(200,123,92,0.3)', borderRadius: 12, padding: '12px 16px', marginBottom: 12 }}>
@@ -874,7 +879,7 @@ function PoolMockup() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.14)', paddingTop: 16 }}>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'rgba(255,255,255,0.58)', margin: 0 }}>24 contributors</p>
         <div style={{ background: 'rgba(255,255,255,0.92)', borderRadius: 10, padding: '9px 18px' }}>
-          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#C87B5C' }}>Support this 🤍</span>
+          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#FF5C00' }}>Support this 🤍</span>
         </div>
       </div>
     </div>

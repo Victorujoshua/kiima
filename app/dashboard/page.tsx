@@ -84,11 +84,17 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <DashboardHeader
-        avatarUrl={avatarUrl}
-        displayName={displayName}
-        username={username}
-      />
+      {/* Desktop page title — hidden on mobile */}
+      <h1 className="k-dash-page-title">Dashboard</h1>
+
+      {/* Profile header — hidden on desktop (sidebar handles nav context) */}
+      <div className="k-dash-header-mobile">
+        <DashboardHeader
+          avatarUrl={avatarUrl}
+          displayName={displayName}
+          username={username}
+        />
+      </div>
 
       <GiftTagsRow tags={tags} userId={userId} currency={currency} />
 

@@ -78,7 +78,7 @@ export default function TagsClient({ tags: initialTags, userId, currency }: Prop
       <div style={pageStyle}>
         {/* Header */}
         <div style={{ marginBottom: '24px' }}>
-          <h1 style={headingStyle}>Gift tags</h1>
+          <h1 className="k-dash-page-title">Gift tags</h1>
           <p style={subtitleStyle}>
             Supporters see these as quick-pick amounts on your gift page.
           </p>
