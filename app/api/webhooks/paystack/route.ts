@@ -127,7 +127,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // 5d. Send notification email to creator (fire-and-forget — never throws)
     try {
-      await sendCreatorNotificationEmail(supabase, contribution);
+      const emailResult = await sendCreatorNotificationEmail(supabase, contribution);
+      console.log('[webhook] Email result:', JSON.stringify(emailResult));
     } catch (emailErr) {
       console.error('[webhook] Email notification failed:', emailErr);
     }
@@ -188,7 +189,10 @@ async function sendCreatorNotificationEmail(
   const creatorEmail = authResult.data.user?.email;
   const profile      = profileResult.data;
 
-  if (!creatorEmail || !profile) return;
+  if (!creatorEmail || !profile) {
+    console.warn('[webhook] Missing creator email or profile for recipient:', contribution.recipient_id);
+    return { success: false, error: 'No creator email or profile' };
+  }
 
   // ✅ Safe split — won't crash if display_name is null
   const creatorFirstName = (profile.display_name ?? profile.username ?? 'Creator').split(' ')[0];
