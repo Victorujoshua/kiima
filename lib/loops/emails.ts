@@ -62,11 +62,11 @@ export async function sendGiftReceivedEmail(data: {
       transactionalId: TEMPLATE_IDS.giftReceived,
       email: data.creatorEmail,
       dataVariables: {
-        first_name:    data.creatorFirstName,
-        sender_name:   data.senderName,
-        gift_amount:   data.giftAmount,
-        tag_used:      data.tagUsed ?? '',
-        note_preview:  data.notePreview ?? '',
+        first_name:   data.creatorFirstName,
+        sendername:   data.senderName,
+        giftamount:   data.giftAmount,
+        tagused:      data.tagUsed ?? '',
+        notepreview:  data.notePreview ?? '',
         dashboard_url: data.dashboardUrl,
       },
     });
