@@ -49,6 +49,7 @@ export interface Contribution {
   is_anonymous: boolean;
   paystack_ref: string;
   status: ContributionStatus;
+  note: string | null;
   created_at: string;
   // Joined fields
   tag?: GiftTag;

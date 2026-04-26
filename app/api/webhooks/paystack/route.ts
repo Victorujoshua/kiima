@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPaystackSignature } from '@/lib/paystack/webhook';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { formatCurrency } from '@/lib/utils/currency';
+import {
+  sendGiftReceivedEmail,
+  sendPoolContributionEmail,
+} from '@/lib/loops/emails';
 
 // Paystack expects a 200 response for every event it delivers — even errors.
 // Returning 4xx/5xx causes Paystack to retry, which can cause double-processing.
@@ -33,7 +38,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     event = JSON.parse(rawBody) as PaystackEvent;
   } catch {
-    // Malformed JSON — log and return 200 so Paystack doesn't retry
     await logWebhookEvent({
       event_type: 'unknown',
       paystack_ref: null,
@@ -63,10 +67,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const supabase = createAdminClient();
 
   try {
-    // 5a. Look up contribution by paystack_ref
+    // 5a. Look up contribution by paystack_ref — include all fields needed for emails
     const { data: contribution, error: lookupError } = await supabase
       .from('contributions')
-      .select('id, pool_id, gift_amount, status')
+      .select('id, recipient_id, pool_id, tag_id, gift_amount, currency, display_name, is_anonymous, note, status')
       .eq('paystack_ref', paystackRef)
       .single();
 
@@ -125,7 +129,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // 5d. Log success
+    // 5d. Send notification email to creator (fire-and-forget — never throws)
+    try {
+      await sendCreatorNotificationEmail(supabase, contribution);
+    } catch (emailErr) {
+      console.error('[webhook] Email notification failed:', emailErr);
+    }
+
+    // 5e. Log success
     await logWebhookEvent({
       event_type: eventType,
       paystack_ref: paystackRef,
@@ -147,8 +158,96 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       error_message: message,
     });
 
-    // Still return 200 — we've logged the failure; retrying won't help
     return NextResponse.json({ ok: true });
+  }
+}
+
+// ─── Email notification helper ────────────────────────────────────────────────
+
+async function sendCreatorNotificationEmail(
+  supabase: ReturnType<typeof createAdminClient>,
+  contribution: {
+    recipient_id: string;
+    pool_id: string | null;
+    tag_id: string | null;
+    gift_amount: number;
+    currency: string;
+    display_name: string | null;
+    is_anonymous: boolean;
+    note: string | null;
+  }
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+
+  // Fetch creator auth record (for email) and profile (for name/username) in parallel
+  const [authResult, profileResult] = await Promise.all([
+    supabase.auth.admin.getUserById(contribution.recipient_id),
+    supabase
+      .from('profiles')
+      .select('display_name, username')
+      .eq('id', contribution.recipient_id)
+      .single(),
+  ]);
+
+  const creatorEmail = authResult.data.user?.email;
+  const profile      = profileResult.data;
+
+  if (!creatorEmail || !profile) return;
+
+  const creatorFirstName = profile.display_name.split(' ')[0];
+  const senderName = contribution.is_anonymous
+    ? 'Someone'
+    : contribution.display_name ?? 'Someone';
+  const giftAmount = formatCurrency(
+    contribution.gift_amount,
+    contribution.currency as import('@/types').Currency
+  );
+
+  if (!contribution.pool_id) {
+    // Direct gift — fetch tag label if there is one
+    let tagLabel: string | null = null;
+    if (contribution.tag_id) {
+      const { data: tag } = await supabase
+        .from('gift_tags')
+        .select('label')
+        .eq('id', contribution.tag_id)
+        .single();
+      tagLabel = tag?.label ?? null;
+    }
+
+    await sendGiftReceivedEmail({
+      creatorEmail,
+      creatorFirstName,
+      senderName,
+      giftAmount,
+      tagUsed:      tagLabel,
+      notePreview:  contribution.note ? contribution.note.substring(0, 100) : null,
+      dashboardUrl: `${appUrl}/dashboard`,
+    });
+  } else {
+    // Pool contribution — fetch pool details
+    const { data: pool } = await supabase
+      .from('support_pools')
+      .select('title, raised, goal_amount, slug, currency')
+      .eq('id', contribution.pool_id)
+      .single();
+
+    if (!pool) return;
+
+    const isGoalReached = Number(pool.raised) >= Number(pool.goal_amount);
+
+    await sendPoolContributionEmail({
+      creatorEmail,
+      creatorFirstName,
+      senderName,
+      giftAmount,
+      poolTitle:   pool.title,
+      poolRaised:  formatCurrency(Number(pool.raised), pool.currency as import('@/types').Currency),
+      poolGoal:    formatCurrency(Number(pool.goal_amount), pool.currency as import('@/types').Currency),
+      poolPercent: Math.round((Number(pool.raised) / Number(pool.goal_amount)) * 100),
+      poolUrl:     `${appUrl}/${profile.username}/pool/${pool.slug}`,
+      isGoalReached,
+    });
   }
 }
 
@@ -167,7 +266,6 @@ async function logWebhookEvent(params: LogParams): Promise<void> {
     const supabase = createAdminClient();
     await supabase.from('webhook_logs').insert(params);
   } catch {
-    // Logging must never throw — if it fails, we still return 200
     console.error('[webhook] Failed to write webhook_log:', params);
   }
 }

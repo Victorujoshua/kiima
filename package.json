@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.5",
     "@supabase/supabase-js": "^2",
+    "loops": "^6.3.0",
     "lucide-react": "^1.11.0",
     "next": "14.2.35",
     "react": "^18",

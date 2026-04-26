@@ -1318,3 +1318,83 @@ OPEN ISSUES / NEXT STEPS:
   - og-default.png still not created.
   - All migrations 001–008 must be run on live Supabase.
 ```
+
+---
+
+```
+Date: 2026-04-26
+Session: 14 — Loops email integration
+
+WHAT WAS BUILT:
+
+  NEW FILES:
+  - lib/loops/client.ts
+      Exports `loops` (LoopsClient instance or null if LOOPS_API_KEY not set).
+      Graceful null prevents crashes in dev without the key.
+      Package: `loops` (npm) — NOT @loops-so/node which does not exist.
+
+  - lib/loops/emails.ts
+      4 exported async functions — all wrapped in try/catch, all return
+      { success } | { success, error }, never throw:
+        sendWelcomeEmail        — triggered after email signup + Google onboarding
+        sendGiftReceivedEmail   — triggered by webhook on confirmed direct gift
+        sendPoolContributionEmail — triggered by webhook on confirmed pool contribution
+                                    (uses poolGoalReached template when isGoalReached)
+        createLoopsContact      — triggered after signup; creates CRM contact with
+                                  userGroup=creators, custom fields username/currency
+      TEMPLATE_IDS object at top — all values are REPLACE_WITH_LOOPS_TEMPLATE_ID
+      placeholders until Victor creates templates in Loops dashboard.
+
+  - supabase/migrations/009_contribution_note.sql
+      ALTER TABLE contributions ADD COLUMN IF NOT EXISTS note text;
+      MUST be run in Supabase SQL Editor before gift email notes appear.
+
+  MODIFIED FILES:
+  - lib/actions/auth.actions.ts
+      + import sendWelcomeEmail, createLoopsContact from lib/loops/emails
+      + After profile INSERT in signupAction: Promise.allSettled([welcome, contact])
+      + After profile INSERT in completeGoogleOnboarding: same pattern
+      Both use Promise.allSettled — email failure never blocks account creation.
+
+  - lib/actions/gift.actions.ts
+      + Reads `note` from formData (trimmed, null if empty)
+      + Saves note to contributions INSERT (ready for when GiftForm adds the field)
+
+  - app/api/webhooks/paystack/route.ts
+      + import formatCurrency, sendGiftReceivedEmail, sendPoolContributionEmail
+      + Contribution select expanded to include recipient_id, is_anonymous,
+        display_name, currency, tag_id, note (in addition to existing fields)
+      + sendCreatorNotificationEmail() helper called after status ? confirmed
+        - Fetches creator email via supabase.auth.admin.getUserById()
+        - Fetches creator profile for display_name + username
+        - Direct gift: fetches tag label if tag_id set, calls sendGiftReceivedEmail
+        - Pool gift: fetches pool row (title/raised/goal/slug), calls sendPoolContributionEmail
+        - Entire email block wrapped in try/catch — email failure never breaks webhook
+
+  - types/index.ts
+      + note: string | null added to Contribution interface
+
+  - CLAUDE.md Section 7 (Migrations table)
+      + 009_contribution_note.sql entry added
+
+IMPORTANT — ACTION REQUIRED BEFORE EMAILS WORK:
+  1. Run migration 009 in Supabase SQL Editor
+  2. Add LOOPS_API_KEY to .env.local and Vercel environment variables
+  3. Create 5 email templates in Loops dashboard and replace all
+     REPLACE_WITH_LOOPS_TEMPLATE_ID values in lib/loops/emails.ts:
+       welcome, giftReceived, poolContribution, poolGoalReached, confirmEmail
+  4. Data variables available per template:
+       welcome:          first_name, username, dashboard_url, gift_link
+       giftReceived:     first_name, sender_name, gift_amount, tag_used,
+                         note_preview, dashboard_url
+       poolContribution: first_name, sender_name, gift_amount, pool_title,
+                         pool_raised, pool_goal, pool_percent, pool_url
+       poolGoalReached:  same as poolContribution
+
+OPEN ISSUES:
+  - GiftForm UI does not yet have a note input field — note is saved server-side
+    but gifters cannot enter one until the field is added to GiftForm/ContributeForm
+  - confirmEmail template wired but never triggered (Supabase handles confirmation
+    emails natively — this slot is reserved for a custom flow if needed)
+  - og-default.png still not created
+```

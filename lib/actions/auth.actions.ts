@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { sendWelcomeEmail, createLoopsContact } from '@/lib/loops/emails';
 import type { Currency } from '@/types';
 
 // ─── Check Username Available ──────────────────────────────────────────────
@@ -80,6 +81,17 @@ export async function completeGoogleOnboarding(data: {
     }
     console.error('[completeGoogleOnboarding] insert error:', profileError.message);
     return { error: 'Something went wrong — try again.' };
+  }
+
+  // Fire welcome email + contact creation — never block onboarding
+  const email     = user.email ?? '';
+  const firstName = data.displayName.split(' ')[0];
+  const lastName  = data.displayName.split(' ').slice(1).join(' ');
+  if (email) {
+    await Promise.allSettled([
+      sendWelcomeEmail({ email, firstName, username }),
+      createLoopsContact({ email, firstName, lastName, username, currency: data.currency }),
+    ]);
   }
 
   return { success: true };
@@ -194,6 +206,14 @@ export async function signupAction(
 
   // Default "Buy me a drink 🥤" tag is inserted automatically by the
   // on_profile_created_insert_default_tag database trigger (migration 002).
+
+  // Fire welcome email + contact creation — never block profile creation
+  const firstName = display_name.split(' ')[0];
+  const lastName  = display_name.split(' ').slice(1).join(' ');
+  await Promise.allSettled([
+    sendWelcomeEmail({ email, firstName, username }),
+    createLoopsContact({ email, firstName, lastName, username, currency }),
+  ]);
 
   // If Supabase email confirmation is enabled, there is no session yet.
   // The profile is created; the user must confirm their email to log in.

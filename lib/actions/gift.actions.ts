@@ -20,6 +20,7 @@ export async function initializeGift(
   const rawDisplayName = (formData.get('display_name')   as string | null)?.trim() || null;
   const isAnonymous    = formData.get('is_anonymous') === 'true';
   const poolId         = (formData.get('pool_id') as string | null) || null;
+  const note           = (formData.get('note') as string | null)?.trim() || null;
 
   // Section 4.3: anonymous choice always overrides
   const displayName = isAnonymous ? null : rawDisplayName;
@@ -93,6 +94,7 @@ export async function initializeGift(
       is_anonymous:   isAnonymous,
       paystack_ref:   reference,
       status:         'pending',
+      note,
     });
 
   if (insertError) {

@@ -716,6 +716,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `supabase/migrations/006_contributions_fee_columns.sql` | ADD fee + net_amount to contributions (idempotent) |
 | `supabase/migrations/007_payment_refactor.sql` | Rename fee columns; ADD paystack_fee, total_charged, platform_fee_percent |
 | `supabase/migrations/008_update_default_tag.sql` | UPDATE all existing default tags to "Buy me a drink 🥤" |
+| `supabase/migrations/009_contribution_note.sql` | ADD note text column to contributions |
 
 ---
 
