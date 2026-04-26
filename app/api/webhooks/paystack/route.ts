@@ -7,13 +7,9 @@ import {
   sendPoolContributionEmail,
 } from '@/lib/loops/emails';
 
-// Paystack expects a 200 response for every event it delivers — even errors.
-// Returning 4xx/5xx causes Paystack to retry, which can cause double-processing.
-// Only 401 is returned (before DB work starts) when signature verification fails.
-
 interface ChargeSuccessData {
   reference: string;
-  amount: number;       // subunits
+  amount: number;
   status: string;
   [key: string]: unknown;
 }
@@ -70,7 +66,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 5a. Look up contribution by paystack_ref — include all fields needed for emails
     const { data: contribution, error: lookupError } = await supabase
       .from('contributions')
-      .select('id, recipient_id, pool_id, tag_id, gift_amount, currency, display_name, is_anonymous, status')
+      .select('id, recipient_id, pool_id, tag_id, gift_amount, currency, display_name, is_anonymous, status, note')
       .eq('paystack_ref', paystackRef)
       .single();
 
@@ -174,6 +170,7 @@ async function sendCreatorNotificationEmail(
     currency: string;
     display_name: string | null;
     is_anonymous: boolean;
+    note: string | null;
   }
 ) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
@@ -193,10 +190,13 @@ async function sendCreatorNotificationEmail(
 
   if (!creatorEmail || !profile) return;
 
-  const creatorFirstName = profile.display_name.split(' ')[0];
+  // ✅ Safe split — won't crash if display_name is null
+  const creatorFirstName = (profile.display_name ?? profile.username ?? 'Creator').split(' ')[0];
+
   const senderName = contribution.is_anonymous
     ? 'Someone'
     : contribution.display_name ?? 'Someone';
+
   const giftAmount = formatCurrency(
     contribution.gift_amount,
     contribution.currency as import('@/types').Currency
@@ -220,7 +220,7 @@ async function sendCreatorNotificationEmail(
       senderName,
       giftAmount,
       tagUsed:      tagLabel,
-      notePreview:  null,
+      notePreview:  contribution.note ?? null, // ✅ real note now
       dashboardUrl: `${appUrl}/dashboard`,
     });
   } else {
