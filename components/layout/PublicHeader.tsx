@@ -9,15 +9,17 @@ export default function PublicHeader() {
 
   return (
     <header style={headerStyle}>
-      <Link href="/" style={logoStyle}>
-        kiima<span style={{ color: '#D7D744' }}>.</span>
-      </Link>
+      <div style={innerStyle}>
+        <Link href="/" style={logoStyle}>
+          kiima<span style={{ color: '#D7D744' }}>.</span>
+        </Link>
 
-      <button onClick={toggle} style={toggleStyle} aria-label="Toggle dark mode">
-        {theme === 'dark'
-          ? <Sun size={18} strokeWidth={2} />
-          : <Moon size={18} strokeWidth={2} />}
-      </button>
+        <button onClick={toggle} style={toggleStyle} aria-label="Toggle dark mode">
+          {theme === 'dark'
+            ? <Sun size={18} strokeWidth={2} />
+            : <Moon size={18} strokeWidth={2} />}
+        </button>
+      </div>
     </header>
   );
 }
@@ -27,20 +29,25 @@ const headerStyle: React.CSSProperties = {
   top: 0,
   left: 0,
   right: 0,
-  height: '52px',
   background: '#000000',
-  borderBottom: '2px solid #D7D744',
+  borderBottom: '2px solid #000000',
+  zIndex: 100,
+};
+
+const innerStyle: React.CSSProperties = {
+  maxWidth: '1120px',
+  margin: '0 auto',
+  padding: '0 60px',
+  height: '68px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '0 20px',
-  zIndex: 100,
 };
 
 const logoStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontWeight: 800,
-  fontSize: '28px',
+  fontSize: '26px',
   color: '#ffffff',
   textDecoration: 'none',
   letterSpacing: '-0.02em',

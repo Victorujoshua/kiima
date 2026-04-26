@@ -15,6 +15,15 @@ export default function LandingPage() {
     });
   }, []);
 
+  // Landing page is always light mode
+  useEffect(() => {
+    const saved = localStorage.getItem('kiima-theme');
+    document.documentElement.setAttribute('data-theme', 'light');
+    return () => {
+      document.documentElement.setAttribute('data-theme', saved ?? 'light');
+    };
+  }, []);
+
   const faqs = [
     { q: 'Do I need a website to use Kiima?', a: 'No. Kiima gives you a personal page at kiima.app/yourname. Share it in your Instagram bio, TikTok, YouTube description, or anywhere your audience finds you.' },
     { q: 'How do I receive my money?', a: 'Funds settle directly to your Nigerian bank account via Paystack. No wallets, no waiting around — money goes straight to you.' },
@@ -666,8 +675,8 @@ export default function LandingPage() {
                 kiima<span style={{ color: 'var(--kiima-olive)' }}>.</span>
               </Link>
               <div className="lp-footer-links" style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
-                {['Product', 'Creators', 'Privacy', 'Terms'].map(l => (
-                  <a key={l} href="#" style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'rgba(246,243,238,0.4)', textDecoration: 'none' }}>{l}</a>
+                {[{ label: 'Product', href: '/product' }, { label: 'Creators', href: '/creators' }, { label: 'Privacy', href: '/privacy' }, { label: 'Terms', href: '/terms' }].map(({ label, href }) => (
+                  <Link key={label} href={href} style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'rgba(246,243,238,0.4)', textDecoration: 'none' }}>{label}</Link>
                 ))}
               </div>
             </div>

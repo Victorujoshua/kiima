@@ -169,7 +169,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-bg)',
-  paddingTop: '52px',
+  paddingTop: '68px',
   paddingBottom: '60px',
 };
 

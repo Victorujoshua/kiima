@@ -155,7 +155,7 @@ export default async function PoolPage({ params }: PageProps) {
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
   background: 'var(--color-bg)',
-  padding: '92px 0 40px',
+  padding: '108px 0 40px',
 };
 
 const gridStyle: React.CSSProperties = {
