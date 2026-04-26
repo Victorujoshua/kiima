@@ -170,13 +170,19 @@ export default function SettingsClient({ profile, email, links }: Props) {
         {/* ── Account section ── */}
         <div style={{ ...cardStyle, marginTop: '12px' }}>
           <p style={sectionLabel}>Account</p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-faint)', margin: '0 0 2px' }}>Email</p>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-secondary)', margin: 0 }}>{email}</p>
-            </div>
+
+          {/* Email */}
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-faint)', margin: '0 0 2px' }}>Email</p>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-secondary)', margin: 0 }}>{email}</p>
           </div>
-          <LogoutRow />
+
+          {/* Change password */}
+          <ChangePasswordRow onToast={setToast} />
+
+          <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '20px', paddingTop: '20px' }}>
+            <LogoutRow />
+          </div>
         </div>
       </div>
 
@@ -184,6 +190,85 @@ export default function SettingsClient({ profile, email, links }: Props) {
         <Toast message={toast.message} variant={toast.variant} onDismiss={dismissToast} />
       )}
     </>
+  );
+}
+
+function ChangePasswordRow({ onToast }: { onToast: (t: ToastState) => void }) {
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (password.length < 8) {
+      onToast({ message: 'Password must be at least 8 characters.', variant: 'error' });
+      return;
+    }
+    if (password !== confirm) {
+      onToast({ message: 'Passwords don\'t match.', variant: 'error' });
+      return;
+    }
+    setPending(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    setPending(false);
+    if (error) {
+      onToast({ message: error.message, variant: 'error' });
+    } else {
+      onToast({ message: 'Password updated ✓', variant: 'success' });
+      setPassword('');
+      setConfirm('');
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-faint)', margin: '0 0 2px' }}>Password</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-secondary)', margin: 0 }}>••••••••</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen(o => !o)}
+          style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '13px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          {open ? 'Cancel' : 'Change'}
+        </button>
+      </div>
+
+      {open && (
+        <form onSubmit={handleSubmit} style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div>
+            <label style={fieldLabel}>New password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              autoComplete="new-password"
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label style={fieldLabel}>Confirm password</label>
+            <input
+              type="password"
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              placeholder="Repeat new password"
+              autoComplete="new-password"
+              style={inputStyle}
+            />
+          </div>
+          <button type="submit" disabled={pending} style={saveBtnStyle(pending)}>
+            {pending ? 'Updating…' : 'Update password'}
+          </button>
+        </form>
+      )}
+    </div>
   );
 }
 

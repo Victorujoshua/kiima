@@ -1,9 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => {
+      setLoggedIn(!!data.session);
+    });
+  }, []);
 
   const faqs = [
     { q: 'Do I need a website to use Kiima?', a: 'No. Kiima gives you a personal page at kiima.app/yourname. Share it in your Instagram bio, TikTok, YouTube description, or anywhere your audience finds you.' },
@@ -299,10 +309,16 @@ export default function LandingPage() {
               <a href="#how-it-works" className="lp-nav-link">How it works</a>
               <a href="#pricing" className="lp-nav-link">Pricing</a>
               <a href="#faq" className="lp-nav-link">FAQ</a>
-              <Link href="/login" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 600, fontSize: 14, color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Log in</Link>
-              <Link href="/signup" className="lp-btn-nav">Get started →</Link>
+              {!loggedIn && (
+                <Link href="/login" style={{ fontFamily: 'var(--kiima-font)', fontWeight: 600, fontSize: 14, color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Log in</Link>
+              )}
+              <Link href={loggedIn ? '/dashboard' : '/signup'} className="lp-btn-nav">
+                {loggedIn ? 'Dashboard →' : 'Get started →'}
+              </Link>
             </div>
-            <Link href="/signup" className="lp-nav-mobile lp-btn-nav" style={{ fontSize: 13, padding: '9px 16px', minHeight: 40 }}>Get started</Link>
+            <Link href={loggedIn ? '/dashboard' : '/signup'} className="lp-nav-mobile lp-btn-nav" style={{ fontSize: 13, padding: '9px 16px', minHeight: 40 }}>
+              {loggedIn ? 'Dashboard' : 'Get started'}
+            </Link>
           </div>
         </nav>
 
