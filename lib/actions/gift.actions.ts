@@ -94,7 +94,6 @@ export async function initializeGift(
       is_anonymous:   isAnonymous,
       paystack_ref:   reference,
       status:         'pending',
-      note,
     });
 
   if (insertError) {
