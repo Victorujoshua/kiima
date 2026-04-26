@@ -4,6 +4,87 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Currency } from '@/types';
 
+// ─── Check Username Available ──────────────────────────────────────────────
+
+const RESERVED = new Set(['admin', 'kiima', 'support', 'help', 'api', 'www']);
+
+export async function checkUsernameAvailable(
+  username: string
+): Promise<{ available: boolean; error?: string }> {
+  const lower = username.toLowerCase().trim();
+
+  if (lower.length < 3) return { available: false, error: 'At least 3 characters.' };
+  if (lower.length > 30) return { available: false, error: 'Max 30 characters.' };
+  if (!/^[a-z0-9_]+$/.test(lower)) return { available: false, error: 'Letters, numbers, and underscores only.' };
+  if (RESERVED.has(lower)) return { available: false, error: 'This username is reserved.' };
+
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('username', lower)
+    .maybeSingle();
+
+  return { available: !data };
+}
+
+// ─── Complete Google Onboarding ────────────────────────────────────────────
+
+export interface OnboardingState {
+  error?: string;
+  fieldErrors?: Partial<Record<'username' | 'display_name', string>>;
+  success?: boolean;
+}
+
+export async function completeGoogleOnboarding(data: {
+  username: string;
+  displayName: string;
+  currency: Currency;
+  avatarUrl: string | null;
+}): Promise<OnboardingState> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Not authenticated — please sign in again.' };
+
+  const username = data.username.toLowerCase().trim();
+  const displayName = data.displayName.trim();
+
+  const fieldErrors: NonNullable<OnboardingState['fieldErrors']> = {};
+
+  if (!displayName) fieldErrors.display_name = 'Please enter your display name.';
+  if (!username) {
+    fieldErrors.username = 'Please choose a username.';
+  } else if (username.length < 3) {
+    fieldErrors.username = 'At least 3 characters.';
+  } else if (!/^[a-z0-9_]+$/.test(username)) {
+    fieldErrors.username = 'Letters, numbers, and underscores only.';
+  } else if (RESERVED.has(username)) {
+    fieldErrors.username = 'This username is reserved.';
+  }
+
+  if (Object.keys(fieldErrors).length > 0) return { fieldErrors };
+
+  const admin = createAdminClient();
+  const { error: profileError } = await admin.from('profiles').insert({
+    id: user.id,
+    username,
+    display_name: displayName,
+    currency: data.currency,
+    avatar_url: data.avatarUrl ?? null,
+  });
+
+  if (profileError) {
+    if (profileError.code === '23505') {
+      return { fieldErrors: { username: 'This username is already taken.' } };
+    }
+    console.error('[completeGoogleOnboarding] insert error:', profileError.message);
+    return { error: 'Something went wrong — try again.' };
+  }
+
+  return { success: true };
+}
+
 // ─── Signup ────────────────────────────────────────────────────────────────
 
 export interface SignupState {

@@ -1262,3 +1262,59 @@ TypeScript: PASSED clean.
 ### Open issues
 - NEXT_PUBLIC_APP_URL must be set in Vercel env vars
 - Card borders need neobrutalist update (30+ files)
+
+---
+
+```
+Date: 2026-04-26
+Session: 13 — Google OAuth signup & login
+
+WHAT WAS BUILT:
+
+  NEW FILES:
+  - components/shared/GoogleButton.tsx
+      Full-width white Google OAuth button. Official 4-colour Google G SVG (inline).
+      Loading state: spinner + "Redirecting..." text while OAuth redirect is in flight.
+      Calls supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: APP_URL/auth/callback } })
+
+  - app/auth/callback/route.ts
+      Google OAuth PKCE code exchange route (separate from /api/auth/callback which handles
+      password reset). Exchanges code for session, then checks if a profiles row exists:
+        - Profile found   ? redirect /dashboard  (returning user)
+        - No profile      ? redirect /onboarding (new Google user)
+
+  - app/onboarding/page.tsx
+      2-step profile setup flow for new Google users.
+      Step 1: display name (pre-filled from Google full_name), username (real-time availability
+              check via checkUsernameAvailable), currency selector (default NGN).
+      Step 2: bank details placeholder — skip to dashboard (no BankDetailsForm built yet).
+      Guards: redirects to /login if unauthenticated; redirects to /dashboard if profile exists.
+
+  MODIFIED FILES:
+  - lib/actions/auth.actions.ts
+      + checkUsernameAvailable(username): validates format/reserved words, queries profiles.
+        Returns { available: boolean, error?: string }
+      + completeGoogleOnboarding(data): gets userId server-side from session (never trusts client),
+        inserts profile row via admin client, returns fieldErrors or success.
+
+  - app/(auth)/login/page.tsx
+      GoogleButton added above email form. "or" divider between them.
+
+  - app/(auth)/signup/page.tsx
+      GoogleButton added above signup form. "or" divider between them.
+
+  - middleware.ts
+      auth/callback added to matcher exclusion (route handles its own session exchange).
+      Added: unauthenticated users hitting /onboarding ? redirect /login.
+
+  - CLAUDE.md Section 7
+      Added GoogleButton, MarketingHeader, updated auth pages + API routes + server actions tables.
+
+OPEN ISSUES / NEXT STEPS:
+  - BankDetailsForm (step 2 of onboarding) is a placeholder — needs full implementation
+    when bank detail collection is scoped (V2 subaccount flow).
+  - Google OAuth provider must be enabled in Supabase dashboard (confirmed already done).
+  - NEXT_PUBLIC_APP_URL env var must be set correctly in Vercel for redirect URL to work.
+  - og-default.png still not created.
+  - All migrations 001–008 must be run on live Supabase.
+```

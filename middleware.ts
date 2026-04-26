@@ -35,11 +35,17 @@ export async function middleware(request: NextRequest) {
   const isAuthenticated = !!session;
 
   // Authenticated users hitting /login or /signup → redirect to /dashboard
+  // Exception: /onboarding is for newly-authenticated Google users who have no profile yet
   if (
     isAuthenticated &&
     (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password')
   ) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Unauthenticated users hitting /onboarding → redirect to /login
+  if (!isAuthenticated && pathname === '/onboarding') {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Unauthenticated users hitting /dashboard or /admin → redirect to /login
@@ -58,8 +64,9 @@ export const config = {
      *   - _next/image (image optimisation)
      *   - favicon.ico
      *   - /api/webhooks/** (Paystack webhook must not be blocked by auth)
-     *   - /api/auth/callback (Supabase PKCE code exchange)
+     *   - /api/auth/callback (Supabase PKCE code exchange — password reset)
+     *   - /auth/callback (Google OAuth code exchange)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/auth/callback).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/auth/callback|auth/callback).*)',
   ],
 };

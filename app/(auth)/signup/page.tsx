@@ -5,6 +5,7 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import KiimaButton from '@/components/shared/KiimaButton';
+import GoogleButton from '@/components/shared/GoogleButton';
 import { signupAction } from '@/lib/actions/auth.actions';
 import type { Currency } from '@/types';
 
@@ -122,6 +123,16 @@ export default function SignupPage() {
         >
           Where giving feels natural
         </p>
+
+        {/* Google sign-up */}
+        <GoogleButton />
+
+        {/* Divider */}
+        <div style={dividerStyle}>
+          <span style={dividerLineStyle} />
+          <span style={dividerTextStyle}>or</span>
+          <span style={dividerLineStyle} />
+        </div>
 
         <form
           action={formAction}
@@ -290,6 +301,27 @@ export default function SignupPage() {
 }
 
 // ── Shared styles ────────────────────────────────────────────────────────────
+
+const dividerStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  margin: 'var(--space-md) 0',
+};
+
+const dividerLineStyle: React.CSSProperties = {
+  flex: 1,
+  height: '1px',
+  background: 'var(--color-border)',
+  display: 'block',
+};
+
+const dividerTextStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: '12px',
+  color: 'var(--color-text-faint)',
+  flexShrink: 0,
+};
 
 const cardStyle: React.CSSProperties = {
   background: 'var(--color-surface)',

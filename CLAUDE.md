@@ -563,6 +563,7 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
+| `GoogleButton` | `shared/GoogleButton.tsx` | No props — full-width white Google OAuth button; handles `signInWithOAuth` + loading state |
 | `GiftTagPill` | `shared/GiftTagPill.tsx` | `tag, selected, onSelect, currency` |
 | `AnonymousToggle` | `shared/AnonymousToggle.tsx` | `isAnon, displayName?, onChange` |
 | `ProgressBar` | `shared/ProgressBar.tsx` | `raised: number, goal: number, currency: Currency` |
@@ -577,7 +578,8 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Notes |
 |---|---|---|
-| `PublicHeader` | `layout/PublicHeader.tsx` | Fixed black header: logo left, dark/light toggle right. Used on public gift page. |
+| `PublicHeader` | `layout/PublicHeader.tsx` | Fixed black header (68px): logo left, dark/light toggle right. Used on public gifter page. |
+| `MarketingHeader` | `layout/MarketingHeader.tsx` | Landing-style black nav (68px): logo + Product/For Creators links + auth-aware CTA. Used on product, creators, privacy, terms pages. |
 
 ### Page Components
 
@@ -589,23 +591,25 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Route | File |
 |---|---|
-| `/signup` | `app/(auth)/signup/page.tsx` |
-| `/login` | `app/(auth)/login/page.tsx` |
+| `/signup` | `app/(auth)/signup/page.tsx` — Google button + email/password form |
+| `/login` | `app/(auth)/login/page.tsx` — Google button + email/password form |
 | `/forgot-password` | `app/(auth)/forgot-password/page.tsx` |
 | `/reset-password` | `app/(auth)/reset-password/page.tsx` |
+| `/onboarding` | `app/onboarding/page.tsx` — 2-step Google signup completion; pre-fills name/avatar from Google metadata; username availability check; currency select |
 
 ### API Routes
 
 | Route | File |
 |---|---|
-| `/api/auth/callback` | `app/api/auth/callback/route.ts` |
+| `/auth/callback` | `app/auth/callback/route.ts` — Google OAuth PKCE exchange; routes new users to /onboarding, returning users to /dashboard |
+| `/api/auth/callback` | `app/api/auth/callback/route.ts` — Password reset PKCE exchange |
 | `/api/webhooks/paystack` | `app/api/webhooks/paystack/route.ts` |
 
 ### Server Actions
 
 | Action file | Exports |
 |---|---|
-| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile` |
+| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `checkUsernameAvailable`, `completeGoogleOnboarding` |
 | `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `updateTag`, `deleteTag` |
 | `lib/actions/gift.actions.ts` | `initializeGift` |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` |

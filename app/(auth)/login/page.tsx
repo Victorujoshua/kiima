@@ -5,6 +5,7 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import KiimaButton from '@/components/shared/KiimaButton';
+import GoogleButton from '@/components/shared/GoogleButton';
 import { loginAction } from '@/lib/actions/auth.actions';
 
 function SubmitButton() {
@@ -65,6 +66,16 @@ export default function LoginPage() {
         >
           Welcome back 🙏
         </p>
+
+        {/* Google sign-in */}
+        <GoogleButton />
+
+        {/* Divider */}
+        <div style={dividerStyle}>
+          <span style={dividerLineStyle} />
+          <span style={dividerTextStyle}>or</span>
+          <span style={dividerLineStyle} />
+        </div>
 
         <form
           action={formAction}
@@ -148,6 +159,27 @@ export default function LoginPage() {
     </main>
   );
 }
+
+const dividerStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+  margin: 'var(--space-md) 0',
+};
+
+const dividerLineStyle: React.CSSProperties = {
+  flex: 1,
+  height: '1px',
+  background: 'var(--color-border)',
+  display: 'block',
+};
+
+const dividerTextStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: '12px',
+  color: 'var(--color-text-faint)',
+  flexShrink: 0,
+};
 
 const eyeBtnStyle: React.CSSProperties = {
   position: 'absolute',
