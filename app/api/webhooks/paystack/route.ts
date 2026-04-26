@@ -70,7 +70,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 5a. Look up contribution by paystack_ref — include all fields needed for emails
     const { data: contribution, error: lookupError } = await supabase
       .from('contributions')
-      .select('id, recipient_id, pool_id, tag_id, gift_amount, currency, display_name, is_anonymous, note, status')
+      .select('id, recipient_id, pool_id, tag_id, gift_amount, currency, display_name, is_anonymous, status')
       .eq('paystack_ref', paystackRef)
       .single();
 
@@ -174,7 +174,6 @@ async function sendCreatorNotificationEmail(
     currency: string;
     display_name: string | null;
     is_anonymous: boolean;
-    note: string | null;
   }
 ) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
@@ -221,7 +220,7 @@ async function sendCreatorNotificationEmail(
       senderName,
       giftAmount,
       tagUsed:      tagLabel,
-      notePreview:  contribution.note ? contribution.note.substring(0, 100) : null,
+      notePreview:  null,
       dashboardUrl: `${appUrl}/dashboard`,
     });
   } else {
