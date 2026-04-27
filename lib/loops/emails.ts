@@ -57,25 +57,38 @@ export async function sendGiftReceivedEmail(data: {
     console.warn('[loops] LOOPS_API_KEY not set — skipping gift received email');
     return { success: false, error: 'Loops not configured' };
   }
+
+  const payload = {
+    transactionalId: TEMPLATE_IDS.giftReceived,
+    email: data.creatorEmail,
+    dataVariables: {
+      firstname:    data.creatorFirstName,
+      sendername:    data.senderName,
+      giftamount:    data.giftAmount,
+      tagused:       data.tagUsed ?? '',
+      notepreview:   data.notePreview ?? '',
+      dashboard_url: data.dashboardUrl,
+    },
+  };
+
+  console.log('[loops] sendGiftReceivedEmail payload:', JSON.stringify(payload, null, 2));
+
   try {
-    await loops.sendTransactionalEmail({
-      transactionalId: TEMPLATE_IDS.giftReceived,
-      email: data.creatorEmail,
-      dataVariables: {
-        first_name:   data.creatorFirstName,
-        sendername:   data.senderName,
-        giftamount:   data.giftAmount,
-        tagused:      data.tagUsed ?? '',
-        notepreview:  data.notePreview ?? '',
-        dashboard_url: data.dashboardUrl,
-      },
-    });
+    const result = await loops.sendTransactionalEmail(payload);
+    console.log('[loops] sendGiftReceivedEmail result:', JSON.stringify(result, null, 2));
     return { success: true };
-  } catch (err) {
-    console.error('[loops] sendGiftReceivedEmail failed:', err);
+  } catch (err: any) {
+    console.error('[loops] sendGiftReceivedEmail failed:', {
+      message: err?.message,
+      status:  err?.status ?? err?.statusCode,
+      body:    err?.body ?? err?.response ?? err?.data,
+      raw:     String(err),
+    });
     return { success: false, error: String(err) };
   }
 }
+
+
 
 // ─── Pool contribution email ──────────────────────────────────────────────────
 

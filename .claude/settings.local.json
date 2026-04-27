@@ -29,7 +29,12 @@
       "PowerShell(Get-Content *)",
       "PowerShell(node scripts/screenshot.js 2>&1 | Select-Object -First 40)",
       "PowerShell(node scripts/screenshot.js 2>&1 | Select-Object -First 20)",
-      "PowerShell(node scripts/screenshot.js 2>&1)"
+      "PowerShell(node scripts/screenshot.js 2>&1)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "PowerShell(npm search *)",
+      "PowerShell(New-Item *)",
+      "Bash(git add *)"
     ]
   }
 }
