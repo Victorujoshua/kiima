@@ -671,6 +671,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `Toast` | `dashboard/Toast.tsx` | `message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s |
 | `AddTagModal` | `dashboard/AddTagModal.tsx` | `userId, currency, onClose, onSuccess(tag)` — bottom sheet, calls createTag |
 | `EditTagModal` | `dashboard/EditTagModal.tsx` | `tag, userId, currency, onClose, onSuccess(tag)` — bottom sheet, pre-filled, calls updateTag |
+| `BankAccountSection` | `dashboard/BankAccountSection.tsx` | `userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP |
 
 ### Dashboard Pages
 

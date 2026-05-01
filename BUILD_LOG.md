@@ -6,6 +6,50 @@
 
 ```
 Date: 2026-05-01
+Session: Dashboard UI unification + bank account setup with OTP
+
+WHAT WAS BUILT:
+  - app/dashboard/page.tsx — full rewrite (DashboardProfileCard + EarningsCard + RecentGifts)
+  - app/[username]/page.tsx — creator avatar used as browser tab favicon
+  - app/globals.css — .k-dash-main: flex:1, margin-left:260px, padding:32px 100px;
+      mobile: margin-left:0, padding:72px 16px 80px (clears MobileHeader + BottomNav)
+  - components/dashboard/DashboardSidebar.tsx — brand colors applied:
+      olive (#D7D744) active state, orange (#FF5C00) logout hover
+  - components/dashboard/EarningsCard.tsx — orange dot for Pools breakdown
+  - components/dashboard/RecentGifts.tsx — orange "See all" link + avatar palette
+  - app/dashboard/transactions/TransactionsClient.tsx — full style overhaul to clean aesthetic
+      (white cards, 1px #EBEBEB borders, var(--font-body), no box-shadow, borderRadius 12/16)
+  - app/dashboard/tags/TagsClient.tsx — same overhaul; orange system badge, 1px borders
+  - app/dashboard/pools/page.tsx + PoolsClient.tsx — same overhaul; black create button pill
+  - app/dashboard/pools/[id]/page.tsx — same overhaul; removed maxWidth 720px constraint
+  - app/dashboard/links/page.tsx — simplified heading, removed maxWidth
+  - app/dashboard/settings/SettingsClient.tsx — full style overhaul + payout account card section
+  - app/dashboard/settings/page.tsx — fetches bank fields (bank_name, account_number, account_name)
+  - components/dashboard/BankAccountSection.tsx — NEW component
+      • 3-stage state machine: display → otp → editing
+      • First-time setup skips OTP and goes directly to editing
+      • Returning edit triggers supabase.auth.reauthenticate() → 6-digit OTP
+      • OTP verified via supabase.auth.verifyOtp({ type: 'reauthentication' })
+      • 60s resend cooldown; masked account number in display
+      • Uses OtpInput component from auth/OtpInput.tsx
+  - CLAUDE.md Section 7 — added BankAccountSection entry
+
+WHAT TO BUILD NEXT:
+  - Run migration 010 in Supabase SQL editor (bank fields on profiles)
+  - Configure Supabase "Reauthentication" email template to include {{ .Token }}
+  - Test bank account setup end-to-end (display → OTP → edit → save)
+  - Update /onboarding (Google OAuth flow) to match new design
+
+OPEN ISSUES:
+  - Supabase reauthentication OTP requires Supabase email template configuration
+  - Avatars storage bucket must exist in Supabase with public read policy
+  - Google OAuth flow still uses old /onboarding design
+```
+
+---
+
+```
+Date: 2026-05-01
 Session: Dashboard redesign — clean white sidebar + home page
 
 WHAT WAS BUILT:
