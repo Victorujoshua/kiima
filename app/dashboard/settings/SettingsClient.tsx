@@ -179,6 +179,7 @@ export default function SettingsClient({ profile, email, links, bankName, accoun
           </p>
           <BankAccountSection
             userId={profile.id}
+            email={email}
             bankName={bankName}
             accountNumber={accountNumber}
             accountName={accountName}

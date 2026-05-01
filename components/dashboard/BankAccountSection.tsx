@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { getBanks, lookupAccountName, saveBankDetails } from '@/lib/actions/bank.actions';
+import OtpInput from '@/components/auth/OtpInput';
 import type { PaystackBank } from '@/lib/actions/bank.actions';
+
+type Stage = 'display' | 'otp' | 'editing';
 
 interface Props {
   userId:        string;
+  email:         string;
   bankName:      string | null;
   accountNumber: string | null;
   accountName:   string | null;
@@ -13,9 +18,65 @@ interface Props {
   onError:       (msg: string) => void;
 }
 
-export default function BankAccountSection({ userId, bankName, accountNumber, accountName, onSaved, onError }: Props) {
+export default function BankAccountSection({
+  userId, email, bankName, accountNumber, accountName, onSaved, onError,
+}: Props) {
   const hasDetails = !!(bankName && accountNumber && accountName);
-  const [editing, setEditing]         = useState(!hasDetails);
+  const [stage, setStage]             = useState<Stage>(hasDetails ? 'display' : 'editing');
+
+  // ── OTP stage ──────────────────────────────────────────────────────────────
+  const [otp, setOtp]                 = useState('');
+  const [otpSending, setOtpSending]   = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError]       = useState<string | null>(null);
+  const [cooldown, setCooldown]       = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown(c => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
+
+  async function handleRequestOtp() {
+    setOtpSending(true);
+    setOtpError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.reauthenticate();
+    setOtpSending(false);
+    if (error) {
+      setOtpError('Could not send code — try again.');
+    } else {
+      setStage('otp');
+      setCooldown(60);
+    }
+  }
+
+  async function handleVerifyOtp() {
+    if (otp.length !== 6) return;
+    setOtpVerifying(true);
+    setOtpError(null);
+    const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'reauthentication' as any });
+    setOtpVerifying(false);
+    if (error) {
+      setOtpError('Invalid or expired code. Try again.');
+    } else {
+      setOtp('');
+      setStage('editing');
+    }
+  }
+
+  async function handleResendOtp() {
+    if (cooldown > 0) return;
+    setOtpError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.reauthenticate();
+    if (!error) setCooldown(60);
+    else setOtpError('Could not resend — try again.');
+  }
+
+  // ── Edit form stage ─────────────────────────────────────────────────────────
   const [banks, setBanks]             = useState<PaystackBank[]>([]);
   const [bankSearch, setBankSearch]   = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -27,13 +88,11 @@ export default function BankAccountSection({ userId, bankName, accountNumber, ac
   const [saving, setSaving]           = useState(false);
   const dropdownRef                   = useRef<HTMLDivElement>(null);
 
-  // Load banks once when editing opens
   useEffect(() => {
-    if (!editing) return;
+    if (stage !== 'editing') return;
     getBanks().then(r => { if (r.banks) setBanks(r.banks); });
-  }, [editing]);
+  }, [stage]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -44,7 +103,6 @@ export default function BankAccountSection({ userId, bankName, accountNumber, ac
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Auto-lookup when account number reaches 10 digits
   useEffect(() => {
     if (accNumber.length !== 10 || !selectedBank) {
       setResolvedName(null);
@@ -81,13 +139,13 @@ export default function BankAccountSection({ userId, bankName, accountNumber, ac
     if (result.error) {
       onError(result.error);
     } else {
-      onSaved('Payout account saved ✓');
-      setEditing(false);
+      onSaved('Payout account updated ✓');
+      setStage('display');
     }
   }, [selectedBank, resolvedName, accNumber, userId, onSaved, onError]);
 
-  // ── Display state ──────────────────────────────────────────────────────────
-  if (!editing) {
+  // ── RENDER: display ────────────────────────────────────────────────────────
+  if (stage === 'display') {
     const masked = accountNumber ? `••••••${accountNumber.slice(-4)}` : '';
     return (
       <div>
@@ -96,23 +154,66 @@ export default function BankAccountSection({ userId, bankName, accountNumber, ac
             <p style={detailNameStyle}>{accountName}</p>
             <p style={detailMetaStyle}>{bankName} · {masked}</p>
           </div>
-          <button type="button" onClick={() => setEditing(true)} style={changeBtnStyle}>
-            Update
+          <button
+            type="button"
+            onClick={handleRequestOtp}
+            disabled={otpSending}
+            style={changeBtnStyle}
+          >
+            {otpSending ? 'Sending…' : 'Update'}
           </button>
         </div>
         <div style={verifiedBadgeStyle}>
           <span style={{ fontSize: 14 }}>✓</span>
           <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600 }}>Payout account connected</span>
         </div>
+        {otpError && <p style={errorStyle}>{otpError}</p>}
       </div>
     );
   }
 
-  // ── Edit / setup form ──────────────────────────────────────────────────────
+  // ── RENDER: otp ────────────────────────────────────────────────────────────
+  if (stage === 'otp') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <button type="button" onClick={() => { setStage('display'); setOtp(''); setOtpError(null); }} style={cancelLinkStyle}>
+          ← Cancel
+        </button>
+
+        <div style={otpInfoCardStyle}>
+          <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: '#1C1916', margin: '0 0 4px' }}>
+            Verify it&apos;s you
+          </p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9A9089', margin: 0, lineHeight: 1.5 }}>
+            A 6-digit code was sent to <strong style={{ color: '#1C1916' }}>{email}</strong>. Enter it below to continue.
+          </p>
+        </div>
+
+        <OtpInput value={otp} onChange={setOtp} disabled={otpVerifying} />
+
+        {otpError && <p style={errorStyle}>{otpError}</p>}
+
+        <button
+          type="button"
+          onClick={handleVerifyOtp}
+          disabled={otp.length !== 6 || otpVerifying}
+          style={saveBtnStyle(otp.length !== 6 || otpVerifying)}
+        >
+          {otpVerifying ? 'Verifying…' : 'Verify & continue'}
+        </button>
+
+        <button type="button" onClick={handleResendOtp} disabled={cooldown > 0} style={resendBtnStyle}>
+          {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+        </button>
+      </div>
+    );
+  }
+
+  // ── RENDER: editing ────────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {hasDetails && (
-        <button type="button" onClick={() => setEditing(false)} style={cancelLinkStyle}>
+        <button type="button" onClick={() => setStage('display')} style={cancelLinkStyle}>
           ← Cancel
         </button>
       )}
@@ -164,23 +265,15 @@ export default function BankAccountSection({ userId, bankName, accountNumber, ac
         />
       </div>
 
-      {/* Lookup result */}
-      {lookupLoading && (
-        <p style={lookupMetaStyle}>Verifying account…</p>
-      )}
+      {lookupLoading && <p style={lookupMetaStyle}>Verifying account…</p>}
       {resolvedName && (
         <div style={resolvedCardStyle}>
           <span style={{ fontSize: 14 }}>✓</span>
           <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: '#1C1916' }}>{resolvedName}</span>
         </div>
       )}
-      {lookupError && (
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-danger)', margin: 0 }}>
-          {lookupError}
-        </p>
-      )}
+      {lookupError && <p style={errorStyle}>{lookupError}</p>}
 
-      {/* Save */}
       <button
         type="button"
         onClick={handleSave}
@@ -271,6 +364,13 @@ const verifiedBadgeStyle: React.CSSProperties = {
   color: '#3D9B56',
 };
 
+const otpInfoCardStyle: React.CSSProperties = {
+  background: '#F9F9F9',
+  border: '1px solid #EBEBEB',
+  borderRadius: 12,
+  padding: '14px 16px',
+};
+
 const detailNameStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
@@ -315,6 +415,25 @@ const lookupMetaStyle: React.CSSProperties = {
   fontSize: 13,
   color: '#9A9089',
   margin: 0,
+};
+
+const errorStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  color: 'var(--color-danger)',
+  margin: 0,
+};
+
+const resendBtnStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 13,
+  color: '#9A9089',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  padding: 0,
+  alignSelf: 'center',
 };
 
 function saveBtnStyle(disabled: boolean): React.CSSProperties {
