@@ -17,11 +17,20 @@ export default async function SettingsPage() {
 
   if (!profileResult.data) redirect('/login');
 
+  const p = profileResult.data as Profile & {
+    bank_name: string | null;
+    account_number: string | null;
+    account_name: string | null;
+  };
+
   return (
     <SettingsClient
-      profile={profileResult.data as Profile}
+      profile={p}
       email={session.user.email ?? ''}
       links={links}
+      bankName={p.bank_name}
+      accountNumber={p.account_number}
+      accountName={p.account_name}
     />
   );
 }

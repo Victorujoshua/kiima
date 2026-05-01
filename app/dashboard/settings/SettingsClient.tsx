@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { updateProfile } from '@/lib/actions/auth.actions';
 import SocialLinksForm from '@/components/forms/SocialLinksForm';
+import BankAccountSection from '@/components/dashboard/BankAccountSection';
 import Toast from '@/components/dashboard/Toast';
 import type { Profile, SocialLink } from '@/types';
 
@@ -13,6 +14,9 @@ interface Props {
   profile: Profile;
   email: string;
   links: SocialLink[];
+  bankName:      string | null;
+  accountNumber: string | null;
+  accountName:   string | null;
 }
 
 type ToastState = { message: string; variant: 'success' | 'error' } | null;
@@ -26,7 +30,7 @@ function SaveButton() {
   );
 }
 
-export default function SettingsClient({ profile, email, links }: Props) {
+export default function SettingsClient({ profile, email, links, bankName, accountNumber, accountName }: Props) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -167,6 +171,22 @@ export default function SettingsClient({ profile, email, links }: Props) {
           <SocialLinksForm userId={profile.id} existingLinks={links} />
         </div>
 
+        {/* ── Payout account section ── */}
+        <div style={{ ...cardStyle, marginTop: '12px' }}>
+          <p style={sectionLabel}>Payout account</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9A9089', margin: '0 0 16px', lineHeight: 1.5 }}>
+            Your Nigerian bank account for receiving supporter gifts.
+          </p>
+          <BankAccountSection
+            userId={profile.id}
+            bankName={bankName}
+            accountNumber={accountNumber}
+            accountName={accountName}
+            onSaved={msg => setToast({ message: msg, variant: 'success' })}
+            onError={msg => setToast({ message: msg, variant: 'error' })}
+          />
+        </div>
+
         {/* ── Account section ── */}
         <div style={{ ...cardStyle, marginTop: '12px' }}>
           <p style={sectionLabel}>Account</p>
@@ -180,7 +200,7 @@ export default function SettingsClient({ profile, email, links }: Props) {
           {/* Change password */}
           <ChangePasswordRow onToast={setToast} />
 
-          <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '20px', paddingTop: '20px' }}>
+          <div style={{ borderTop: '1px solid #EBEBEB', marginTop: '20px', paddingTop: '20px' }}>
             <LogoutRow />
           </div>
         </div>
