@@ -102,15 +102,16 @@ export default function SignupPage() {
         {/* Wordmark */}
         <h1
           style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 500,
+            fontFamily: 'var(--font-body)',
+            fontWeight: 800,
             fontSize: '28px',
-            color: 'var(--color-accent)',
+            color: 'var(--color-text-primary)',
             textAlign: 'center',
+            letterSpacing: '-0.02em',
             marginBottom: 'var(--space-xs)',
           }}
         >
-          Kiima
+          kiima<span style={{ color: '#D7D744' }}>.</span>
         </h1>
         <p
           style={{
