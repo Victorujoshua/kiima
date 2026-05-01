@@ -175,11 +175,14 @@ export async function signupAction(
     if (msg.includes('password') || msg.includes('weak')) {
       return { fieldErrors: { password: 'Password is too weak — please choose a stronger one.' } };
     }
-    return { error: `Auth error (${authError.status}): ${authError.message}` };
+    if (msg.includes('confirmation email') || msg.includes('sending')) {
+      return { error: 'Account created but confirmation email failed — please contact support or try signing in.' };
+    }
+    return { error: 'Something went wrong — try again.' };
   }
 
   if (!authData.user) {
-    return { error: 'Signup returned no user — email confirmation may still be enabled in Supabase, or this email is already registered.' };
+    return { error: 'Something went wrong — try again.' };
   }
 
   const admin = createAdminClient();
@@ -206,7 +209,7 @@ export async function signupAction(
       }
       return { fieldErrors: { email: 'An account with this email already exists.' } };
     }
-    return { error: `Account setup failed (${profileError.code}): ${profileError.message}` };
+    return { error: 'Something went wrong — try again.' };
   }
 
   // Default "Buy me a drink 🥤" tag is inserted automatically by the
