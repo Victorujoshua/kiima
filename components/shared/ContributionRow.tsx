@@ -1,4 +1,5 @@
-import { formatContributionLine } from '@/lib/utils/display-name';
+import { formatContributionLine, parseSocialHandle } from '@/lib/utils/display-name';
+import { PlatformIcon } from '@/components/shared/SocialHandleInput';
 import type { Contribution } from '@/types';
 
 interface ContributionRowProps {
@@ -24,7 +25,21 @@ export default function ContributionRow({ contribution, isLast = false, source }
       }}
     >
       <div style={{ minWidth: 0 }}>
-        <span style={lineStyle}>{line}</span>
+        {(() => {
+          const social = !contribution.is_anonymous ? parseSocialHandle(contribution.display_name) : null;
+          if (social) {
+            const amount = formatContributionLine(contribution).split(' sent ')[1] ?? '';
+            return (
+              <span style={{ ...lineStyle, display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}>
+                <PlatformIcon platform={social.platform} />
+                <span style={{ color: 'var(--color-text-faint)', flexShrink: 0 }}>|</span>
+                <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', flexShrink: 0 }}>{social.handle}</span>
+                <span style={{ flexShrink: 0 }}>sent {amount}</span>
+              </span>
+            );
+          }
+          return <span style={lineStyle}>{line}</span>;
+        })()}
         {source && <span style={sourceStyle}>{source}</span>}
       </div>
       <span style={dateStyle}>{date}</span>

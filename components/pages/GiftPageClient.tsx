@@ -111,7 +111,11 @@ export default function GiftPageClient({
           <input type="hidden" name="recipient_id" value={recipientId} />
           <input type="hidden" name="tag_id" value={tagId} />
           <input type="hidden" name="amount" value={giftAmount} />
-          <input type="hidden" name="display_name" value={nameValue.trim()} />
+          <input type="hidden" name="display_name" value={
+            nameValue.trim().startsWith('@')
+              ? `${selectedPlatform}:${nameValue.trim()}`
+              : nameValue.trim()
+          } />
           <input type="hidden" name="is_anonymous" value={isAnonymous ? 'true' : 'false'} />
 
           {/* Name / social handle */}

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils/currency';
-import { resolveDisplayName } from '@/lib/utils/display-name';
+import { resolveDisplayName, parseSocialHandle } from '@/lib/utils/display-name';
+import { PlatformIcon } from '@/components/shared/SocialHandleInput';
 import type { Contribution, Currency } from '@/types';
 
 interface Props {
@@ -78,7 +79,18 @@ export default function RecentGifts({ contributions, currency }: Props) {
 
                 {/* Info */}
                 <div style={infoStyle}>
-                  <span style={nameStyle}>{name}</span>
+                  {(() => {
+                    const social = !c.is_anonymous ? parseSocialHandle(c.display_name) : null;
+                    return social ? (
+                      <span style={{ ...nameStyle, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <PlatformIcon platform={social.platform} />
+                        <span style={{ color: 'var(--color-text-faint)' }}>|</span>
+                        <span>{social.handle}</span>
+                      </span>
+                    ) : (
+                      <span style={nameStyle}>{name}</span>
+                    );
+                  })()}
                   <span style={tagLabelStyle}>{tagLabel}</span>
                   <span style={timeStyle}>{relativeTime(c.created_at)}</span>
                 </div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPaystackSignature } from '@/lib/paystack/webhook';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatCurrency } from '@/lib/utils/currency';
+import { parseSocialHandle } from '@/lib/utils/display-name';
 import {
   sendGiftReceivedEmail,
   sendPoolContributionEmail,
@@ -197,9 +198,20 @@ async function sendCreatorNotificationEmail(
   // ✅ Safe split — won't crash if display_name is null
   const creatorFirstName = (profile.display_name ?? profile.username ?? 'Creator').split(' ')[0];
 
-  const senderName = contribution.is_anonymous
-    ? 'Someone'
-    : contribution.display_name ?? 'Someone';
+  let senderName: string;
+  if (contribution.is_anonymous) {
+    senderName = 'Someone';
+  } else if (contribution.display_name) {
+    const social = parseSocialHandle(contribution.display_name);
+    if (social) {
+      const label = social.platform.charAt(0).toUpperCase() + social.platform.slice(1);
+      senderName = `${social.handle} · ${label}`;
+    } else {
+      senderName = contribution.display_name;
+    }
+  } else {
+    senderName = 'Someone';
+  }
 
   const giftAmount = formatCurrency(
     contribution.gift_amount,
