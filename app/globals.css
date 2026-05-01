@@ -492,6 +492,38 @@ p {
   font-weight: 700;
 }
 
+/* ─── New dashboard sidebar (white, BMC-style) ───────── */
+.k-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #F2EDE7;
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  overflow: hidden;
+}
+@media (max-width: 767px) {
+  .k-sidebar { display: none; }
+}
+
+/* ─── Dashboard main content area ────────────────────── */
+.k-dash-main {
+  margin-left: 260px;
+  min-height: 100vh;
+  background: #F4F4F4;
+  padding: 32px;
+}
+@media (max-width: 767px) {
+  .k-dash-main {
+    margin-left: 0;
+    padding: 72px 16px 80px;
+  }
+}
+
 /* ─── Signup flow — profile step responsive grid ─────── */
 .k-signup-profile-grid {
   display: flex;

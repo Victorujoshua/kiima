@@ -6,6 +6,55 @@
 
 ```
 Date: 2026-05-01
+Session: Dashboard redesign — clean white sidebar + home page
+
+WHAT WAS BUILT:
+  - components/dashboard/Sidebar.tsx — new white BMC-style sidebar (260px fixed)
+      • Nav: Home, View page (external), Supporters, Pools, Tags, Settings
+      • Active state: #F6F3EE background, #1C1916 text, 700 weight
+      • Bottom: avatar circle + displayName/@username + logout button
+      • Hidden on mobile via .k-sidebar CSS class
+  - components/dashboard/EarningsCard.tsx — new client component
+      • Period selector: 7d / 30d / all time (pill select)
+      • Large Fraunces 48px total amount display
+      • Breakdown row: Gifts (yellow dot) + Pools (orange dot)
+      • No shadow, 1px #EBEBEB border
+  - components/dashboard/RecentGifts.tsx — restyled to clean BMC aesthetic
+      • "Recent supporters" heading, colored avatar initials
+      • Relative time: m/h/d format
+      • No shadow, 1px #EBEBEB border
+  - components/dashboard/DashboardProfileCard.tsx — new client component
+      • 56px avatar circle, displayName, kiima.app/{username} link, bio (2-line clamp)
+      • Share button: terracotta pill (#FDF1EC bg, #C87B5C text)
+      • Copies URL to clipboard or opens native share sheet
+  - app/dashboard/page.tsx — full rewrite
+      • Removed: DashboardHeader, GiftTagsRow, StatCards
+      • New data fetch: all confirmed contributions (for EarningsCard), last 5 (RecentGifts)
+      • Profile data: added bio to select
+      • max-width: 860px container
+  - app/dashboard/layout.tsx — updated
+      • Fetches profile (display_name, username, avatar_url) for Sidebar
+      • Renders new Sidebar + MobileHeader; main uses .k-dash-main class
+  - app/globals.css — added .k-sidebar + .k-dash-main CSS rules
+  - CLAUDE.md Section 7 — updated with DashboardProfileCard, EarningsCard, RecentGifts
+
+WHAT TO BUILD NEXT:
+  - Verify dashboard renders correctly in browser (dev server)
+  - Update /dashboard/transactions, /pools, /tags pages to match new clean aesthetic
+  - Add bank details section to /dashboard/settings for creators who skipped Step 4
+  - Update /onboarding (Google OAuth flow) to match new signup design
+
+OPEN ISSUES:
+  - Supabase SMTP (Resend) must be configured for email confirmation delivery
+  - OTP verification requires Supabase "Confirm signup" email template to include {{ .Token }}
+  - Avatars storage bucket must exist in Supabase with appropriate policies
+  - Google OAuth flow still routes to /onboarding (existing 2-step flow) — not yet updated
+```
+
+---
+
+```
+Date: 2026-05-01
 Session: 4-step signup flow redesign
 
 WHAT WAS BUILT:

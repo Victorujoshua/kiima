@@ -665,7 +665,9 @@ Keep this updated as components are built. Before building any new component, ch
 | `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop. |
 | `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |
 | `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
-| `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency` — last 5 with avatar, tag, relative time, amounts |
+| `DashboardProfileCard` | `dashboard/DashboardProfileCard.tsx` | `displayName, username, avatarUrl, bio` — white card with avatar, name, kiima link, bio, share button |
+| `EarningsCard` | `dashboard/EarningsCard.tsx` | `contributions, currency` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown |
+| `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts |
 | `Toast` | `dashboard/Toast.tsx` | `message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s |
 | `AddTagModal` | `dashboard/AddTagModal.tsx` | `userId, currency, onClose, onSuccess(tag)` — bottom sheet, calls createTag |
 | `EditTagModal` | `dashboard/EditTagModal.tsx` | `tag, userId, currency, onClose, onSuccess(tag)` — bottom sheet, pre-filled, calls updateTag |

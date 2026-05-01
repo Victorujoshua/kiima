@@ -1,59 +1,38 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getTagsByUser } from '@/lib/actions/tag.actions';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import GiftTagsRow from '@/components/dashboard/GiftTagsRow';
-import StatCards from '@/components/dashboard/StatCards';
+import DashboardProfileCard from '@/components/dashboard/DashboardProfileCard';
+import EarningsCard from '@/components/dashboard/EarningsCard';
 import RecentGifts from '@/components/dashboard/RecentGifts';
 import type { Contribution, Currency } from '@/types';
 
 export default async function DashboardPage() {
   const supabase = createClient();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect('/login');
 
   const userId = session.user.id;
 
-  // All data fetched in parallel
   const [
     { data: profile },
-    { data: directGiftsData },
-    { data: poolGiftsData },
-    { count: totalCount },
+    { data: earningsData },
     { data: recentData },
-    tags,
-    { count: activePoolsCount },
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('currency, display_name, username, avatar_url')
+      .select('currency, display_name, username, avatar_url, bio')
       .eq('id', userId)
       .single(),
 
+    // All confirmed contributions for EarningsCard period filtering
     supabase
       .from('contributions')
-      .select('gift_amount')
+      .select('gift_amount, pool_id, created_at')
       .eq('recipient_id', userId)
       .eq('status', 'confirmed')
-      .is('pool_id', null),
+      .order('created_at', { ascending: false }),
 
-    supabase
-      .from('contributions')
-      .select('gift_amount')
-      .eq('recipient_id', userId)
-      .eq('status', 'confirmed')
-      .not('pool_id', 'is', null),
-
-    supabase
-      .from('contributions')
-      .select('*', { count: 'exact', head: true })
-      .eq('recipient_id', userId)
-      .eq('status', 'confirmed'),
-
+    // Last 5 for Recent Supporters
     supabase
       .from('contributions')
       .select('*, tag:gift_tags!tag_id(*)')
@@ -61,47 +40,29 @@ export default async function DashboardPage() {
       .eq('status', 'confirmed')
       .order('created_at', { ascending: false })
       .limit(5),
-
-    getTagsByUser(userId),
-
-    supabase
-      .from('support_pools')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('status', 'open'),
   ]);
 
   const currency     = (profile?.currency ?? 'NGN') as Currency;
   const displayName  = profile?.display_name ?? '';
   const username     = profile?.username ?? '';
   const avatarUrl    = profile?.avatar_url ?? null;
+  const bio          = profile?.bio ?? null;
 
-  const directTotal  = (directGiftsData ?? []).reduce((s, r) => s + Number(r.gift_amount), 0);
-  const poolTotal    = (poolGiftsData   ?? []).reduce((s, r) => s + Number(r.gift_amount), 0);
-  const giftCount    = totalCount ?? 0;
-  const activePools  = activePoolsCount ?? 0;
-  const contributions = (recentData ?? []) as Contribution[];
+  const allContributions = (earningsData ?? []) as { gift_amount: number; pool_id: string | null; created_at: string }[];
+  const recentContributions = (recentData ?? []) as Contribution[];
 
   return (
-    <>
-      {/* Profile header — shown on both mobile and desktop */}
-      <DashboardHeader
-        avatarUrl={avatarUrl}
+    <div style={{ maxWidth: 860 }}>
+      <DashboardProfileCard
         displayName={displayName}
         username={username}
+        avatarUrl={avatarUrl}
+        bio={bio}
       />
 
-      <GiftTagsRow tags={tags} userId={userId} currency={currency} />
+      <EarningsCard contributions={allContributions} currency={currency} />
 
-      <StatCards
-        directTotal={directTotal}
-        poolTotal={poolTotal}
-        giftCount={giftCount}
-        activePools={activePools}
-        currency={currency}
-      />
-
-      <RecentGifts contributions={contributions} currency={currency} />
-    </>
+      <RecentGifts contributions={recentContributions} currency={currency} creatorName={displayName} />
+    </div>
   );
 }

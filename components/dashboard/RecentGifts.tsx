@@ -6,233 +6,171 @@ import type { Contribution, Currency } from '@/types';
 
 interface Props {
   contributions: Contribution[];
-  currency: Currency;
+  currency:      Currency;
+  creatorName:   string;
 }
 
 function relativeTime(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diffMs / 60_000);
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `${mins}m`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  if (hours < 24) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
 }
 
-// Soft avatar background colours — rotate by index
-const AVATAR_BG = [
-  'var(--color-accent-soft)',
-  'var(--color-success-soft)',
-  '#F0F0FD',
-  '#FFF9EC',
-  '#FDF0F0',
-];
+const AVATAR_COLORS = ['#FDF1EC', '#EEF8F0', '#F0F0FD', '#FFF9EC', '#FDF0F0'];
+const AVATAR_TEXT   = ['#C87B5C', '#3D9B56', '#6B6BD6', '#B8860B', '#E07070'];
 
-export default function RecentGifts({ contributions, currency }: Props) {
+export default function RecentGifts({ contributions, currency, creatorName }: Props) {
   return (
     <div style={cardStyle}>
       <div style={headerStyle}>
-        <h2 style={headingStyle}>Recent gifts</h2>
-        <Link href="/dashboard/transactions" style={seeAllStyle}>
-          See all →
-        </Link>
+        <span style={headingStyle}>Recent supporters</span>
+        <Link href="/dashboard/transactions" style={seeAllStyle}>See all →</Link>
       </div>
 
       {contributions.length === 0 ? (
         <div style={emptyStyle}>
-          <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>
-            🥤
-          </span>
-          <p style={emptyTextStyle}>
-            No gifts yet — share your link to get started
+          <span style={{ fontSize: 36, display: 'block', marginBottom: 10 }}>🥤</span>
+          <p style={emptyTextStyle}>No supporters yet</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#B5AAAA', margin: '4px 0 0' }}>
+            Share your page to receive your first gift
           </p>
         </div>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <div>
           {contributions.map((c, i) => {
             const name     = resolveDisplayName(c.display_name, c.is_anonymous);
             const isAnon   = name === 'Anonymous';
-            const initial  = isAnon ? '🥤' : name.charAt(0).toUpperCase();
-            const tagLabel = c.tag?.label ?? 'Custom amount';
-            const bg       = AVATAR_BG[i % AVATAR_BG.length];
+            const tagLabel = (c as any).tag?.label ?? 'Custom amount';
             const isLast   = i === contributions.length - 1;
+            const social   = !c.is_anonymous ? parseSocialHandle(c.display_name) : null;
+            const initial  = isAnon ? '🥤' : name.charAt(0).toUpperCase();
+            const bg       = AVATAR_COLORS[i % AVATAR_COLORS.length];
+            const fg       = AVATAR_TEXT[i % AVATAR_TEXT.length];
 
             return (
-              <li
+              <div
                 key={c.id}
                 style={{
-                  ...rowStyle,
-                  borderBottom: isLast ? 'none' : '1px solid #F2EDE7',
-                  paddingBottom: isLast ? 0 : '14px',
-                  marginBottom: isLast ? 0 : '14px',
+                  display:       'flex',
+                  alignItems:    'center',
+                  gap:           12,
+                  paddingBottom: isLast ? 0 : 14,
+                  marginBottom:  isLast ? 0 : 14,
+                  borderBottom:  isLast ? 'none' : '1px solid #F2EDE7',
                 }}
               >
                 {/* Avatar */}
-                <div style={{ ...avatarStyle, background: bg }}>
-                  {isAnon ? (
-                    <span style={{ fontSize: '16px', lineHeight: 1 }}>{initial}</span>
-                  ) : (
-                    <span style={avatarTextStyle}>{initial}</span>
-                  )}
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {isAnon
+                    ? <span style={{ fontSize: 16, lineHeight: 1 }}>🥤</span>
+                    : <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 14, color: fg, lineHeight: 1 }}>{initial}</span>
+                  }
                 </div>
 
-                {/* Info */}
-                <div style={infoStyle}>
-                  {(() => {
-                    const social = !c.is_anonymous ? parseSocialHandle(c.display_name) : null;
-                    return social ? (
-                      <span style={{ ...nameStyle, display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <PlatformIcon platform={social.platform} />
-                        <span style={{ color: 'var(--color-text-faint)' }}>|</span>
-                        <span>{social.handle}</span>
-                      </span>
-                    ) : (
-                      <span style={nameStyle}>{name}</span>
-                    );
-                  })()}
-                  <span style={tagLabelStyle}>{tagLabel}</span>
+                {/* Name + tag */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {social ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
+                      <PlatformIcon platform={social.platform} />
+                      <span style={nameStyle}>{social.handle}</span>
+                    </div>
+                  ) : (
+                    <p style={nameStyle}>{name}</p>
+                  )}
+                  <p style={tagStyle}>{tagLabel}</p>
+                </div>
+
+                {/* Amount + time */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+                  <span style={amountStyle}>{formatCurrency(Number(c.gift_amount), currency)}</span>
                   <span style={timeStyle}>{relativeTime(c.created_at)}</span>
                 </div>
-
-                {/* Amount */}
-                <div style={amountColStyle}>
-                  <span style={giftAmountStyle}>
-                    {formatCurrency(Number(c.gift_amount), currency)}
-                  </span>
-                  <span style={creatorAmountStyle}>
-                    → {formatCurrency(Number(c.creator_amount), currency)}
-                  </span>
-                </div>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       )}
     </div>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const cardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-xl)',
+  background:   '#ffffff',
+  borderRadius: 16,
+  border:       '1px solid #EBEBEB',
+  padding:      28,
+  marginTop:    16,
 };
 
 const headerStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
+  display:        'flex',
+  alignItems:     'center',
   justifyContent: 'space-between',
-  marginBottom: 'var(--space-md)',
+  marginBottom:   20,
 };
 
 const headingStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 500,
-  fontSize: '18px',
-  color: 'var(--color-text-primary)',
-  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize:   16,
+  color:      '#1C1916',
 };
 
 const seeAllStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: '13px',
-  color: 'var(--color-accent)',
+  fontFamily:     'var(--font-body)',
+  fontSize:       13,
+  fontWeight:     600,
+  color:          '#C87B5C',
   textDecoration: 'none',
 };
 
 const emptyStyle: React.CSSProperties = {
   textAlign: 'center',
-  padding: 'var(--space-xl) 0',
+  padding:   '24px 0',
 };
 
 const emptyTextStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: '14px',
-  color: 'var(--color-text-muted)',
-  margin: 0,
-  lineHeight: 1.65,
-};
-
-const rowStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-};
-
-const avatarStyle: React.CSSProperties = {
-  width: '38px',
-  height: '38px',
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
-};
-
-const avatarTextStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: '15px',
-  color: 'var(--color-text-secondary)',
-  lineHeight: 1,
-};
-
-const infoStyle: React.CSSProperties = {
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2px',
-  minWidth: 0,
+  fontWeight: 600,
+  fontSize:   15,
+  color:      '#5A4D44',
+  margin:     0,
 };
 
 const nameStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: '14px',
-  color: 'var(--color-text-primary)',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
+  fontFamily:    'var(--font-body)',
+  fontWeight:    600,
+  fontSize:      14,
+  color:         '#1C1916',
+  margin:        0,
+  overflow:      'hidden',
+  textOverflow:  'ellipsis',
+  whiteSpace:    'nowrap',
 };
 
-const tagLabelStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '12px',
-  color: 'var(--color-text-muted)',
-  overflow: 'hidden',
+const tagStyle: React.CSSProperties = {
+  fontFamily:   'var(--font-body)',
+  fontSize:     12,
+  color:        '#9A9089',
+  margin:       '2px 0 0',
+  overflow:     'hidden',
   textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
+  whiteSpace:   'nowrap',
+};
+
+const amountStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize:   14,
+  color:      '#1C1916',
 };
 
 const timeStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: '11px',
-  color: 'var(--color-text-faint)',
-};
-
-const amountColStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-end',
-  gap: '2px',
-  flexShrink: 0,
-};
-
-const giftAmountStyle: React.CSSProperties = {
-  fontFamily: 'monospace',
-  fontWeight: 800,
-  fontSize: '14px',
-  color: 'var(--color-text-primary)',
-};
-
-const creatorAmountStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '11px',
-  color: 'var(--color-text-muted)',
+  fontSize:   12,
+  color:      '#B5AAAA',
 };
