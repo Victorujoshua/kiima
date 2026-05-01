@@ -206,7 +206,7 @@ export async function signupAction(
       }
       return { fieldErrors: { email: 'An account with this email already exists.' } };
     }
-    return { error: 'Something went wrong — try again.' };
+    return { error: `Account setup failed (${profileError.code}): ${profileError.message}` };
   }
 
   // Default "Buy me a drink 🥤" tag is inserted automatically by the
