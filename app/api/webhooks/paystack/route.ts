@@ -212,10 +212,13 @@ async function sendCreatorNotificationEmail(
     if (contribution.tag_id) {
       const { data: tag } = await supabase
         .from('gift_tags')
-        .select('label')
+        .select('label, amount')
         .eq('id', contribution.tag_id)
         .single();
-      tagLabel = tag?.label ?? null;
+      if (tag) {
+        const qty = tag.amount > 0 ? Math.round(Number(contribution.gift_amount) / Number(tag.amount)) : 1;
+        tagLabel = qty > 1 ? `${qty}× ${tag.label}` : tag.label;
+      }
     }
 
     await sendGiftReceivedEmail({

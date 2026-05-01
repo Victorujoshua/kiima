@@ -90,7 +90,7 @@ export default function GiftPageClient({
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const giftAmount = defaultTag.amount * selectedQty;
-  const tagId = selectedQty === 1 ? defaultTag.id : '';
+  const tagId = defaultTag.id;
   const displayNamePreview = isAnonymous ? 'Anonymous' : (nameValue.trim() || 'Anonymous');
 
   return (
