@@ -132,14 +132,13 @@ const listStyle: React.CSSProperties = {
 };
 
 const poolCardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-lg)',
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 28,
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-md)',
+  gap: 16,
 };
 
 const poolHeaderStyle: React.CSSProperties = {
@@ -175,7 +174,7 @@ const badgeStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 600,
   fontSize: '11px',
-  borderRadius: 'var(--radius-full)',
+  borderRadius: 100,
   padding: '3px 10px',
   flexShrink: 0,
 };
@@ -220,11 +219,10 @@ const viewLinkStyle: React.CSSProperties = {
 };
 
 const emptyCardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-2xl)',
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 40,
   textAlign: 'center',
 };
 

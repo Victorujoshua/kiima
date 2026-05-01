@@ -233,7 +233,7 @@ function ChangePasswordRow({ onToast }: { onToast: (t: ToastState) => void }) {
         <button
           type="button"
           onClick={() => setOpen(o => !o)}
-          style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '13px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '13px', color: '#FF5C00', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           {open ? 'Cancel' : 'Change'}
         </button>
@@ -304,11 +304,10 @@ const headingStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: '20px',
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 28,
 };
 
 const sectionLabel: React.CSSProperties = {
@@ -325,8 +324,8 @@ const avatarBtnStyle: React.CSSProperties = {
   width: '72px',
   height: '72px',
   borderRadius: '50%',
-  background: 'var(--color-accent-soft)',
-  border: '2px solid var(--color-border)',
+  background: '#FFF0EB',
+  border: '1px solid #EBEBEB',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -375,9 +374,9 @@ const fieldLabel: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   height: '48px',
-  border: '1.5px solid var(--color-border)',
-  borderRadius: 'var(--radius-md)',
-  background: 'var(--color-surface)',
+  border: '1.5px solid #EBEBEB',
+  borderRadius: 12,
+  background: '#ffffff',
   fontFamily: 'var(--font-body)',
   fontSize: '15px',
   color: 'var(--color-text-primary)',
@@ -389,9 +388,9 @@ const inputStyle: React.CSSProperties = {
 
 const textareaStyle: React.CSSProperties = {
   width: '100%',
-  border: '1.5px solid var(--color-border)',
-  borderRadius: 'var(--radius-md)',
-  background: 'var(--color-surface)',
+  border: '1.5px solid #EBEBEB',
+  borderRadius: 12,
+  background: '#ffffff',
   fontFamily: 'var(--font-body)',
   fontSize: '15px',
   color: 'var(--color-text-primary)',
@@ -407,10 +406,10 @@ function saveBtnStyle(pending: boolean): React.CSSProperties {
   return {
     width: '100%',
     height: '48px',
-    background: pending ? 'var(--color-text-muted)' : 'var(--color-accent)',
+    background: pending ? '#9A9089' : '#000000',
     color: '#fff',
     border: 'none',
-    borderRadius: 'var(--radius-full)',
+    borderRadius: 100,
     fontFamily: 'var(--font-body)',
     fontWeight: 700,
     fontSize: '15px',

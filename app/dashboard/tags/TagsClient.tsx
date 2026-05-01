@@ -130,7 +130,7 @@ export default function TagsClient({ tags: initialTags, userId, currency }: Prop
                     key={tag.id}
                     style={{
                       ...tagRowStyle,
-                      borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
+                      borderBottom: isLast ? 'none' : '1px solid #EBEBEB',
                       opacity: isDeleting ? 0.4 : 1,
                       transition: 'opacity 0.2s ease',
                     }}
@@ -242,11 +242,10 @@ const subtitleStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: '20px',
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 28,
 };
 
 const sectionLabelStyle: React.CSSProperties = {
@@ -272,9 +271,9 @@ const systemBadgeStyle: React.CSSProperties = {
   fontWeight: 700,
   fontSize: '10px',
   letterSpacing: '0.08em',
-  color: 'var(--color-accent)',
-  background: 'var(--color-accent-soft)',
-  borderRadius: 'var(--radius-full)',
+  color: '#FF5C00',
+  background: '#FFF0EB',
+  borderRadius: 100,
   padding: '2px 8px',
   whiteSpace: 'nowrap',
   flexShrink: 0,
@@ -348,7 +347,7 @@ const editBtnStyle: React.CSSProperties = {
   padding: '8px 10px',
   minHeight: '40px',
   cursor: 'pointer',
-  borderRadius: 'var(--radius-sm)',
+  borderRadius: 8,
   transition: 'background 0.1s ease',
 };
 
@@ -362,7 +361,7 @@ const deleteBtnStyle: React.CSSProperties = {
   padding: '8px 10px',
   minHeight: '40px',
   cursor: 'pointer',
-  borderRadius: 'var(--radius-sm)',
+  borderRadius: 8,
   transition: 'background 0.1s ease',
 };
 
@@ -380,7 +379,7 @@ const confirmYesStyle: React.CSSProperties = {
   color: '#fff',
   background: 'var(--color-danger)',
   border: 'none',
-  borderRadius: 'var(--radius-sm)',
+  borderRadius: 8,
   padding: '6px 12px',
   cursor: 'pointer',
   minHeight: '32px',
@@ -392,8 +391,8 @@ const confirmNoStyle: React.CSSProperties = {
   fontSize: '13px',
   color: 'var(--color-text-secondary)',
   background: 'transparent',
-  border: '1px solid var(--color-border)',
-  borderRadius: 'var(--radius-sm)',
+  border: '1px solid #EBEBEB',
+  borderRadius: 8,
   padding: '6px 12px',
   cursor: 'pointer',
   minHeight: '32px',

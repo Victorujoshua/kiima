@@ -33,19 +33,32 @@ export default function PoolsClient({ userId, currency }: PoolsClientProps) {
     <button
       type="button"
       onClick={() => setShowForm(true)}
-      className="k-btn k-btn--primary"
-      style={{ flexShrink: 0 }}
+      style={createBtnStyle}
     >
       + Create pool
     </button>
   );
 }
 
+const createBtnStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: '14px',
+  color: '#ffffff',
+  background: '#000000',
+  border: 'none',
+  borderRadius: 100,
+  padding: '12px 20px',
+  cursor: 'pointer',
+  flexShrink: 0,
+  transition: 'opacity 0.15s ease',
+};
+
 const cancelBtnStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 600,
   fontSize: '14px',
-  color: 'var(--color-accent)',
+  color: '#FF5C00',
   background: 'none',
   border: 'none',
   cursor: 'pointer',

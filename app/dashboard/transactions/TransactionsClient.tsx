@@ -139,10 +139,10 @@ const searchWrapStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
-  background: 'var(--color-surface)',
-  border: '2px solid #000000',
+  background: '#ffffff',
+  border: '1px solid #EBEBEB',
+  borderRadius: 12,
   padding: '0 14px',
-  boxShadow: '3px 3px 0 0 #000000',
 };
 
 const searchInputStyle: React.CSSProperties = {
@@ -153,7 +153,7 @@ const searchInputStyle: React.CSSProperties = {
   padding: '10px 0',
   outline: 'none',
   fontSize: 14,
-  fontFamily: 'var(--kiima-font)',
+  fontFamily: 'var(--font-body)',
   color: 'var(--color-text-primary)',
 };
 
@@ -161,35 +161,37 @@ const filterBtnStyle: React.CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 8,
-  height: 46,
+  height: 44,
   padding: '0 18px',
-  border: '2px solid #000000',
-  background: 'var(--color-surface)',
-  fontFamily: 'var(--kiima-font)',
+  border: '1px solid #EBEBEB',
+  borderRadius: 100,
+  background: '#ffffff',
+  fontFamily: 'var(--font-body)',
   fontWeight: 600,
   fontSize: 14,
   cursor: 'pointer',
-  boxShadow: '3px 3px 0 0 #000000',
   whiteSpace: 'nowrap',
-  transition: 'transform 0.15s ease',
+  transition: 'background 0.15s ease',
 };
 
 const dropdownStyle: React.CSSProperties = {
   position: 'absolute',
   top: 'calc(100% + 6px)',
   right: 0,
-  background: 'var(--color-surface)',
-  border: '2px solid #000000',
-  boxShadow: '4px 4px 0 0 #000000',
+  background: '#ffffff',
+  border: '1px solid #EBEBEB',
+  borderRadius: 12,
+  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
   minWidth: 160,
   zIndex: 20,
   display: 'flex',
   flexDirection: 'column',
+  overflow: 'hidden',
 };
 
 const dropdownItemStyle: React.CSSProperties = {
   padding: '10px 16px',
-  fontFamily: 'var(--kiima-font)',
+  fontFamily: 'var(--font-body)',
   fontSize: 14,
   color: 'var(--color-text-primary)',
   cursor: 'pointer',
@@ -199,26 +201,26 @@ const dropdownItemStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-xl)',
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 28,
 };
 
 const countStyle: React.CSSProperties = {
-  fontFamily: 'var(--kiima-font)',
+  fontFamily: 'var(--font-body)',
   fontWeight: 700,
   fontSize: 11,
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
   color: 'var(--color-text-faint)',
-  margin: '0 0 var(--space-md)',
+  margin: '0 0 16px',
 };
 
 const emptyStyle: React.CSSProperties = {
-  fontFamily: 'var(--kiima-font)',
+  fontFamily: 'var(--font-body)',
   fontSize: 14,
   color: 'var(--color-text-muted)',
   margin: 0,
-  padding: 'var(--space-md) 0',
+  padding: '16px 0',
 };

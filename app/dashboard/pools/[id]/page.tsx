@@ -169,12 +169,9 @@ export default async function PoolDetailPage({ params }: PageProps) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const pageStyle: React.CSSProperties = {
-  maxWidth: '720px',
-  margin: '0 auto',
-  padding: 'var(--space-xl) 0',
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-md)',
+  gap: 16,
 };
 
 const backLinkStyle: React.CSSProperties = {
@@ -188,11 +185,10 @@ const backLinkStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-xl)',
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 28,
 };
 
 const titleRowStyle: React.CSSProperties = {
@@ -204,9 +200,9 @@ const titleRowStyle: React.CSSProperties = {
 };
 
 const titleStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 500,
-  fontSize: '24px',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: '20px',
   color: 'var(--color-text-primary)',
   margin: 0,
   flex: 1,
@@ -217,11 +213,11 @@ const badgeStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 600,
   fontSize: '11px',
-  borderRadius: 'var(--radius-full)',
+  borderRadius: 100,
   padding: '4px 12px',
   flexShrink: 0,
   alignSelf: 'flex-start',
-  marginTop: '5px',
+  marginTop: '4px',
 };
 
 const openBadgeStyle: React.CSSProperties = {
@@ -274,19 +270,18 @@ const statValueStyle: React.CSSProperties = {
 const statDivider: React.CSSProperties = {
   width: '1px',
   height: '32px',
-  background: 'var(--color-border)',
+  background: '#EBEBEB',
   flexShrink: 0,
 };
 
 const dangerCardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-xl)',
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 28,
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-md)',
+  gap: 16,
 };
 
 const dangerHeadingStyle: React.CSSProperties = {
@@ -303,10 +298,10 @@ const closedNoticeStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: '13px',
   color: 'var(--color-text-muted)',
-  background: 'var(--color-bg)',
-  border: '1px solid var(--color-border)',
-  borderRadius: 'var(--radius-md)',
-  padding: '12px var(--space-md)',
+  background: '#F4F4F4',
+  border: '1px solid #EBEBEB',
+  borderRadius: 12,
+  padding: '12px 16px',
 };
 
 const sectionHeadingStyle: React.CSSProperties = {
