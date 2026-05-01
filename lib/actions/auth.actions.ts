@@ -175,7 +175,7 @@ export async function signupAction(
     if (msg.includes('password') || msg.includes('weak')) {
       return { fieldErrors: { password: 'Password is too weak — please choose a stronger one.' } };
     }
-    return { error: 'Something went wrong — try again.' };
+    return { error: `Sign up failed: ${authError.message}` };
   }
 
   if (!authData.user) {
@@ -206,7 +206,7 @@ export async function signupAction(
       }
       return { fieldErrors: { email: 'An account with this email already exists.' } };
     }
-    return { error: 'Something went wrong — try again.' };
+    return { error: `Account setup failed: ${profileError.message}` };
   }
 
   // Default "Buy me a drink 🥤" tag is inserted automatically by the
