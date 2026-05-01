@@ -161,13 +161,14 @@ export default function GiftPageClient({
             </div>
           </label>
 
-          {/* Note — V2 feature: textarea is UI-only, value is NOT submitted */}
+          {/* Note */}
           <div>
             <label style={labelStyle}>
               Leave a note{' '}
               <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>(optional)</span>
             </label>
             <textarea
+              name="note"
               value={noteValue}
               onChange={e => setNoteValue(e.target.value)}
               placeholder="Say something nice…"
