@@ -6,7 +6,7 @@ import { initializeGift } from '@/lib/actions/gift.actions';
 import { formatCurrency } from '@/lib/utils/currency';
 import { resolveDisplayName } from '@/lib/utils/display-name';
 import DrinkQuantitySelector, { type DrinkQty } from '@/components/shared/DrinkQuantitySelector';
-import SocialHandleInput, { type SocialPlatformOption } from '@/components/shared/SocialHandleInput';
+import SocialHandleInput, { PlatformIcon, type SocialPlatformOption } from '@/components/shared/SocialHandleInput';
 import SocialLinksRow from '@/components/shared/SocialLinksRow';
 import type { GiftTag, Currency, Contribution, SocialLink } from '@/types';
 
@@ -141,9 +141,19 @@ export default function GiftPageClient({
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-primary)', fontWeight: 500 }}>
                 Stay anonymous
               </span>
-              <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                👤 You'll appear as {displayNamePreview}
-              </span>
+              {isAnonymous || !nameValue.startsWith('@') ? (
+                <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                  👤 You'll appear as {displayNamePreview}
+                </span>
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px', color: 'var(--color-text-muted)' }}>
+                  <PlatformIcon platform={selectedPlatform} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px' }}>|</span>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    {nameValue.replace(/^@/, '')}
+                  </span>
+                </span>
+              )}
             </div>
           </label>
 

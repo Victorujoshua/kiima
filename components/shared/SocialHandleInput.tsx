@@ -47,7 +47,7 @@ function TikTokIcon() {
   );
 }
 
-function PlatformIcon({ platform }: { platform: SocialPlatformOption }) {
+export function PlatformIcon({ platform }: { platform: SocialPlatformOption }) {
   if (platform === 'instagram') return <InstagramIcon />;
   if (platform === 'twitter') return <TwitterIcon />;
   return <TikTokIcon />;
