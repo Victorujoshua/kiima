@@ -179,7 +179,7 @@ export async function signupAction(
   }
 
   if (!authData.user) {
-    return { error: 'Something went wrong — try again.' };
+    return { error: 'Signup returned no user — email confirmation may still be enabled in Supabase, or this email is already registered.' };
   }
 
   const admin = createAdminClient();
