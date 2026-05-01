@@ -62,7 +62,7 @@ export async function sendGiftReceivedEmail(data: {
     transactionalId: TEMPLATE_IDS.giftReceived,
     email: data.creatorEmail,
     dataVariables: {
-      creatorfirstname: data.creatorFirstName,
+      recipientName: data.creatorFirstName, // ← fixed: was creatorfirstname
       sendername:    data.senderName,
       giftamount:    data.giftAmount,
       tagused:       data.tagUsed ?? '',
@@ -87,8 +87,6 @@ export async function sendGiftReceivedEmail(data: {
     return { success: false, error: String(err) };
   }
 }
-
-
 
 // ─── Pool contribution email ──────────────────────────────────────────────────
 
