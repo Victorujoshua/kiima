@@ -175,7 +175,7 @@ export async function signupAction(
     if (msg.includes('password') || msg.includes('weak')) {
       return { fieldErrors: { password: 'Password is too weak — please choose a stronger one.' } };
     }
-    return { error: 'Something went wrong — try again.' };
+    return { error: `Auth error (${authError.status}): ${authError.message}` };
   }
 
   if (!authData.user) {
