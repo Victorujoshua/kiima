@@ -52,7 +52,7 @@ export default async function DashboardPage() {
   const recentContributions = (recentData ?? []) as Contribution[];
 
   return (
-    <div style={{ maxWidth: 860 }}>
+    <div style={{ maxWidth: 860, margin: '0 auto' }}>
       <DashboardProfileCard
         displayName={displayName}
         username={username}
