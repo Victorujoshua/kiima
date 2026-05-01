@@ -34,7 +34,8 @@
       "Bash(git push *)",
       "PowerShell(npm search *)",
       "PowerShell(New-Item *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "PowerShell(auth *)"
     ]
   }
 }
