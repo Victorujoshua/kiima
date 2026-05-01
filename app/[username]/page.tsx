@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: { params: { username: string 
   return {
     title,
     description,
+    icons: profile.avatar_url ? { icon: profile.avatar_url } : undefined,
     openGraph: { title, description, url, images: [{ url: image }], siteName: 'Kiima' },
     twitter: { card: 'summary', title, description, images: [image] },
   };
