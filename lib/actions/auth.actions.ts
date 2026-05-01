@@ -165,12 +165,15 @@ export async function signupAction(
       status: authError.status,
       name: authError.name,
     });
-    if (authError.message.toLowerCase().includes('already registered')) {
-      return {
-        fieldErrors: {
-          email: 'An account with this email already exists.',
-        },
-      };
+    const msg = authError.message.toLowerCase();
+    if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('already in use')) {
+      return { fieldErrors: { email: 'An account with this email already exists.' } };
+    }
+    if (msg.includes('rate limit') || msg.includes('too many') || msg.includes('after')) {
+      return { error: 'Too many attempts — please wait a moment and try again.' };
+    }
+    if (msg.includes('password') || msg.includes('weak')) {
+      return { fieldErrors: { password: 'Password is too weak — please choose a stronger one.' } };
     }
     return { error: 'Something went wrong — try again.' };
   }
@@ -197,9 +200,11 @@ export async function signupAction(
       hint: profileError.hint,
     });
     if (profileError.code === '23505') {
-      return {
-        fieldErrors: { username: 'This username is already taken.' },
-      };
+      const details = `${profileError.details ?? ''} ${profileError.message ?? ''}`.toLowerCase();
+      if (details.includes('username')) {
+        return { fieldErrors: { username: 'This username is already taken — try another.' } };
+      }
+      return { fieldErrors: { email: 'An account with this email already exists.' } };
     }
     return { error: 'Something went wrong — try again.' };
   }
