@@ -92,6 +92,7 @@ export async function initializeGift(
       currency:       profile.currency,
       display_name:   displayName,
       is_anonymous:   isAnonymous,
+      note:           note,
       paystack_ref:   reference,
       status:         'pending',
     });
