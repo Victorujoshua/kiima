@@ -53,7 +53,7 @@ export default function DashboardProfileCard({ displayName, username, avatarUrl,
       </div>
 
       {/* Share CTA */}
-      <button onClick={handleShare} style={shareBtnStyle}>
+      <button onClick={handleShare} style={{ ...shareBtnStyle, background: copied ? '#D7D744' : '#000000', color: copied ? '#000000' : '#ffffff' }}>
         {copied ? 'Copied!' : 'Share page'}
       </button>
     </div>
@@ -128,13 +128,11 @@ const shareBtnStyle: React.CSSProperties = {
   fontFamily:   'var(--font-body)',
   fontWeight:   600,
   fontSize:     13,
-  color:        '#C87B5C',
-  background:   '#FDF1EC',
   border:       'none',
   borderRadius: 100,
-  padding:      '10px 18px',
+  padding:      '10px 20px',
   cursor:       'pointer',
   whiteSpace:   'nowrap',
   flexShrink:   0,
-  transition:   'background 0.15s ease',
+  transition:   'background 0.15s ease, color 0.15s ease',
 };

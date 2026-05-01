@@ -20,8 +20,8 @@ function relativeTime(dateStr: string): string {
   return `${Math.floor(hours / 24)}d`;
 }
 
-const AVATAR_COLORS = ['#FDF1EC', '#EEF8F0', '#F0F0FD', '#FFF9EC', '#FDF0F0'];
-const AVATAR_TEXT   = ['#C87B5C', '#3D9B56', '#6B6BD6', '#B8860B', '#E07070'];
+const AVATAR_COLORS = ['#FFF5EB', '#F5F5CC', '#FFF0EB', '#F5F5CC', '#FFF5EB'];
+const AVATAR_TEXT   = ['#FF5C00', '#8A8A00', '#FF5C00', '#8A8A00', '#FF5C00'];
 
 export default function RecentGifts({ contributions, currency, creatorName }: Props) {
   return (
@@ -124,7 +124,7 @@ const seeAllStyle: React.CSSProperties = {
   fontFamily:     'var(--font-body)',
   fontSize:       13,
   fontWeight:     600,
-  color:          '#C87B5C',
+  color:          '#FF5C00',
   textDecoration: 'none',
 };
 

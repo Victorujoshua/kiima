@@ -84,8 +84,8 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
               href={item.href}
               style={{
                 ...navItemStyle,
-                background:  active ? '#F6F3EE' : 'transparent',
-                color:       active ? '#1C1916' : '#5A4D44',
+                background:  active ? '#D7D744' : 'transparent',
+                color:       active ? '#000000' : '#5A4D44',
                 fontWeight:  active ? 700 : 500,
               }}
             >
@@ -114,7 +114,7 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
         </div>
 
         <button onClick={handleLogout} style={logoutBtnStyle}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#E07070'; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#FF5C00'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#9A9089'; }}
         >
           Log out

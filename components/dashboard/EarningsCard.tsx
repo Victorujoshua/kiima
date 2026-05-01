@@ -65,7 +65,7 @@ export default function EarningsCard({ contributions, currency }: Props) {
           <span style={breakdownLabelStyle}>Gifts</span>
         </div>
         <div style={breakdownItemStyle}>
-          <span style={{ ...dotStyle, background: '#E8A07A' }} />
+          <span style={{ ...dotStyle, background: '#FF5C00' }} />
           <span style={breakdownAmountStyle}>{formatCurrency(poolTotal, currency)}</span>
           <span style={breakdownLabelStyle}>Pools</span>
         </div>
