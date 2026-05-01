@@ -157,6 +157,9 @@ export async function signupAction(
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+    },
   });
 
   if (authError) {
@@ -333,6 +336,80 @@ export async function updateProfile(
   }
 
   return { success: true };
+}
+
+// ─── Create Profile (email/password signup Step 3) ────────────────────────────
+
+export async function createProfile(data: {
+  userId: string;
+  email: string;
+  username: string;
+  displayName: string;
+  bio?: string;
+  avatarUrl?: string | null;
+  currency: Currency;
+  socialLink?: string;
+}): Promise<{ success?: boolean; error?: string }> {
+  const admin = createAdminClient();
+
+  const { error } = await admin.from('profiles').insert({
+    id: data.userId,
+    username: data.username,
+    display_name: data.displayName,
+    bio: data.bio || null,
+    avatar_url: data.avatarUrl || null,
+    currency: data.currency,
+  });
+
+  if (error) {
+    if (error.code === '23505') return { error: 'This username is already taken.' };
+    console.error('[createProfile]', error.message);
+    return { error: 'Something went wrong — try again.' };
+  }
+
+  if (data.socialLink) {
+    await admin.from('social_links').insert({
+      user_id: data.userId,
+      platform: 'website',
+      url: data.socialLink,
+    });
+  }
+
+  const firstName = data.displayName.split(' ')[0];
+  const lastName  = data.displayName.split(' ').slice(1).join(' ');
+  await Promise.allSettled([
+    sendWelcomeEmail({ email: data.email, firstName, username: data.username }),
+    createLoopsContact({ email: data.email, firstName, lastName, username: data.username, currency: data.currency }),
+  ]);
+
+  return { success: true };
+}
+
+// ─── Upload Avatar (admin client — usable before email confirmation) ──────────
+
+export async function uploadAvatar(
+  userId: string,
+  formData: FormData
+): Promise<{ url?: string; error?: string }> {
+  const file = formData.get('avatar') as File | null;
+  if (!file || file.size === 0) return { error: 'No file provided.' };
+
+  const admin = createAdminClient();
+  const ext   = file.name.split('.').pop() ?? 'jpg';
+  const path  = `${userId}/avatar.${ext}`;
+  const buffer = await file.arrayBuffer();
+
+  const { error } = await admin.storage
+    .from('avatars')
+    .upload(path, Buffer.from(buffer), { contentType: file.type, upsert: true });
+
+  if (error) {
+    console.error('[uploadAvatar]', error.message);
+    return { error: 'Upload failed — try again.' };
+  }
+
+  const { data: { publicUrl } } = admin.storage.from('avatars').getPublicUrl(path);
+  return { url: publicUrl };
 }
 
 // ─── Reset Password ────────────────────────────────────────────────────────

@@ -24,20 +24,28 @@ export async function sendWelcomeEmail(user: {
     console.warn('[loops] LOOPS_API_KEY not set — skipping welcome email');
     return { success: false, error: 'Loops not configured' };
   }
+  const payload = {
+    transactionalId: TEMPLATE_IDS.welcome,
+    email: user.email,
+    dataVariables: {
+      first_name:    user.firstName,
+      username:      user.username,
+      dashboard_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+      gift_link:     `${process.env.NEXT_PUBLIC_APP_URL}/${user.username}`,
+    },
+  };
+  console.log('[loops] sendWelcomeEmail payload:', JSON.stringify(payload, null, 2));
   try {
-    await loops.sendTransactionalEmail({
-      transactionalId: TEMPLATE_IDS.welcome,
-      email: user.email,
-      dataVariables: {
-        first_name:    user.firstName,
-        username:      user.username,
-        dashboard_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-        gift_link:     `${process.env.NEXT_PUBLIC_APP_URL}/${user.username}`,
-      },
-    });
+    const result = await loops.sendTransactionalEmail(payload);
+    console.log('[loops] sendWelcomeEmail result:', JSON.stringify(result, null, 2));
     return { success: true };
-  } catch (err) {
-    console.error('[loops] sendWelcomeEmail failed:', err);
+  } catch (err: any) {
+    console.error('[loops] sendWelcomeEmail failed:', {
+      message: err?.message,
+      status:  err?.status ?? err?.statusCode,
+      body:    err?.body ?? err?.response ?? err?.data,
+      raw:     String(err),
+    });
     return { success: false, error: String(err) };
   }
 }

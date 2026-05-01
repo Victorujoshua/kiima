@@ -581,6 +581,17 @@ Keep this updated as components are built. Before building any new component, ch
 | `PublicHeader` | `layout/PublicHeader.tsx` | Fixed black header (68px): logo left, dark/light toggle right. Used on public gifter page. |
 | `MarketingHeader` | `layout/MarketingHeader.tsx` | Landing-style black nav (68px): logo + Product/For Creators links + auth-aware CTA. Used on product, creators, privacy, terms pages. |
 
+### Auth Step Components
+
+| Component | File | Key Props |
+|---|---|---|
+| `SignupProgressBar` | `auth/ProgressBar.tsx` | `step: number, total: number` — thin yellow pill bar, 200px centered |
+| `OtpInput` | `auth/OtpInput.tsx` | `value, onChange, disabled?` — 6-box OTP input with auto-advance and paste support |
+| `UsernameStep` | `auth/UsernameStep.tsx` | `onNext(username)` — pill input with kiima.app/ prefix, real-time availability check, fixed bottom bar CTA |
+| `EmailPasswordStep` | `auth/EmailPasswordStep.tsx` | `username, onBack, onNext(userId, email)` — pill inputs, Google button, fixed bottom bar CTA |
+| `ProfileStep` | `auth/ProfileStep.tsx` | `userId, email, username, onNext` — avatar upload, name/bio/social/currency, calls createProfile + uploadAvatar |
+| `VerifyBankStep` | `auth/VerifyBankStep.tsx` | `userId, email` — OTP verification + searchable bank dropdown + account name lookup + saveBankDetails |
+
 ### Page Components
 
 | Component | File | Key Props |
@@ -591,7 +602,7 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Route | File |
 |---|---|
-| `/signup` | `app/(auth)/signup/page.tsx` — Google button + email/password form |
+| `/signup` | `app/(auth)/signup/page.tsx` — 4-step signup flow: username → email/password → profile → OTP + bank |
 | `/login` | `app/(auth)/login/page.tsx` — Google button + email/password form |
 | `/forgot-password` | `app/(auth)/forgot-password/page.tsx` |
 | `/reset-password` | `app/(auth)/reset-password/page.tsx` |
@@ -609,7 +620,8 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Action file | Exports |
 |---|---|
-| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `checkUsernameAvailable`, `completeGoogleOnboarding` |
+| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `checkUsernameAvailable`, `completeGoogleOnboarding`, `createProfile`, `uploadAvatar` |
+| `lib/actions/bank.actions.ts` | `getBanks`, `lookupAccountName`, `saveBankDetails` |
 | `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `updateTag`, `deleteTag` |
 | `lib/actions/gift.actions.ts` | `initializeGift` |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` |
@@ -623,6 +635,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `lib/paystack/initialize.ts` | `initializePaystackTransaction` |
 | `lib/paystack/webhook.ts` | `verifyPaystackSignature` |
 | `lib/paystack/verify.ts` | `verifyPaystackTransaction` |
+| `lib/paystack/banks.ts` | `fetchSupportedBanks`, `resolveAccountName`, `createPaystackSubaccount` |
 
 ### Dashboard Loading Skeletons
 
@@ -717,6 +730,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `supabase/migrations/007_payment_refactor.sql` | Rename fee columns; ADD paystack_fee, total_charged, platform_fee_percent |
 | `supabase/migrations/008_update_default_tag.sql` | UPDATE all existing default tags to "Buy me a drink 🥤" |
 | `supabase/migrations/009_contribution_note.sql` | ADD note text column to contributions |
+| `supabase/migrations/010_bank_details.sql` | ADD bank_name, bank_code, account_number, account_name, paystack_subaccount_code to profiles |
 
 ---
 
