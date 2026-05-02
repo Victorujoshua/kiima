@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import {
+  Home, Eye, PenLine, Heart, Target, Tag, Settings, LogOut, ExternalLink,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import type { LucideIcon } from 'lucide-react';
 
 interface Props {
   displayName: string;
@@ -12,19 +16,19 @@ interface Props {
 
 type NavItem =
   | { kind: 'section'; label: string }
-  | { kind: 'link'; href: string; label: string; emoji: string; exact?: boolean; external?: boolean; indent?: boolean };
+  | { kind: 'link'; href: string; label: string; Icon: LucideIcon; exact?: boolean; external?: boolean };
 
 function buildNav(username: string, appUrl: string): NavItem[] {
   return [
-    { kind: 'link', href: '/dashboard', label: 'Home', emoji: '🏠', exact: true },
-    { kind: 'link', href: `${appUrl}/${username}`, label: 'View page', emoji: '👁', external: true },
-    { kind: 'link', href: '/dashboard/edit-page', label: 'Edit page', emoji: '✏️' },
+    { kind: 'link', href: '/dashboard',           label: 'Home',       Icon: Home,    exact: true },
+    { kind: 'link', href: `${appUrl}/${username}`, label: 'View page',  Icon: Eye,     external: true },
+    { kind: 'link', href: '/dashboard/edit-page',  label: 'Edit page',  Icon: PenLine  },
     { kind: 'section', label: 'MONETIZE' },
-    { kind: 'link', href: '/dashboard/transactions', label: 'Supporters', emoji: '❤️' },
-    { kind: 'link', href: '/dashboard/pools',        label: 'Pools',      emoji: '🎯' },
-    { kind: 'link', href: '/dashboard/tags',         label: 'Tags',       emoji: '🏷️' },
+    { kind: 'link', href: '/dashboard/transactions', label: 'Supporters', Icon: Heart  },
+    { kind: 'link', href: '/dashboard/pools',        label: 'Pools',      Icon: Target },
+    { kind: 'link', href: '/dashboard/tags',         label: 'Tags',       Icon: Tag    },
     { kind: 'section', label: 'SETTINGS' },
-    { kind: 'link', href: '/dashboard/settings', label: 'Settings', emoji: '⚙️' },
+    { kind: 'link', href: '/dashboard/settings',     label: 'Settings',   Icon: Settings },
   ];
 }
 
@@ -56,11 +60,15 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '4px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
+      <nav style={{ flex: 1, padding: '4px 12px', display: 'flex', flexDirection: 'column', gap: 1, overflowY: 'auto' }}>
         {navItems.map((item, i) => {
           if (item.kind === 'section') {
-            return <p key={i} style={sectionLabelStyle}>{item.label}</p>;
+            return (
+              <p key={i} style={sectionLabelStyle}>{item.label}</p>
+            );
           }
+
+          const { Icon } = item;
 
           if (item.external) {
             return (
@@ -69,29 +77,24 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ ...navItemStyle, color: '#5A4D44', fontWeight: 500 }}
+                style={navItemStyle(false)}
               >
-                <span style={emojiStyle}>{item.emoji}</span>
-                {item.label}
-                <span style={{ fontSize: 11, color: '#B5AAAA', marginLeft: 'auto' }}>↗</span>
+                <span style={iconSlotStyle(false)}>
+                  <Icon size={15} strokeWidth={1.5} />
+                </span>
+                <span style={navTextStyle(false)}>{item.label}</span>
+                <ExternalLink size={11} strokeWidth={1.5} style={{ marginLeft: 'auto', color: '#C4BDB7', flexShrink: 0 }} />
               </a>
             );
           }
 
           const active = isActive(item.href, item.exact);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={{
-                ...navItemStyle,
-                background: active ? '#D7D744' : 'transparent',
-                color:      active ? '#000000' : '#5A4D44',
-                fontWeight: active ? 700 : 500,
-              }}
-            >
-              <span style={emojiStyle}>{item.emoji}</span>
-              {item.label}
+            <Link key={item.href} href={item.href} style={navItemStyle(active)}>
+              <span style={iconSlotStyle(active)}>
+                <Icon size={15} strokeWidth={active ? 2 : 1.5} />
+              </span>
+              <span style={navTextStyle(active)}>{item.label}</span>
             </Link>
           );
         })}
@@ -114,16 +117,21 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
           </div>
         </div>
 
-        <button onClick={handleLogout} style={logoutBtnStyle}
+        <button
+          onClick={handleLogout}
+          style={logoutBtnStyle}
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#FF5C00'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#9A9089'; }}
         >
+          <LogOut size={13} strokeWidth={1.5} />
           Log out
         </button>
       </div>
     </aside>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const logoStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
@@ -136,31 +144,55 @@ const logoStyle: React.CSSProperties = {
 const sectionLabelStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
-  fontSize: 11,
+  fontSize: 10,
   textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-  color: '#B5AAAA',
-  margin: '14px 0 4px 12px',
+  letterSpacing: '0.1em',
+  color: '#C4BDB7',
+  margin: '16px 0 4px',
+  // Align with the text column: icon slot (26px) + gap (10px) + item padding (12px) = 48px
+  paddingLeft: 48,
 };
 
-const navItemStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  padding: '10px 12px',
-  borderRadius: 10,
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  textDecoration: 'none',
-  transition: 'background 0.12s ease, color 0.12s ease',
-  cursor: 'pointer',
-};
+function navItemStyle(active: boolean): React.CSSProperties {
+  return {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '7px 12px',
+    borderRadius: 8,
+    textDecoration: 'none',
+    transition: 'background 0.12s ease',
+    background: 'transparent',
+    cursor: 'pointer',
+  };
+}
 
-const emojiStyle: React.CSSProperties = {
-  fontSize: 16,
-  lineHeight: 1,
-  flexShrink: 0,
-};
+// Icon slot: fixed 26×26 box — active gets olive fill, inactive is transparent
+function iconSlotStyle(active: boolean): React.CSSProperties {
+  return {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    background: active ? '#D7D744' : 'transparent',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    color: active ? '#000000' : '#9A9089',
+    transition: 'background 0.12s ease, color 0.12s ease',
+  };
+}
+
+function navTextStyle(active: boolean): React.CSSProperties {
+  return {
+    fontFamily: 'var(--font-body)',
+    fontSize: 14,
+    fontWeight: active ? 700 : 500,
+    color: active ? '#1C1916' : '#5A4D44',
+    lineHeight: 1,
+    transition: 'color 0.12s ease',
+  };
+}
 
 const avatarCircleStyle: React.CSSProperties = {
   width: 38,
@@ -205,6 +237,9 @@ const creatorUsernameStyle: React.CSSProperties = {
 };
 
 const logoutBtnStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   fontWeight: 500,
@@ -213,6 +248,5 @@ const logoutBtnStyle: React.CSSProperties = {
   border: 'none',
   cursor: 'pointer',
   padding: '4px 0',
-  textDecoration: 'none',
   transition: 'color 0.15s ease',
 };
