@@ -12,7 +12,7 @@ export default async function EditPage() {
   const [profileResult, tags] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, username, display_name, bio, avatar_url, currency, theme_color')
+      .select('*')
       .eq('id', session.user.id)
       .single(),
     getTagsByUser(session.user.id),
@@ -20,7 +20,7 @@ export default async function EditPage() {
 
   if (!profileResult.data) redirect('/login');
 
-  const profile = profileResult.data as Profile;
+  const profile = profileResult.data as Profile & { theme_color?: string | null };
   const currency = (profile.currency ?? 'NGN') as Currency;
 
   // The default tag is always first (is_default = true, ordered first)
