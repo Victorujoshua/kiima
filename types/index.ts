@@ -9,7 +9,8 @@ export interface Profile {
   bio: string | null;
   avatar_url: string | null;
   currency: Currency;
-  theme_color: string;  // accent colour for gift page, default '#C87B5C'
+  theme_color: string;           // accent colour for gift page, default '#C87B5C'
+  show_contributions: boolean;   // whether gifters see the supporters list, default true
   created_at: string;
 }
 

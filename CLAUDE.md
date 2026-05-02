@@ -610,7 +610,7 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount` — bio/links removed; rendered in left-column profile card on `[username]/page.tsx`. White cards on warm bg; orange section label + CTA; olive quantity pills; custom pill toggle; orange supporter count badge; subtle rgba separator rows |
+| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions` — supporters section hidden when `showContributions=false`; white cards on warm bg; orange section label + CTA; olive quantity pills; custom pill toggle; orange supporter count badge |
 
 ### Auth Pages
 
@@ -697,6 +697,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `AboutSection` | `dashboard/edit/AboutSection.tsx` | `userId, initialBio, onChange(html)` — Tiptap editor with Bold + Link toolbar; stores HTML in profiles.bio |
 | `GiftLabelSection` | `dashboard/edit/GiftLabelSection.tsx` | `userId, currency, initialLabel, initialAmount, onChange(label, amount)` — emoji picker grid, text input, quick-pick pills, amount input |
 | `ThemeColorSection` | `dashboard/edit/ThemeColorSection.tsx` | `userId, initialColor, onChange(color)` — 6 preset swatches + custom color picker; preview strip |
+| `ShowContributionsSection` | `dashboard/edit/ShowContributionsSection.tsx` | `userId, initialValue: boolean` — pill toggle; auto-saves on change; controls supporter list visibility on gift page |
 | `LivePreviewPanel` | `dashboard/edit/LivePreviewPanel.tsx` | `displayName, username, avatarUrl, bio, themeColor, tagLabel` — desktop-only (≥1200px) phone mockup; updates live from parent state |
 
 ### Dashboard Pages
@@ -762,6 +763,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `supabase/migrations/010_bank_details.sql` | ADD bank_name, bank_code, account_number, account_name, paystack_subaccount_code to profiles |
 | `supabase/migrations/011_profile_theme_color.sql` | ADD theme_color text DEFAULT '#C87B5C' to profiles |
 | `supabase/migrations/012_notifications.sql` | CREATE notifications table, indexes, RLS policies |
+| `supabase/migrations/013_profile_show_contributions.sql` | ADD show_contributions boolean DEFAULT true to profiles |
 
 ---
 

@@ -5,6 +5,58 @@
 ---
 
 ```
+Date: 2026-05-02 (session 6)
+Session: Fix/Feat — Remove public page dark mode; add show-contributions toggle to edit page
+
+WHAT WAS CHANGED:
+
+  components/layout/PublicHeader.tsx:
+    - Removed dark/light mode toggle button entirely (Sun/Moon icons, useTheme hook)
+    - Now a plain server component (no 'use client') — just logo + black header
+
+  supabase/migrations/013_profile_show_contributions.sql:
+    - ALTER TABLE profiles ADD COLUMN show_contributions boolean NOT NULL DEFAULT true
+    - Run this in Supabase SQL Editor before the toggle will persist
+
+  types/index.ts:
+    - Added show_contributions: boolean to Profile interface
+
+  lib/actions/auth.actions.ts:
+    - Added show_contributions?: boolean to updateProfileDirect updates type
+
+  components/dashboard/edit/ShowContributionsSection.tsx (NEW):
+    - Pill toggle (olive when on, grey when off, black circular thumb)
+    - Auto-saves on toggle via updateProfileDirect — no Save button
+    - Shows "Saved ✓" flash for 2.5s on success; reverts + shows error on failure
+    - Subtitle text updates to reflect current state
+
+  app/dashboard/edit-page/EditPageClient.tsx:
+    - Added initialShowContributions prop
+    - Mounts ShowContributionsSection below ThemeColorSection
+
+  app/dashboard/edit-page/page.tsx:
+    - Fetches show_contributions from profiles
+    - Passes initialShowContributions={profile.show_contributions ?? true} to client
+
+  components/pages/GiftPageClient.tsx:
+    - Added showContributions: boolean prop
+    - Supporters card (and count badge) only rendered when showContributions=true
+
+  app/[username]/page.tsx:
+    - Added show_contributions to the profiles .select() query
+    - Passes showContributions to GiftPageClient
+
+WHAT TO BUILD NEXT:
+  - Run migration 013 in Supabase SQL Editor
+  - Pool page redesign to match creator page layout
+
+OPEN ISSUES:
+  - Migration 013 must be run before show_contributions persists in DB
+```
+
+---
+
+```
 Date: 2026-05-02 (session 5)
 Session: Fix — Creator page: remove dark bg, full-width two-column desktop layout
 

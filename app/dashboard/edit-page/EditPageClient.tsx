@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import AvatarSection      from '@/components/dashboard/edit/AvatarSection';
-import DisplayNameSection from '@/components/dashboard/edit/DisplayNameSection';
-import GiftLabelSection   from '@/components/dashboard/edit/GiftLabelSection';
-import ThemeColorSection  from '@/components/dashboard/edit/ThemeColorSection';
-import LivePreviewPanel   from '@/components/dashboard/edit/LivePreviewPanel';
+import AvatarSection             from '@/components/dashboard/edit/AvatarSection';
+import DisplayNameSection        from '@/components/dashboard/edit/DisplayNameSection';
+import GiftLabelSection          from '@/components/dashboard/edit/GiftLabelSection';
+import ThemeColorSection         from '@/components/dashboard/edit/ThemeColorSection';
+import ShowContributionsSection  from '@/components/dashboard/edit/ShowContributionsSection';
+import LivePreviewPanel          from '@/components/dashboard/edit/LivePreviewPanel';
 import type { Currency } from '@/types';
 
 // Tiptap uses browser APIs — must be loaded client-side only
@@ -24,6 +25,7 @@ interface Props {
   initialThemeColor: string;
   initialTagLabel: string;
   initialTagAmount: number;
+  initialShowContributions: boolean;
   currency: Currency;
 }
 
@@ -36,6 +38,7 @@ export default function EditPageClient({
   initialThemeColor,
   initialTagLabel,
   initialTagAmount,
+  initialShowContributions,
   currency,
 }: Props) {
   const [displayName, setDisplayName] = useState(initialDisplayName);
@@ -86,6 +89,11 @@ export default function EditPageClient({
             userId={userId}
             initialColor={initialThemeColor}
             onChange={color => setThemeColor(color)}
+          />
+
+          <ShowContributionsSection
+            userId={userId}
+            initialValue={initialShowContributions}
           />
         </div>
 

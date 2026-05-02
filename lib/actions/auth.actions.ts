@@ -349,6 +349,7 @@ export async function updateProfileDirect(
     bio?: string | null;
     avatar_url?: string | null;
     theme_color?: string;
+    show_contributions?: boolean;
   }
 ): Promise<{ success?: boolean; error?: string }> {
   if (!userId) return { error: 'Something went wrong — try again.' };

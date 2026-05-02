@@ -47,7 +47,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, username, display_name, bio, avatar_url, currency, theme_color, created_at, suspended')
+    .select('id, username, display_name, bio, avatar_url, currency, theme_color, show_contributions, created_at, suspended')
     .eq('username', params.username)
     .single();
 
@@ -163,6 +163,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
               currency={profile.currency as Currency}
               contributions={contributions}
               contributorCount={contributorCount}
+              showContributions={(profile as any).show_contributions ?? true}
             />
           </div>
 

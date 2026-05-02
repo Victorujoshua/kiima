@@ -17,6 +17,7 @@ interface Props {
   currency: Currency;
   contributions: Contribution[];
   contributorCount: number;
+  showContributions: boolean;
 }
 
 function timeAgo(dateStr: string): string {
@@ -81,6 +82,7 @@ export default function GiftPageClient({
   currency,
   contributions,
   contributorCount,
+  showContributions,
 }: Props) {
   const [state, formAction] = useFormState(initializeGift, null);
   const [selectedQty, setSelectedQty] = useState<DrinkQty>(1);
@@ -227,8 +229,8 @@ export default function GiftPageClient({
         </form>
       </div>
 
-      {/* ── Supporters ── */}
-      <div style={supportersCardStyle}>
+      {/* ── Supporters — only shown if creator has enabled it ── */}
+      {showContributions && <div style={supportersCardStyle}>
 
         {/* Header row */}
         <div style={supportersHeaderRowStyle}>
@@ -272,7 +274,7 @@ export default function GiftPageClient({
             })}
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Footer */}
       <p style={footerStyle}>

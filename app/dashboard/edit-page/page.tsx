@@ -20,7 +20,7 @@ export default async function EditPage() {
 
   if (!profileResult.data) redirect('/login');
 
-  const profile = profileResult.data as Profile & { theme_color?: string | null };
+  const profile = profileResult.data as Profile & { theme_color?: string | null; show_contributions?: boolean | null };
   const currency = (profile.currency ?? 'NGN') as Currency;
 
   // The default tag is always first (is_default = true, ordered first)
@@ -36,6 +36,7 @@ export default async function EditPage() {
       initialThemeColor={profile.theme_color ?? '#C87B5C'}
       initialTagLabel={defaultTag?.label ?? 'Buy me a drink 🥤'}
       initialTagAmount={defaultTag?.amount ?? 2000}
+      initialShowContributions={profile.show_contributions ?? true}
       currency={currency}
     />
   );
