@@ -7,6 +7,7 @@ import { upsertSocialLink } from '@/lib/actions/link.actions';
 interface Props {
   userId: string;
   existingLinks: SocialLink[];
+  noCard?: boolean;
 }
 
 const PLATFORMS: { key: SocialPlatform; label: string; placeholder: string }[] = [
@@ -134,8 +135,8 @@ function LinkRow({ userId, platform, label, placeholder, initialUrl }: LinkRowPr
             fontSize: '14px',
             color: 'var(--color-text-primary)',
             background: 'var(--color-bg)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-sm)',
+            border: '1.5px solid #EBEBEB',
+            borderRadius: 12,
             padding: '10px 14px',
             outline: 'none',
             transition: 'border-color 0.15s ease, background 0.15s ease',
@@ -167,7 +168,7 @@ function LinkRow({ userId, platform, label, placeholder, initialUrl }: LinkRowPr
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 'var(--radius-sm)',
+            borderRadius: 100,
             border: 'none',
             background: status === 'saved'
               ? 'var(--color-success-soft)'
@@ -201,30 +202,17 @@ function LinkRow({ userId, platform, label, placeholder, initialUrl }: LinkRowPr
   );
 }
 
-export default function SocialLinksForm({ userId, existingLinks }: Props) {
-  // Build a lookup map for existing URLs
+export default function SocialLinksForm({ userId, existingLinks, noCard }: Props) {
   const existingByPlatform: Partial<Record<SocialPlatform, string>> = {};
   for (const link of existingLinks) {
     existingByPlatform[link.platform] = link.url;
   }
 
-  return (
-    <div
-      style={{
-        background: 'var(--color-surface)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--color-border)',
-        boxShadow: 'var(--shadow-card)',
-        padding: 'var(--space-xl)',
-      }}
-    >
-      {/* Remove bottom border from last row */}
+  const rows = (
+    <>
       <style>{`.k-social-last { border-bottom: none !important; }`}</style>
       {PLATFORMS.map(({ key, label, placeholder }, i) => (
-        <div
-          key={key}
-          className={i === PLATFORMS.length - 1 ? 'k-social-last' : ''}
-        >
+        <div key={key} className={i === PLATFORMS.length - 1 ? 'k-social-last' : ''}>
           <LinkRow
             userId={userId}
             platform={key}
@@ -234,6 +222,21 @@ export default function SocialLinksForm({ userId, existingLinks }: Props) {
           />
         </div>
       ))}
+    </>
+  );
+
+  if (noCard) return <div>{rows}</div>;
+
+  return (
+    <div
+      style={{
+        background: '#ffffff',
+        borderRadius: 16,
+        border: '1px solid #EBEBEB',
+        padding: 28,
+      }}
+    >
+      {rows}
     </div>
   );
 }

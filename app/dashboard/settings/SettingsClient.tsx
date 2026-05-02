@@ -166,9 +166,9 @@ export default function SettingsClient({ profile, email, links, bankName, accoun
         </div>
 
         {/* ── Social links section ── */}
-        <div style={{ marginTop: '12px' }}>
-          <p style={{ ...sectionLabel, padding: '0 4px', marginBottom: '8px' }}>Social links</p>
-          <SocialLinksForm userId={profile.id} existingLinks={links} />
+        <div style={{ ...cardStyle, marginTop: '12px' }}>
+          <p style={sectionLabel}>Social links</p>
+          <SocialLinksForm userId={profile.id} existingLinks={links} noCard />
         </div>
 
         {/* ── Payout account section ── */}
