@@ -620,9 +620,9 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Action file | Exports |
 |---|---|
-| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `checkUsernameAvailable`, `completeGoogleOnboarding`, `createProfile`, `uploadAvatar` |
+| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `updateProfileDirect`, `checkUsernameAvailable`, `completeGoogleOnboarding`, `createProfile`, `uploadAvatar` |
 | `lib/actions/bank.actions.ts` | `getBanks`, `lookupAccountName`, `saveBankDetails` |
-| `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `updateTag`, `deleteTag` |
+| `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `updateTag`, `deleteTag`, `updateDefaultTag` |
 | `lib/actions/gift.actions.ts` | `initializeGift` |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` |
 | `lib/actions/admin.actions.ts` | `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment` |
@@ -673,11 +673,23 @@ Keep this updated as components are built. Before building any new component, ch
 | `EditTagModal` | `dashboard/EditTagModal.tsx` | `tag, userId, currency, onClose, onSuccess(tag)` — bottom sheet, pre-filled, calls updateTag |
 | `BankAccountSection` | `dashboard/BankAccountSection.tsx` | `userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP |
 
+### Edit Page Section Components (`components/dashboard/edit/`)
+
+| Component | File | Key Props |
+|---|---|---|
+| `AvatarSection` | `dashboard/edit/AvatarSection.tsx` | `userId, initialAvatarUrl, displayName, onChange(url)` — file input, preview, upload to Supabase Storage avatars bucket, remove |
+| `DisplayNameSection` | `dashboard/edit/DisplayNameSection.tsx` | `userId, initialValue, onChange(name)` — text input, 60-char limit with count, yellow Save |
+| `AboutSection` | `dashboard/edit/AboutSection.tsx` | `userId, initialBio, onChange(html)` — Tiptap editor with Bold + Link toolbar; stores HTML in profiles.bio |
+| `GiftLabelSection` | `dashboard/edit/GiftLabelSection.tsx` | `userId, currency, initialLabel, initialAmount, onChange(label, amount)` — emoji picker grid, text input, quick-pick pills, amount input |
+| `ThemeColorSection` | `dashboard/edit/ThemeColorSection.tsx` | `userId, initialColor, onChange(color)` — 6 preset swatches + custom color picker; preview strip |
+| `LivePreviewPanel` | `dashboard/edit/LivePreviewPanel.tsx` | `displayName, username, avatarUrl, bio, themeColor, tagLabel` — desktop-only (≥1200px) phone mockup; updates live from parent state |
+
 ### Dashboard Pages
 
 | Route | File |
 |---|---|
 | `/dashboard` | `app/dashboard/page.tsx` |
+| `/dashboard/edit-page` | `app/dashboard/edit-page/page.tsx` + `EditPageClient.tsx` — 5 independent save sections + desktop live preview panel |
 | `/dashboard/transactions` | `app/dashboard/transactions/page.tsx` |
 | `/dashboard/tags` | `app/dashboard/tags/page.tsx` + `TagsClient.tsx` — full CRUD (add/edit/delete) with bottom-sheet modals and toast |
 | `/dashboard/pools` | `app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx` |
@@ -734,6 +746,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `supabase/migrations/008_update_default_tag.sql` | UPDATE all existing default tags to "Buy me a drink 🥤" |
 | `supabase/migrations/009_contribution_note.sql` | ADD note text column to contributions |
 | `supabase/migrations/010_bank_details.sql` | ADD bank_name, bank_code, account_number, account_name, paystack_subaccount_code to profiles |
+| `supabase/migrations/011_profile_theme_color.sql` | ADD theme_color text DEFAULT '#C87B5C' to profiles |
 
 ---
 

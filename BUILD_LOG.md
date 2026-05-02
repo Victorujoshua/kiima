@@ -5,6 +5,62 @@
 ---
 
 ```
+Date: 2026-05-02
+Session: /dashboard/edit-page — profile editor with live preview
+
+WHAT WAS BUILT:
+  - app/dashboard/edit-page/page.tsx — server component; fetches profile + default tag
+  - app/dashboard/edit-page/EditPageClient.tsx — client; owns shared state for 5 sections
+      and passes it to LivePreviewPanel so preview updates live as user types
+  - components/dashboard/edit/AvatarSection.tsx
+      • 80px avatar circle; file input → immediate preview via URL.createObjectURL
+      • Save: uploads to Supabase Storage avatars bucket (upsert), updates profiles.avatar_url
+      • Remove button shown only when avatar exists
+  - components/dashboard/edit/DisplayNameSection.tsx
+      • Text input pre-filled; 60-char limit with live count; Save calls updateProfileDirect
+  - components/dashboard/edit/AboutSection.tsx
+      • Tiptap editor (StarterKit + Link extension)
+      • Toolbar: Bold (B) button + Link icon with inline URL popover
+      • Stores HTML in profiles.bio; empty editor saves null
+  - components/dashboard/edit/GiftLabelSection.tsx
+      • Emoji picker grid (12 options); text input "Buy me a [text] [emoji]"
+      • Quick-pick pills: Drink / Beer / Pizza / Book / Game
+      • Amount per item input with currency symbol prefix
+      • Calls updateDefaultTag() to update is_default=true gift tag
+  - components/dashboard/edit/ThemeColorSection.tsx
+      • 6 preset swatches with checkmark on selected + ring outline
+      • Custom pill → native <input type="color"> picker
+      • Preview strip: shows tag pills rendered in chosen colour
+      • Saves to profiles.theme_color via updateProfileDirect
+  - components/dashboard/edit/LivePreviewPanel.tsx
+      • Sticky right panel (1200px+ only) — phone frame mockup
+      • Updates live: avatar, name, bio (HTML), theme colour, tag label
+  - supabase/migrations/011_profile_theme_color.sql
+      • ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_color text DEFAULT '#C87B5C'
+  - lib/actions/auth.actions.ts — added updateProfileDirect(userId, { display_name?, bio?, avatar_url?, theme_color? })
+  - lib/actions/tag.actions.ts — added updateDefaultTag(userId, label, amount)
+  - types/index.ts — added theme_color: string to Profile interface
+  - components/dashboard/Sidebar.tsx — added ✏️ Edit page link (indented under View page)
+  - components/dashboard/MobileHeader.tsx — added Edit page to drawer nav + page titles
+  - app/globals.css — added .k-edit-preview-col (display:none; shows at ≥1200px)
+  - package.json — @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-link installed
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (theme_color column)
+  - Apply theme_color on public gift page: read from profile, apply to tag pills,
+    submit button, and quantity selector active state
+  - Update /dashboard/links to also appear on Edit page OR keep it in Sidebar only
+  - Consider adding "Edit page" link in MobileHeader page title bar shortcut
+
+OPEN ISSUES:
+  - theme_color column must be added to DB before ThemeColorSection saves succeed
+  - Tiptap editor currently has no border-focus animation (would need :focus-within CSS)
+  - The SVG file "7db9643e-...1.svg" in project root is untracked clutter — can be deleted
+```
+
+---
+
+```
 Date: 2026-05-01
 Session: Dashboard UI unification + bank account setup with OTP
 
