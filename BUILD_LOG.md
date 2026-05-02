@@ -62,6 +62,35 @@ OPEN ISSUES:
 
 ```
 Date: 2026-05-01
+Session: Sidebar icon overhaul — Lucide icons + nav alignment
+
+WHAT WAS BUILT:
+  - components/dashboard/Sidebar.tsx — full icon overhaul
+      • Replaced all emoji icons with Lucide outline icons:
+        Home, Eye, PenLine, Heart, Target, Tag, Settings, LogOut, ExternalLink
+      • Icon slot pattern: fixed 26×26 box (borderRadius 6)
+          Active:   background #D7D744 (olive), icon color #000000
+          Inactive: background transparent, icon color #9A9089
+      • navItemStyle / iconSlotStyle / navTextStyle separated into clean functions
+      • Section labels (MONETIZE / SETTINGS) padded 48px to align with text column
+          (12px item padding + 26px icon slot + 10px gap = 48px)
+      • View page and Edit page sit at same indent level (independent nav items)
+      • Logout button uses LogOut icon aligned with text
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (theme_color column required for
+    ThemeColorSection to save)
+  - Apply theme_color on public gift page: tag pills, CTA button, quantity selector
+
+OPEN ISSUES:
+  - theme_color DB column not yet added; ThemeColorSection saves will fail until 011 runs
+  - Stray SVG file "7db9643e-...1.svg" in project root — untracked, can be deleted
+```
+
+---
+
+```
+Date: 2026-05-01
 Session: Dashboard UI unification + bank account setup with OTP
 
 WHAT WAS BUILT:

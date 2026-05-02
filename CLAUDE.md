@@ -662,6 +662,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `BottomNav` | `dashboard/BottomNav.tsx` | Unused — replaced by MobileHeader. File retained but not mounted. |
 | `MobileHeader` | `dashboard/MobileHeader.tsx` | No props — fixed top bar (logo + page title + hamburger) on mobile; slide-in drawer nav + dark mode toggle. Hidden on desktop (≥768px) via `.k-mobile-header` CSS class. |
 | `DashboardSidebar` | `dashboard/DashboardSidebar.tsx` | No props — reads pathname for active state. Black bg, olive active highlight, desktop only via `.k-dash-sidebar` CSS class. |
+| `Sidebar` | `dashboard/Sidebar.tsx` | `displayName, username, avatarUrl` — the actual sidebar mounted in layout.tsx; Lucide outline icons with 26×26 olive-filled slot on active; section labels padded to align with text column |
 | `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop. |
 | `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |
 | `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
