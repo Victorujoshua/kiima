@@ -6,6 +6,229 @@
 
 ```
 Date: 2026-05-02
+Session: Feat — Theme color applied to public gift page
+
+WHAT WAS CHANGED:
+  - app/[username]/page.tsx:
+      • Added theme_color to the profiles .select() query
+      • Extracted const themeColor from profile data (fallback #C87B5C)
+      • Injected --color-accent: themeColor as inline CSS variable on .k-gift-shell
+      • All children (cover gradient, avatar fallback, DrinkQuantitySelector pills,
+        submit button, checkbox accentColor) automatically pick up the override
+        via CSS custom property cascade — zero child component changes needed
+
+  BUILD: 0 errors. 33 routes compile clean.
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (REQUIRED before theme_color works in prod):
+      ALTER TABLE profiles ADD COLUMN IF NOT EXISTS theme_color text DEFAULT '#C87B5C';
+  - Delete stray SVG file "7db9643e-...1.svg" from project root
+
+OPEN ISSUES:
+  - migration 011 must be run in Supabase before theme_color column exists in DB
+  - Stray SVG "7db9643e-2808-4731-b0e0-5cab58575979 1.svg" in project root (untracked)
+```
+
+---
+
+```
+Date: 2026-05-02
+Session: Feat — Simplified gift tag system (one tag per creator)
+
+WHAT WAS CHANGED:
+
+  REMOVED:
+    - app/dashboard/tags/ (page.tsx, TagsClient.tsx, loading.tsx) — deleted
+    - components/dashboard/AddTagModal.tsx — deleted
+    - components/dashboard/EditTagModal.tsx — deleted
+    - components/dashboard/GiftTagsRow.tsx — deleted
+    - lib/actions/tag.actions.ts: removed createTag, updateTag, deleteTag exports
+    - Sidebar.tsx: removed Tags nav item (+ Tag lucide import)
+    - MobileHeader.tsx: removed Tags nav item and PAGE_TITLES entry (dead file, kept tidy)
+
+  UPDATED:
+    - components/dashboard/BottomNav.tsx: replaced Tags tab with Edit page
+      (/dashboard/edit-page, PenLine icon) — new tabs: Home|Pools|Edit page|Settings
+    - components/pages/GiftPageClient.tsx:
+        • Card heading now uses defaultTag.label (dynamic, not hardcoded)
+        • Submit button: "Send ₦X [emoji]" using extractEmoji() helper
+        • activityLine() now receives emoji param instead of hardcoded "drink"
+        • extractEmoji(): last-word non-ASCII extraction (no unicode regex flag needed)
+    - CLAUDE.md: Section 4.2 rewritten, Section 5 gift_tags note added,
+      Section 6 tree updated, Section 7 removed deleted components,
+      tag.actions.ts exports updated.
+
+  BUILD: 0 errors. /dashboard/tags removed from route table. 33 routes compile clean.
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (theme_color column)
+  - Apply theme_color on public gift page
+
+OPEN ISSUES:
+  - theme_color DB column not yet added
+  - Stray SVG file "7db9643e-...1.svg" in project root — can be deleted
+```
+
+---
+
+```
+Date: 2026-05-02
+Session: Feat — Unified sidebar nav for desktop and mobile
+
+WHAT WAS BUILT:
+  - components/dashboard/Sidebar.tsx
+      • Now owns both desktop and mobile navigation.
+      • Added useState(mobileOpen), useEffect for route-change close, and
+        useEffect for scroll-lock.
+      • Renders a .k-mob-topbar div (black bar, D7D744 border-bottom, 56px)
+        with logo + Menu icon hamburger — hidden on desktop via CSS.
+      • Renders a backdrop (fixed inset, rgba 0.4) when mobileOpen.
+      • aside gets class k-sidebar-open when mobileOpen — CSS slides it in.
+      • Logo row inside aside: added .k-mob-close-btn X button (hidden desktop).
+      • Imported: useState, useEffect, Menu, X from lucide-react.
+
+  - app/dashboard/layout.tsx
+      • Removed MobileHeader import and usage. Sidebar now self-contained.
+
+  - app/globals.css
+      • .k-sidebar mobile: replaced display:none with transform:translateX(-100%)
+        + transition 0.25s + z-index:120 + box-shadow overlay. Added
+        .k-sidebar.k-sidebar-open { transform: translateX(0) }.
+      • Added .k-mob-topbar: hidden on desktop, flex 56px black top bar on mobile.
+      • Added .k-mob-close-btn: hidden on desktop, flex on mobile.
+
+  - CLAUDE.md Section 7 updated: Sidebar and MobileHeader entries.
+
+RESULT:
+  Mobile users see the same sidebar (white bg, olive active, all 7 nav items,
+  creator info + logout at bottom) instead of the old hamburger drawer that
+  had different items and a black background.
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (theme_color column)
+  - Apply theme_color on public gift page: tag pills, CTA button, quantity selector
+
+OPEN ISSUES:
+  - theme_color DB column not yet added
+  - Stray SVG file "7db9643e-...1.svg" in project root — untracked, can be deleted
+```
+
+---
+
+```
+Date: 2026-05-02
+Session: Fix — All dashboard skeleton loaders rewritten to match new UI
+
+WHAT WAS FIXED:
+  - app/dashboard/transactions/loading.tsx (full rewrite)
+      • Old: generic header + k-skeleton rows with CSS variable card shell.
+      • New: page title shimmer → toolbar shell (search bar + filter pill, both
+        matching exact borderRadius/height from TransactionsClient) → white card
+        (borderRadius:16, border:1px #EBEBEB, padding:28) with count label and
+        8 ContributionRow-matched rows (line + source badge left, date right,
+        padding 8px 0, rgba border between rows).
+
+  - app/dashboard/pools/loading.tsx (full rewrite)
+      • Old: pools/page.tsx-style shell with var(--radius-lg) and var(--shadow-card).
+      • New: header (title + subtitle + Create-pool pill right) → 3 pool cards
+        matching poolCardStyle (flex col, gap:16, #ffffff, 16px radius, 28px pad)
+        each with: title+badge row → URL line → 8px progress bar → footer (raised
+        label + View link).
+
+  - app/dashboard/tags/loading.tsx (full rewrite)
+      • Old: generic card rows with CSS variable shell.
+      • New: heading + subtitle → Default tag card (section label + tag row with
+        SYSTEM badge pill + label/amount + locked text) → Custom tags card (section
+        header + 3 rows each with label/amount + Edit/Remove button pair shimmer,
+        matching tagRowStyle padding 12px 0 and #EBEBEB row borders).
+
+  - app/globals.css — shimmer class already added in prior session.
+
+VERIFICATION:
+  - Each skeleton rendered in a temp preview page and screenshotted at 1440px.
+  - All shells, proportions, toolbar shapes, and row layouts verified correct.
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (theme_color column)
+  - Apply theme_color on public gift page: tag pills, CTA button, quantity selector
+
+OPEN ISSUES:
+  - theme_color DB column not yet added; ThemeColorSection saves will fail until 011 runs
+  - Stray SVG file "7db9643e-...1.svg" in project root — untracked, can be deleted
+```
+
+---
+
+```
+Date: 2026-05-02
+Session: Fix — Dashboard skeleton loaders rewritten to match new UI
+
+WHAT WAS FIXED:
+  - app/dashboard/loading.tsx (full rewrite)
+      • Old skeleton showed header text + 3-column stat grid + a simple row
+        list — none of which exist in the new dashboard UI.
+      • New file has 3 exact skeletons: ProfileCardSkeleton, EarningsCardSkeleton,
+        RecentSupportersSkeleton.
+      • Each skeleton outer shell (borderRadius: 16, border: 1px solid #EBEBEB,
+        padding: 28, background: #ffffff) is copied verbatim from the real
+        component's cardStyle so no layout shift occurs on load.
+      • Inner content: every real element replaced with a same-size shimmer block.
+        Avatar circles, name lines, period pill, 48px amount block, dot + label
+        breakdown, and 5 supporter rows all match their real counterparts.
+  - app/globals.css
+      • Added .shimmer class: linear-gradient 90deg shimmer animation at 1.5s
+        ease-in-out infinite. Sits alongside existing .k-skeleton class.
+  - app/dashboard/page.tsx — no structural change; temporary delay added and
+      removed during verification only.
+
+VERIFICATION:
+  - Rendered DashboardLoading in a temp /skeleton-preview page and took a
+    1440px screenshot. All 3 card shells matched size/border/radius.
+    Shimmer blocks rendered correctly in each position.
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (theme_color column)
+  - Apply theme_color on public gift page: tag pills, CTA button, quantity selector
+
+OPEN ISSUES:
+  - theme_color DB column not yet added; ThemeColorSection saves will fail until 011 runs
+  - Stray SVG file "7db9643e-...1.svg" in project root — untracked, can be deleted
+```
+
+---
+
+```
+Date: 2026-05-02
+Session: Fix — Tiptap v3 immediatelyRender error on /dashboard/edit-page
+
+WHAT WAS FIXED:
+  - components/dashboard/edit/AboutSection.tsx
+      • Added `immediatelyRender: false` to useEditor() options.
+      • Root cause: Tiptap v3 detects Next.js via `window.next` and throws
+        "SSR has been detected, please set `immediatelyRender` explicitly to
+        `false`" in development mode when the option is absent. This threw
+        even though AboutSection is dynamically imported with `ssr: false`,
+        because `window.next` is always set on the client in Next.js apps.
+        The single throw caused 4 console errors (React StrictMode double
+        renders + error boundary catch) and the global error.tsx boundary
+        rendered "Something went wrong".
+      • Build was already clean (TypeScript compile-time error-free); this
+        was a pure runtime error in dev mode.
+  - No other files changed.
+
+WHAT TO BUILD NEXT:
+  - Run migration 011 in Supabase SQL editor (theme_color column)
+  - Apply theme_color on public gift page: tag pills, CTA button, quantity selector
+
+OPEN ISSUES:
+  - theme_color DB column not yet added; ThemeColorSection saves will fail until 011 runs
+  - Stray SVG file "7db9643e-...1.svg" in project root — untracked, can be deleted
+```
+
+---
+
+```
+Date: 2026-05-02
 Session: /dashboard/edit-page — profile editor with live preview
 
 WHAT WAS BUILT:

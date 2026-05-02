@@ -216,16 +216,16 @@ These rules are non-negotiable. They come from the product spec. Never work arou
 
 ### 4.2 Gift Tags
 
-- The system-default tag `"Buy me a drink 🥤"` always exists for every creator
-- Default tag amount: ₦2,000 (or currency equivalent — creator cannot change this)
-- The default tag **cannot be edited or deleted** — ever
-- Creators can add unlimited custom tags, each with:
-  - A label (emoji allowed, encouraged)
-  - A fixed amount
-- Tags appear as pill buttons on the gift link page
-- **Clicking a tag auto-fills the amount field AND locks it (non-editable)**
-- To enter a custom amount, the user must not select any tag (or clear selection)
-- Tags are optional — creators may have only the default tag
+Each creator has exactly **ONE gift tag** (`is_default = true`). There are no custom tags and no multi-tag support.
+
+- The tag is created automatically at signup (trigger on `profiles` insert)
+- The creator edits its **label** and **amount** from `/dashboard/edit-page` via `GiftLabelSection`
+- `updateDefaultTag(userId, label, amount)` is the only write path — `createTag` and `deleteTag` no longer exist
+- The gift page always shows this single tag:
+  - Label drives the card heading and the submit button emoji
+  - Amount drives the `DrinkQuantitySelector` (×1, ×3, ×5, or custom multiplier)
+  - Submit button: `"Send ₦[total] [emoji from label]"`
+- `getTagsByUser(userId)` is still used on the public gift page — returns the one default tag
 
 ### 4.3 Anonymous Identity Logic
 
@@ -368,8 +368,10 @@ gift_tags (
   user_id     uuid REFERENCES profiles(id) ON DELETE CASCADE,
   label       text NOT NULL,
   amount      numeric NOT NULL,
-  is_default  boolean DEFAULT false,   -- true = system "Buy me a drink 🥤" tag
+  is_default  boolean DEFAULT false,   -- always true; one row per creator only
   created_at  timestamptz DEFAULT now()
+  -- Only one row per creator (is_default = true). No multi-tag support.
+  -- Label and amount are creator-editable via /dashboard/edit-page (GiftLabelSection).
 )
 
 -- Support pools
@@ -480,7 +482,6 @@ kiima/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   ├── transactions/page.tsx
-│   │   ├── tags/page.tsx
 │   │   ├── links/page.tsx
 │   │   └── pools/
 │   │       ├── page.tsx
@@ -622,7 +623,7 @@ Keep this updated as components are built. Before building any new component, ch
 |---|---|
 | `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `updateProfileDirect`, `checkUsernameAvailable`, `completeGoogleOnboarding`, `createProfile`, `uploadAvatar` |
 | `lib/actions/bank.actions.ts` | `getBanks`, `lookupAccountName`, `saveBankDetails` |
-| `lib/actions/tag.actions.ts` | `getTagsByUser`, `createTag`, `updateTag`, `deleteTag`, `updateDefaultTag` |
+| `lib/actions/tag.actions.ts` | `getTagsByUser`, `updateDefaultTag` |
 | `lib/actions/gift.actions.ts` | `initializeGift` |
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` |
 | `lib/actions/admin.actions.ts` | `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment` |
@@ -644,7 +645,6 @@ Keep this updated as components are built. Before building any new component, ch
 | `app/dashboard/loading.tsx` |
 | `app/dashboard/transactions/loading.tsx` |
 | `app/dashboard/pools/loading.tsx` |
-| `app/dashboard/tags/loading.tsx` |
 
 ### Dashboard Shell
 
@@ -659,19 +659,16 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `BottomNav` | `dashboard/BottomNav.tsx` | Unused — replaced by MobileHeader. File retained but not mounted. |
-| `MobileHeader` | `dashboard/MobileHeader.tsx` | No props — fixed top bar (logo + page title + hamburger) on mobile; slide-in drawer nav + dark mode toggle. Hidden on desktop (≥768px) via `.k-mobile-header` CSS class. |
+| `BottomNav` | `dashboard/BottomNav.tsx` | Unused. File retained but not mounted. |
+| `MobileHeader` | `dashboard/MobileHeader.tsx` | Unused — replaced by mobile support built into Sidebar. File retained but not mounted. |
 | `DashboardSidebar` | `dashboard/DashboardSidebar.tsx` | No props — reads pathname for active state. Black bg, olive active highlight, desktop only via `.k-dash-sidebar` CSS class. |
-| `Sidebar` | `dashboard/Sidebar.tsx` | `displayName, username, avatarUrl` — the actual sidebar mounted in layout.tsx; Lucide outline icons with 26×26 olive-filled slot on active; section labels padded to align with text column |
+| `Sidebar` | `dashboard/Sidebar.tsx` | `displayName, username, avatarUrl` — handles nav for both breakpoints. Desktop (≥768px): fixed 260px left panel. Mobile (<768px): renders `.k-mob-topbar` (black bar + hamburger) and slides in as full-overlay on open; `.k-mob-close-btn` X button inside; backdrop + scroll lock when open. Same nav items, same styling on both. |
 | `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop. |
-| `GiftTagsRow` | `dashboard/GiftTagsRow.tsx` | `tags, userId, currency` — horizontal scroll pills + add/delete modal |
 | `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
 | `DashboardProfileCard` | `dashboard/DashboardProfileCard.tsx` | `displayName, username, avatarUrl, bio` — white card with avatar, name, kiima link, bio, share button |
 | `EarningsCard` | `dashboard/EarningsCard.tsx` | `contributions, currency` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown |
 | `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts |
 | `Toast` | `dashboard/Toast.tsx` | `message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s |
-| `AddTagModal` | `dashboard/AddTagModal.tsx` | `userId, currency, onClose, onSuccess(tag)` — bottom sheet, calls createTag |
-| `EditTagModal` | `dashboard/EditTagModal.tsx` | `tag, userId, currency, onClose, onSuccess(tag)` — bottom sheet, pre-filled, calls updateTag |
 | `BankAccountSection` | `dashboard/BankAccountSection.tsx` | `userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP |
 
 ### Edit Page Section Components (`components/dashboard/edit/`)
@@ -692,7 +689,6 @@ Keep this updated as components are built. Before building any new component, ch
 | `/dashboard` | `app/dashboard/page.tsx` |
 | `/dashboard/edit-page` | `app/dashboard/edit-page/page.tsx` + `EditPageClient.tsx` — 5 independent save sections + desktop live preview panel |
 | `/dashboard/transactions` | `app/dashboard/transactions/page.tsx` |
-| `/dashboard/tags` | `app/dashboard/tags/page.tsx` + `TagsClient.tsx` — full CRUD (add/edit/delete) with bottom-sheet modals and toast |
 | `/dashboard/pools` | `app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx` |
 | `/dashboard/pools/[id]` | `app/dashboard/pools/[id]/page.tsx` + `ClosePoolButton.tsx` + `ShowContributorsToggle.tsx` |
 | `/dashboard/links` | `app/dashboard/links/page.tsx` |

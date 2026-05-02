@@ -35,7 +35,9 @@
       "PowerShell(npm search *)",
       "PowerShell(New-Item *)",
       "Bash(git add *)",
-      "PowerShell(auth *)"
+      "PowerShell(auth *)",
+      "PowerShell(npx next build 2>&1 | Select-Object -Last 40)",
+      "Bash(npx next *)"
     ]
   }
 }

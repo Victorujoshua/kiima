@@ -47,7 +47,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, username, display_name, bio, avatar_url, currency, created_at, suspended')
+    .select('id, username, display_name, bio, avatar_url, currency, theme_color, created_at, suspended')
     .eq('username', params.username)
     .single();
 
@@ -94,6 +94,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
   if (!defaultTag) notFound();
 
   const paymentFailed = searchParams.payment_failed === '1';
+  const themeColor = (profile as Profile & { suspended: boolean }).theme_color ?? '#C87B5C';
 
   return (
     <main style={pageStyle}>
@@ -105,7 +106,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
         </div>
       )}
 
-      <div className="k-gift-shell">
+      <div className="k-gift-shell" style={{ '--color-accent': themeColor } as React.CSSProperties}>
         {/* Left column — profile */}
         <div>
           {/* Cover image */}

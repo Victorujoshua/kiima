@@ -21,6 +21,7 @@ export default function AboutSection({ userId, initialBio, onChange }: Props) {
   const [linkUrl, setLinkUrl] = useState('');
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer' } }),

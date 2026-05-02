@@ -1,9 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Home, Eye, PenLine, Heart, Target, Tag, Settings, LogOut, ExternalLink,
+  Home, Eye, PenLine, Heart, Target, Settings, LogOut, ExternalLink, Menu, X,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { LucideIcon } from 'lucide-react';
@@ -26,18 +27,27 @@ function buildNav(username: string, appUrl: string): NavItem[] {
     { kind: 'section', label: 'MONETIZE' },
     { kind: 'link', href: '/dashboard/transactions', label: 'Supporters', Icon: Heart  },
     { kind: 'link', href: '/dashboard/pools',        label: 'Pools',      Icon: Target },
-    { kind: 'link', href: '/dashboard/tags',         label: 'Tags',       Icon: Tag    },
     { kind: 'section', label: 'SETTINGS' },
     { kind: 'link', href: '/dashboard/settings',     label: 'Settings',   Icon: Settings },
   ];
 }
 
 export default function Sidebar({ displayName, username, avatarUrl }: Props) {
-  const pathname = usePathname();
-  const router   = useRouter();
-  const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
-  const navItems = buildNav(username, appUrl);
-  const initial  = displayName.charAt(0).toUpperCase();
+  const pathname    = usePathname();
+  const router      = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const appUrl      = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
+  const navItems    = buildNav(username, appUrl);
+  const initial     = displayName.charAt(0).toUpperCase();
+
+  // Close on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  // Lock body scroll when sidebar overlay is open on mobile
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
 
   function isActive(href: string, exact = false) {
     if (exact) return pathname === href;
@@ -51,12 +61,44 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
   }
 
   return (
-    <aside className="k-sidebar">
-      {/* Logo */}
-      <div style={{ padding: '24px 20px 16px' }}>
+    <>
+      {/* Mobile top bar — hamburger trigger, hidden on desktop via CSS */}
+      <div className="k-mob-topbar">
+        <span style={mobileLogoStyle}>
+          kiima<span style={{ color: '#D7D744' }}>.</span>
+        </span>
+        <button
+          aria-label="Open navigation"
+          onClick={() => setMobileOpen(true)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4 }}
+        >
+          <Menu size={22} color="#ffffff" strokeWidth={2} />
+        </button>
+      </div>
+
+      {/* Backdrop — dims content when sidebar is open on mobile */}
+      {mobileOpen && (
+        <div
+          aria-hidden="true"
+          onClick={() => setMobileOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 110 }}
+        />
+      )}
+
+    <aside className={`k-sidebar${mobileOpen ? ' k-sidebar-open' : ''}`}>
+      {/* Logo + mobile close */}
+      <div style={{ padding: '24px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={logoStyle}>
           kiima<span style={{ color: '#D7D744' }}>.</span>
         </span>
+        <button
+          className="k-mob-close-btn"
+          aria-label="Close navigation"
+          onClick={() => setMobileOpen(false)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, color: '#9A9089' }}
+        >
+          <X size={18} strokeWidth={2} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -128,6 +170,7 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
         </button>
       </div>
     </aside>
+    </>
   );
 }
 
@@ -138,6 +181,14 @@ const logoStyle: React.CSSProperties = {
   fontWeight: 800,
   fontSize: 22,
   color: '#1C1916',
+  letterSpacing: '-0.02em',
+};
+
+const mobileLogoStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 800,
+  fontSize: 20,
+  color: '#ffffff',
   letterSpacing: '-0.02em',
 };
 

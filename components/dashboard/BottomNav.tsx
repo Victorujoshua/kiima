@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Target, Tag, Settings } from 'lucide-react';
+import { Home, Target, PenLine, Settings } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/dashboard',          label: 'Home',     Icon: Home     },
-  { href: '/dashboard/pools',    label: 'Pools',    Icon: Target   },
-  { href: '/dashboard/tags',     label: 'Tags',     Icon: Tag      },
-  { href: '/dashboard/settings', label: 'Settings', Icon: Settings },
+  { href: '/dashboard',           label: 'Home',      Icon: Home    },
+  { href: '/dashboard/pools',     label: 'Pools',     Icon: Target  },
+  { href: '/dashboard/edit-page', label: 'Edit page', Icon: PenLine },
+  { href: '/dashboard/settings',  label: 'Settings',  Icon: Settings },
 ];
 
 export default function BottomNav() {

@@ -32,10 +32,16 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-function activityLine(giftAmount: number, drinkPrice: number, currency: Currency): string {
+function extractEmoji(label: string): string {
+  const parts = label.trim().split(/\s+/);
+  const last  = parts[parts.length - 1] ?? '';
+  return /[^\x00-\x7F]/.test(last) ? last : '';
+}
+
+function activityLine(giftAmount: number, drinkPrice: number, currency: Currency, emoji: string): string {
   if (drinkPrice > 0 && giftAmount % drinkPrice === 0) {
     const qty = giftAmount / drinkPrice;
-    return `bought ${qty} drink${qty === 1 ? '' : 's'}`;
+    return `sent ×${qty} ${emoji}`.trim();
   }
   return `sent ${formatCurrency(giftAmount, currency)}`;
 }
@@ -90,7 +96,8 @@ export default function GiftPageClient({
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const giftAmount = defaultTag.amount * selectedQty;
-  const tagId = defaultTag.id;
+  const tagId      = defaultTag.id;
+  const tagEmoji   = extractEmoji(defaultTag.label);
   const displayNamePreview = isAnonymous ? 'Anonymous' : (nameValue.trim() || 'Anonymous');
 
   return (
@@ -98,7 +105,7 @@ export default function GiftPageClient({
 
       {/* Section 2 — Gift card */}
       <div style={cardStyle}>
-        <h2 style={cardHeadingStyle}>Buy {creatorName} a drink 🥤</h2>
+        <h2 style={cardHeadingStyle}>{defaultTag.label}</h2>
 
         <DrinkQuantitySelector
           drinkPrice={defaultTag.amount}
@@ -177,7 +184,7 @@ export default function GiftPageClient({
             />
           </div>
 
-          <SubmitButton label={`Send ${formatCurrency(giftAmount, currency)} 🥤`} />
+          <SubmitButton label={`Send ${formatCurrency(giftAmount, currency)}${tagEmoji ? ` ${tagEmoji}` : ''}`} />
 
           {state && typeof state === 'object' && 'error' in state && state.error && (
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-danger)', margin: 0, textAlign: 'center' }}>
@@ -222,7 +229,7 @@ export default function GiftPageClient({
                       {name}
                     </p>
                     <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
-                      {activityLine(c.gift_amount, defaultTag.amount, currency)}
+                      {activityLine(c.gift_amount, defaultTag.amount, currency, tagEmoji)}
                     </p>
                   </div>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', flexShrink: 0 }}>

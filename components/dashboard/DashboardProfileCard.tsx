@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Copy, Check } from 'lucide-react';
 
 interface Props {
   displayName: string;
@@ -11,9 +12,19 @@ interface Props {
 
 export default function DashboardProfileCard({ displayName, username, avatarUrl, bio }: Props) {
   const [copied, setCopied] = useState(false);
-  const appUrl      = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
-  const profileUrl  = `${appUrl}/${username}`;
-  const initial     = displayName.charAt(0).toUpperCase();
+  const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
+  const profileUrl = `${appUrl}/${username}`;
+  const initial    = displayName.charAt(0).toUpperCase();
+
+  async function copyToClipboard() {
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // no-op
+    }
+  }
 
   async function handleShare() {
     if (navigator.share) {
@@ -23,13 +34,7 @@ export default function DashboardProfileCard({ displayName, username, avatarUrl,
         // dismissed
       }
     } else {
-      try {
-        await navigator.clipboard.writeText(profileUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        // no-op
-      }
+      await copyToClipboard();
     }
   }
 
@@ -48,12 +53,24 @@ export default function DashboardProfileCard({ displayName, username, avatarUrl,
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={nameStyle}>{displayName}</p>
-        <p style={usernameStyle}>kiima.app/{username}</p>
+        <div style={usernamRowStyle}>
+          <span style={usernameStyle}>kiima.app/{username}</span>
+          <button onClick={copyToClipboard} style={copyIconBtnStyle} title="Copy link">
+            {copied
+              ? <Check size={13} strokeWidth={2.5} color="#3D9B56" />
+              : <Copy size={13} strokeWidth={2} color="#9A9089" />
+            }
+          </button>
+        </div>
         {bio && <p style={bioStyle}>{bio}</p>}
       </div>
 
-      {/* Share CTA */}
-      <button onClick={handleShare} style={{ ...shareBtnStyle, background: copied ? '#D7D744' : '#000000', color: copied ? '#000000' : '#ffffff' }}>
+      {/* Share CTA — hidden on mobile (≤480px) via k-profile-share-btn */}
+      <button
+        onClick={handleShare}
+        className="k-profile-share-btn"
+        style={{ ...shareBtnStyle, background: copied ? '#D7D744' : '#000000', color: copied ? '#000000' : '#ffffff' }}
+      >
         {copied ? 'Copied!' : 'Share page'}
       </button>
     </div>
@@ -102,14 +119,34 @@ const nameStyle: React.CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
-const usernameStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize:   13,
-  color:      '#9A9089',
+const usernamRowStyle: React.CSSProperties = {
+  display:    'flex',
+  alignItems: 'center',
+  gap:        4,
   margin:     '3px 0 0',
   overflow:   'hidden',
+};
+
+const usernameStyle: React.CSSProperties = {
+  fontFamily:   'var(--font-body)',
+  fontSize:     13,
+  color:        '#9A9089',
+  overflow:     'hidden',
   textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
+  whiteSpace:   'nowrap',
+  flexShrink:   1,
+  minWidth:     0,
+};
+
+const copyIconBtnStyle: React.CSSProperties = {
+  background: 'none',
+  border:     'none',
+  padding:    '2px',
+  cursor:     'pointer',
+  display:    'flex',
+  alignItems: 'center',
+  flexShrink: 0,
+  lineHeight: 1,
 };
 
 const bioStyle: React.CSSProperties = {

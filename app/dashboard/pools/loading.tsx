@@ -1,32 +1,62 @@
-// Skeleton shown while pools/page.tsx fetches data
 export default function PoolsLoading() {
   return (
-    <div style={pageStyle}>
-      {/* Header skeleton */}
-      <div style={headerStyle}>
+    <div>
+      {/* Page header — matches pools/page.tsx headerStyle: flex, space-between, marginBottom 28 */}
+      <div style={{
+        display:        'flex',
+        alignItems:     'flex-start',
+        justifyContent: 'space-between',
+        gap:            16,
+        marginBottom:   28,
+        flexWrap:       'wrap',
+      }}>
         <div>
-          <div className="k-skeleton" style={{ width: 130, height: 20, marginBottom: 8 }} />
-          <div className="k-skeleton" style={{ width: 280, height: 14 }} />
+          {/* Title — h1.k-dash-page-title */}
+          <div className="shimmer" style={{ width: 140, height: 24, borderRadius: 6, marginBottom: 8 }} />
+          {/* Subtitle */}
+          <div className="shimmer" style={{ width: 280, height: 14, borderRadius: 6 }} />
         </div>
-        <div className="k-skeleton" style={{ width: 120, height: 40, borderRadius: 100 }} />
+        {/* "Create pool" button — pill, ~130×44 */}
+        <div className="shimmer" style={{ width: 130, height: 44, borderRadius: 100, flexShrink: 0 }} />
       </div>
 
-      {/* Pool cards skeleton */}
-      <div style={listStyle}>
-        {[1, 2, 3].map((i) => (
-          <div key={i} style={poolCardStyle}>
-            {/* Title row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 6 }}>
-              <div className="k-skeleton" style={{ flex: 1, height: 16, maxWidth: 200 }} />
-              <div className="k-skeleton" style={{ width: 52, height: 20, borderRadius: 100 }} />
+      {/* Pool card list — matches listStyle: flex col, gap 16 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            style={{
+              background:    '#ffffff',
+              borderRadius:  16,
+              border:        '1px solid #EBEBEB',
+              padding:       28,
+              display:       'flex',
+              flexDirection: 'column',
+              gap:           16,
+            }}
+          >
+            {/* Pool header: title + badge + URL — matches poolHeaderStyle children */}
+            <div>
+              {/* Title row — matches poolTitleRowStyle: flex, alignItems center, gap 8, marginBottom 4 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                {/* Pool title — 16px bold */}
+                <div className="shimmer" style={{ flex: 1, maxWidth: 200, height: 18, borderRadius: 6 }} />
+                {/* Status badge pill — matches badgeStyle: borderRadius 100, padding 3px 10px */}
+                <div className="shimmer" style={{ width: 52, height: 22, borderRadius: 100, flexShrink: 0 }} />
+              </div>
+              {/* Pool URL — CopyPoolLink: 12px link */}
+              <div className="shimmer" style={{ width: 220, height: 12, borderRadius: 6 }} />
             </div>
-            {/* URL */}
-            <div className="k-skeleton" style={{ width: 220, height: 12, marginBottom: 16 }} />
-            {/* Progress bar */}
-            <div className="k-skeleton" style={{ width: '100%', height: 8, borderRadius: 100, marginBottom: 8 }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div className="k-skeleton" style={{ width: 140, height: 12 }} />
-              <div className="k-skeleton" style={{ width: 40, height: 12 }} />
+
+            {/* Progress bar — matches ProgressBar: full width, 8px height */}
+            <div className="shimmer" style={{ width: '100%', height: 8, borderRadius: 100 }} />
+
+            {/* Footer — matches poolFooterStyle: flex, space-between */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Raised label — 12px muted */}
+              <div className="shimmer" style={{ width: 180, height: 12, borderRadius: 6 }} />
+              {/* View → link — 13px */}
+              <div className="shimmer" style={{ width: 40, height: 13, borderRadius: 6, flexShrink: 0 }} />
             </div>
           </div>
         ))}
@@ -34,31 +64,3 @@ export default function PoolsLoading() {
     </div>
   );
 }
-
-const pageStyle: React.CSSProperties = {
-  padding: 'var(--space-xl) 0',
-  maxWidth: '800px',
-};
-
-const headerStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  gap: 'var(--space-md)',
-  marginBottom: 'var(--space-xl)',
-  flexWrap: 'wrap' as const,
-};
-
-const listStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 'var(--space-md)',
-};
-
-const poolCardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-lg)',
-};
