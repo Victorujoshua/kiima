@@ -18,7 +18,7 @@ function buildNav(username: string, appUrl: string): NavItem[] {
   return [
     { kind: 'link', href: '/dashboard', label: 'Home', emoji: '🏠', exact: true },
     { kind: 'link', href: `${appUrl}/${username}`, label: 'View page', emoji: '👁', external: true },
-    { kind: 'link', href: '/dashboard/edit-page', label: 'Edit page', emoji: '✏️', indent: true },
+    { kind: 'link', href: '/dashboard/edit-page', label: 'Edit page', emoji: '✏️' },
     { kind: 'section', label: 'MONETIZE' },
     { kind: 'link', href: '/dashboard/transactions', label: 'Supporters', emoji: '❤️' },
     { kind: 'link', href: '/dashboard/pools',        label: 'Pools',      emoji: '🎯' },
@@ -85,13 +85,12 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
               href={item.href}
               style={{
                 ...navItemStyle,
-                ...(item.indent ? { paddingLeft: 28, marginTop: -1 } : {}),
-                background:  active ? '#D7D744' : 'transparent',
-                color:       active ? '#000000' : '#5A4D44',
-                fontWeight:  active ? 700 : 500,
+                background: active ? '#D7D744' : 'transparent',
+                color:      active ? '#000000' : '#5A4D44',
+                fontWeight: active ? 700 : 500,
               }}
             >
-              <span style={{ ...emojiStyle, fontSize: item.indent ? 14 : 16 }}>{item.emoji}</span>
+              <span style={emojiStyle}>{item.emoji}</span>
               {item.label}
             </Link>
           );
