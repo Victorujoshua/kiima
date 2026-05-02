@@ -106,59 +106,67 @@ export default async function UserPage({ params, searchParams }: PageProps) {
         </div>
       )}
 
-      <div style={shellStyle}>
+      <div className="k-creator-shell">
+        <div className="k-creator-grid">
 
-        {/* ── Creator hero ── */}
-        <div style={heroStyle}>
-          {/* Avatar */}
-          <div style={avatarWrapStyle}>
-            {profile.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profile.avatar_url}
-                alt={profile.display_name}
-                style={avatarImgStyle}
-              />
-            ) : (
-              <div style={avatarFallbackStyle}>
-                {profile.display_name.slice(0, 2).toUpperCase()}
+          {/* ── LEFT: Creator profile ── */}
+          <div className="k-creator-profile-sticky">
+            <div style={profileCardStyle}>
+              {/* Olive top accent */}
+              <div style={oliveAccentStyle} />
+
+              {/* Avatar */}
+              <div style={avatarWrapStyle}>
+                {profile.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.display_name}
+                    style={avatarImgStyle}
+                  />
+                ) : (
+                  <div style={avatarFallbackStyle}>
+                    {profile.display_name.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
               </div>
-            )}
-            {/* Olive corner accent */}
-            <div style={avatarAccentStyle} />
+
+              <h1 style={displayNameStyle}>{profile.display_name}</h1>
+              <p style={usernameTagStyle}>@{profile.username}</p>
+
+              {profile.bio && (
+                <div
+                  className="k-bio-prose"
+                  style={{ marginTop: '16px', padding: '0 28px' }}
+                  dangerouslySetInnerHTML={{ __html: profile.bio }}
+                />
+              )}
+
+              {(links as SocialLink[]).length > 0 && (
+                <div style={{ marginTop: '20px', padding: '0 20px' }}>
+                  <SocialLinksRow links={links as SocialLink[]} />
+                </div>
+              )}
+
+              {/* Bottom spacer */}
+              <div style={{ height: '28px' }} />
+            </div>
           </div>
 
-          <h1 style={displayNameStyle}>{profile.display_name}</h1>
-          <p style={usernameTagStyle}>@{profile.username}</p>
-
-          {profile.bio && (
-            <div
-              className="k-bio-prose k-bio-prose--dark"
-              style={{ marginTop: '16px' }}
-              dangerouslySetInnerHTML={{ __html: profile.bio }}
+          {/* ── RIGHT: Gift form + supporters ── */}
+          <div>
+            <GiftPageClient
+              recipientId={profile.id}
+              creatorName={profile.display_name}
+              defaultTag={defaultTag}
+              feePercent={feePercent}
+              currency={profile.currency as Currency}
+              contributions={contributions}
+              contributorCount={contributorCount}
             />
-          )}
+          </div>
 
-          {(links as SocialLink[]).length > 0 && (
-            <div style={{ marginTop: '20px' }}>
-              <SocialLinksRow links={links as SocialLink[]} onDark />
-            </div>
-          )}
         </div>
-
-        {/* ── Olive stripe transition ── */}
-        <div style={stripeStyle} />
-
-        {/* ── Gift form + supporters ── */}
-        <GiftPageClient
-          recipientId={profile.id}
-          creatorName={profile.display_name}
-          defaultTag={defaultTag}
-          feePercent={feePercent}
-          currency={profile.currency as Currency}
-          contributions={contributions}
-          contributorCount={contributorCount}
-        />
       </div>
     </main>
   );
@@ -168,39 +176,29 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
-  background: '#000000',
+  background: 'var(--color-bg)',
   paddingTop: '68px',
 };
 
-const shellStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  padding: '48px 24px 80px',
+const profileCardStyle: React.CSSProperties = {
+  background: 'var(--color-surface)',
+  border: '2px solid #000000',
+  boxShadow: '4px 4px 0 0 #000000',
+  overflow: 'hidden',
 };
 
-const heroStyle: React.CSSProperties = {
-  textAlign: 'center',
-  paddingBottom: '40px',
+const oliveAccentStyle: React.CSSProperties = {
+  height: '4px',
+  background: '#D7D744',
 };
 
 const avatarWrapStyle: React.CSSProperties = {
-  width: '88px',
-  height: '88px',
-  border: '2px solid #D7D744',
-  margin: '0 auto 24px',
+  width: '80px',
+  height: '80px',
+  border: '2px solid #000000',
+  margin: '28px 28px 0',
   overflow: 'hidden',
-  position: 'relative',
   flexShrink: 0,
-};
-
-const avatarAccentStyle: React.CSSProperties = {
-  position: 'absolute',
-  bottom: '-5px',
-  right: '-5px',
-  width: '12px',
-  height: '12px',
-  background: '#D7D744',
-  pointerEvents: 'none',
 };
 
 const avatarImgStyle: React.CSSProperties = {
@@ -220,17 +218,17 @@ const avatarFallbackStyle: React.CSSProperties = {
   justifyContent: 'center',
   fontFamily: 'var(--kiima-font)',
   fontWeight: 800,
-  fontSize: '28px',
+  fontSize: '24px',
 };
 
 const displayNameStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontWeight: 800,
-  fontSize: '38px',
-  color: '#ffffff',
-  margin: '0 0 8px',
-  letterSpacing: '-1.5px',
-  lineHeight: 1.1,
+  fontSize: '26px',
+  color: '#1C1916',
+  margin: '16px 28px 0',
+  letterSpacing: '-0.8px',
+  lineHeight: 1.15,
 };
 
 const usernameTagStyle: React.CSSProperties = {
@@ -238,32 +236,31 @@ const usernameTagStyle: React.CSSProperties = {
   fontSize: '11px',
   fontWeight: 700,
   color: '#D7D744',
-  margin: 0,
+  background: '#000000',
+  display: 'inline-block',
+  margin: '8px 28px 0',
+  padding: '3px 8px',
   textTransform: 'uppercase',
-  letterSpacing: '0.14em',
-};
-
-const stripeStyle: React.CSSProperties = {
-  height: '3px',
-  background: '#D7D744',
-  marginBottom: '0',
+  letterSpacing: '0.1em',
 };
 
 const paymentFailedBannerStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '16px auto 0',
+  maxWidth: '1080px',
+  margin: '0 auto',
+  padding: '12px 20px',
   fontFamily: 'var(--kiima-font)',
   fontSize: '13px',
   color: 'var(--color-danger)',
-  background: 'rgba(224, 112, 112, 0.12)',
+  background: 'var(--color-danger-soft)',
   border: '1px solid var(--color-danger)',
-  padding: '12px var(--space-md)',
 };
 
 const suspendedCardStyle: React.CSSProperties = {
   maxWidth: '480px',
   margin: '80px auto 0',
-  background: '#ffffff',
+  background: 'var(--color-surface)',
+  border: '2px solid #000000',
+  boxShadow: '4px 4px 0 0 #000000',
   padding: '40px',
   textAlign: 'center',
 };

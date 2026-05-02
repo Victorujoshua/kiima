@@ -204,14 +204,14 @@ export default function GiftPageClient({
               rows={3}
               style={{
                 width: '100%',
-                background: '#F6F3EE',
+                background: 'var(--color-bg)',
                 border: 'none',
                 borderBottom: '2px solid #000000',
                 padding: '10px 0',
                 fontFamily: 'var(--kiima-font)',
                 fontSize: '14px',
                 lineHeight: 1.6,
-                color: '#1C1916',
+                color: 'var(--color-text-primary)',
                 outline: 'none',
                 resize: 'none',
                 boxSizing: 'border-box',
@@ -455,7 +455,7 @@ const emptyStyle: React.CSSProperties = {
 const footerStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontSize: '12px',
-  color: 'rgba(255,255,255,0.35)',
+  color: 'var(--color-text-muted)',
   textAlign: 'center',
   margin: '28px 0 0',
 };

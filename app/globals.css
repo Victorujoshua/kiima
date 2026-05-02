@@ -645,6 +645,42 @@ p {
   }
 }
 
+/* ─── Creator public page — responsive two-column grid ── */
+.k-creator-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+@media (min-width: 768px) {
+  .k-creator-shell {
+    padding: 40px 40px 80px;
+  }
+}
+
+.k-creator-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .k-creator-grid {
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+}
+
+/* Sticky profile panel on desktop */
+.k-creator-profile-sticky {
+  position: static;
+}
+@media (min-width: 768px) {
+  .k-creator-profile-sticky {
+    position: sticky;
+    top: 88px;
+  }
+}
+
 /* ─── Bottom-sheet modal animations ──────────────────── */
 @keyframes slide-up {
   from { transform: translateY(100%); }

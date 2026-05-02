@@ -610,7 +610,7 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount` — bio/links removed; now rendered in hero block on `[username]/page.tsx`. Redesigned: white cards on black page; orange "Send gift" label + CTA; olive quantity pills; custom toggle switch; orange supporter count badge; minimal separator rows |
+| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount` — bio/links removed; rendered in left-column profile card on `[username]/page.tsx`. White cards on warm bg; orange section label + CTA; olive quantity pills; custom pill toggle; orange supporter count badge; subtle rgba separator rows |
 
 ### Auth Pages
 

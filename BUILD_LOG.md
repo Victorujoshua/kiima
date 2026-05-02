@@ -5,6 +5,39 @@
 ---
 
 ```
+Date: 2026-05-02 (session 5)
+Session: Fix — Creator page: remove dark bg, full-width two-column desktop layout
+
+WHAT WAS CHANGED:
+
+  app/[username]/page.tsx:
+    - Page background reverted to var(--color-bg) (warm #F6F3EE) — no more all-black page
+    - Layout: two-column grid on desktop (≥768px): 320px profile left + flex-1 right
+    - Shell: max-width 1080px centered (matches landing page scale)
+    - Profile left column: white card with 4px olive top accent, 2px black border + shadow
+    - Avatar: 80px square, 2px black border; fallback = olive bg, black initials
+    - @username: black pill badge (black bg, olive text) — inline label style
+    - Bio and social links: padded 28px from card edges
+    - Profile column is sticky on desktop (top: 88px)
+    - SocialLinksRow: onDark prop removed (back to light mode icons)
+    - Payment-failed banner adapted to light bg (danger-soft background)
+
+  app/globals.css:
+    - Added .k-creator-shell (max-width + responsive padding)
+    - Added .k-creator-grid (1col mobile → 320px+1fr desktop)
+    - Added .k-creator-profile-sticky (static mobile → sticky desktop)
+
+WHAT TO BUILD NEXT:
+  - Pool page redesign to match
+  - gift/success page refresh
+
+OPEN ISSUES:
+  - None
+```
+
+---
+
+```
 Date: 2026-05-02 (session 4)
 Session: Redesign — Creator public gift page (minimal black canvas)
 
