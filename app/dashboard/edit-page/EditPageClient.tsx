@@ -1,13 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import AvatarSection      from '@/components/dashboard/edit/AvatarSection';
 import DisplayNameSection from '@/components/dashboard/edit/DisplayNameSection';
-import AboutSection       from '@/components/dashboard/edit/AboutSection';
 import GiftLabelSection   from '@/components/dashboard/edit/GiftLabelSection';
 import ThemeColorSection  from '@/components/dashboard/edit/ThemeColorSection';
 import LivePreviewPanel   from '@/components/dashboard/edit/LivePreviewPanel';
 import type { Currency } from '@/types';
+
+// Tiptap uses browser APIs — must be loaded client-side only
+const AboutSection = dynamic(
+  () => import('@/components/dashboard/edit/AboutSection'),
+  { ssr: false, loading: () => <div style={editorSkeletonStyle} /> }
+);
 
 interface Props {
   userId: string;
@@ -122,4 +128,12 @@ const sectionsColStyle: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 16,
+};
+
+const editorSkeletonStyle: React.CSSProperties = {
+  background: '#ffffff',
+  borderRadius: 16,
+  border: '1px solid #EBEBEB',
+  padding: 28,
+  minHeight: 120,
 };
