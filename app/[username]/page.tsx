@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: { username: string 
 
   const title = `${profile.display_name}'s Kiima`;
   const description = profile.bio
-    ? profile.bio.slice(0, 160)
+    ? profile.bio.replace(/<[^>]+>/g, '').slice(0, 160)
     : `Send ${profile.display_name} a gift on Kiima.`;
   const url = `${APP_URL}/${profile.username}`;
   const image = profile.avatar_url ?? `${APP_URL}/og-default.png`;
@@ -56,8 +56,9 @@ export default async function UserPage({ params, searchParams }: PageProps) {
   if ((profile as Profile & { suspended: boolean }).suspended) {
     return (
       <main style={pageStyle}>
+        <PublicHeader />
         <div style={suspendedCardStyle}>
-          <p style={{ fontSize: '36px', margin: '0 0 var(--space-sm)' }}>🔒</p>
+          <p style={{ fontSize: '32px', margin: '0 0 var(--space-sm)' }}>🔒</p>
           <p style={suspendedHeadingStyle}>This creator is unavailable</p>
           <p style={suspendedBodyStyle}>This page is temporarily unavailable.</p>
         </div>
@@ -94,7 +95,6 @@ export default async function UserPage({ params, searchParams }: PageProps) {
   if (!defaultTag) notFound();
 
   const paymentFailed = searchParams.payment_failed === '1';
-  const themeColor = (profile as Profile & { suspended: boolean }).theme_color ?? '#C87B5C';
 
   return (
     <main style={pageStyle}>
@@ -106,13 +106,11 @@ export default async function UserPage({ params, searchParams }: PageProps) {
         </div>
       )}
 
-      <div className="k-gift-shell" style={{ '--color-accent': themeColor } as React.CSSProperties}>
-        {/* Left column — profile */}
-        <div>
-          {/* Cover image */}
-          <div style={coverStyle} />
+      <div style={shellStyle}>
 
-          {/* Avatar overlapping cover */}
+        {/* ── Creator hero ── */}
+        <div style={heroStyle}>
+          {/* Avatar */}
           <div style={avatarWrapStyle}>
             {profile.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -126,32 +124,32 @@ export default async function UserPage({ params, searchParams }: PageProps) {
                 {profile.display_name.slice(0, 2).toUpperCase()}
               </div>
             )}
+            {/* Olive corner accent */}
+            <div style={avatarAccentStyle} />
           </div>
 
-          {/* Name + username */}
-          <div style={profileInfoStyle}>
-            <h1 style={profileNameStyle}>{profile.display_name}</h1>
-            <p style={profileUsernameStyle}>@{profile.username}</p>
-          </div>
+          <h1 style={displayNameStyle}>{profile.display_name}</h1>
+          <p style={usernameTagStyle}>@{profile.username}</p>
 
-          {/* Bio + social links — desktop left column only */}
-          {(profile.bio || (links as SocialLink[]).length > 0) && (
-            <div className="k-gift-profile-bio">
-              <div style={profileBioCardStyle}>
-                {profile.bio && (
-                  <p style={profileBioTextStyle}>{profile.bio}</p>
-                )}
-                {(links as SocialLink[]).length > 0 && (
-                  <div style={{ marginTop: profile.bio ? '16px' : 0 }}>
-                    <SocialLinksRow links={links as SocialLink[]} />
-                  </div>
-                )}
-              </div>
+          {profile.bio && (
+            <div
+              className="k-bio-prose k-bio-prose--dark"
+              style={{ marginTop: '16px' }}
+              dangerouslySetInnerHTML={{ __html: profile.bio }}
+            />
+          )}
+
+          {(links as SocialLink[]).length > 0 && (
+            <div style={{ marginTop: '20px' }}>
+              <SocialLinksRow links={links as SocialLink[]} onDark />
             </div>
           )}
         </div>
 
-        {/* Right column — gift form, supporters, about (mobile) */}
+        {/* ── Olive stripe transition ── */}
+        <div style={stripeStyle} />
+
+        {/* ── Gift form + supporters ── */}
         <GiftPageClient
           recipientId={profile.id}
           creatorName={profile.display_name}
@@ -160,130 +158,128 @@ export default async function UserPage({ params, searchParams }: PageProps) {
           currency={profile.currency as Currency}
           contributions={contributions}
           contributorCount={contributorCount}
-          bio={profile.bio}
-          links={links as SocialLink[]}
         />
       </div>
     </main>
   );
 }
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
-  background: 'var(--color-bg)',
+  background: '#000000',
   paddingTop: '68px',
-  paddingBottom: '60px',
 };
 
-const coverStyle: React.CSSProperties = {
-  height: '160px',
-  borderRadius: 'var(--radius-lg)',
-  background: 'linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 60%, var(--color-accent-soft) 100%)',
+const shellStyle: React.CSSProperties = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  padding: '48px 24px 80px',
+};
+
+const heroStyle: React.CSSProperties = {
+  textAlign: 'center',
+  paddingBottom: '40px',
 };
 
 const avatarWrapStyle: React.CSSProperties = {
+  width: '88px',
+  height: '88px',
+  border: '2px solid #D7D744',
+  margin: '0 auto 24px',
+  overflow: 'hidden',
   position: 'relative',
-  display: 'flex',
-  justifyContent: 'center',
-  marginTop: '-40px',
-  marginBottom: '12px',
+  flexShrink: 0,
+};
+
+const avatarAccentStyle: React.CSSProperties = {
+  position: 'absolute',
+  bottom: '-5px',
+  right: '-5px',
+  width: '12px',
+  height: '12px',
+  background: '#D7D744',
+  pointerEvents: 'none',
 };
 
 const avatarImgStyle: React.CSSProperties = {
-  width: '80px',
-  height: '80px',
-  borderRadius: '50%',
+  width: '100%',
+  height: '100%',
   objectFit: 'cover',
-  border: '3px solid var(--color-bg)',
-  boxShadow: 'var(--shadow-card)',
+  display: 'block',
 };
 
 const avatarFallbackStyle: React.CSSProperties = {
-  width: '80px',
-  height: '80px',
-  borderRadius: '50%',
-  background: 'var(--color-accent)',
-  color: '#fff',
+  width: '100%',
+  height: '100%',
+  background: '#D7D744',
+  color: '#000000',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontFamily: 'var(--font-body)',
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 800,
+  fontSize: '28px',
+};
+
+const displayNameStyle: React.CSSProperties = {
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 800,
+  fontSize: '38px',
+  color: '#ffffff',
+  margin: '0 0 8px',
+  letterSpacing: '-1.5px',
+  lineHeight: 1.1,
+};
+
+const usernameTagStyle: React.CSSProperties = {
+  fontFamily: 'var(--kiima-font)',
+  fontSize: '11px',
   fontWeight: 700,
-  fontSize: '24px',
-  border: '3px solid var(--color-bg)',
-  boxShadow: 'var(--shadow-card)',
-};
-
-const profileInfoStyle: React.CSSProperties = {
-  textAlign: 'center',
-  marginBottom: '20px',
-};
-
-const profileNameStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 500,
-  fontSize: '26px',
-  color: 'var(--color-text-primary)',
-  margin: '0 0 4px',
-};
-
-const profileUsernameStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '14px',
-  color: 'var(--color-text-muted)',
+  color: '#D7D744',
   margin: 0,
+  textTransform: 'uppercase',
+  letterSpacing: '0.14em',
+};
+
+const stripeStyle: React.CSSProperties = {
+  height: '3px',
+  background: '#D7D744',
+  marginBottom: '0',
 };
 
 const paymentFailedBannerStyle: React.CSSProperties = {
   maxWidth: '480px',
-  margin: '16px auto var(--space-md)',
-  fontFamily: 'var(--font-body)',
-  fontSize: '14px',
+  margin: '16px auto 0',
+  fontFamily: 'var(--kiima-font)',
+  fontSize: '13px',
   color: 'var(--color-danger)',
-  background: 'var(--color-danger-soft)',
-  borderRadius: 'var(--radius-md)',
+  background: 'rgba(224, 112, 112, 0.12)',
+  border: '1px solid var(--color-danger)',
   padding: '12px var(--space-md)',
 };
 
 const suspendedCardStyle: React.CSSProperties = {
   maxWidth: '480px',
   margin: '80px auto 0',
-  background: 'var(--color-surface)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: 'var(--space-2xl)',
+  background: '#ffffff',
+  padding: '40px',
   textAlign: 'center',
 };
 
-const profileBioCardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  border: '1px solid var(--color-border)',
-  boxShadow: 'var(--shadow-card)',
-  padding: '20px',
-};
-
-const profileBioTextStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '14px',
-  color: 'var(--color-text-secondary)',
-  margin: 0,
-  lineHeight: 1.65,
-  whiteSpace: 'pre-wrap',
-};
-
 const suspendedHeadingStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 500,
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 800,
   fontSize: '22px',
-  color: 'var(--color-text-primary)',
+  color: '#1C1916',
   margin: '0 0 var(--space-xs)',
 };
 
 const suspendedBodyStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
+  fontFamily: 'var(--kiima-font)',
   fontSize: '14px',
-  color: 'var(--color-text-secondary)',
+  color: '#5A4D44',
   margin: 0,
   lineHeight: 1.65,
 };

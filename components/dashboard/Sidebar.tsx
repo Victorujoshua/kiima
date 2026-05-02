@@ -19,6 +19,22 @@ type NavItem =
   | { kind: 'section'; label: string }
   | { kind: 'link'; href: string; label: string; Icon: LucideIcon; exact?: boolean; external?: boolean };
 
+const MOBILE_PAGE_TITLES: Record<string, string> = {
+  '/dashboard/edit-page':    'Edit page',
+  '/dashboard/transactions': 'Supporters',
+  '/dashboard/pools':        'Pools',
+  '/dashboard/links':        'Social links',
+  '/dashboard/settings':     'Settings',
+};
+
+function getMobilePageTitle(pathname: string): string {
+  if (MOBILE_PAGE_TITLES[pathname]) return MOBILE_PAGE_TITLES[pathname];
+  for (const [route, title] of Object.entries(MOBILE_PAGE_TITLES)) {
+    if (pathname.startsWith(route)) return title;
+  }
+  return '';
+}
+
 function buildNav(username: string, appUrl: string): NavItem[] {
   return [
     { kind: 'link', href: '/dashboard',           label: 'Home',       Icon: Home,    exact: true },
@@ -39,6 +55,7 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
   const appUrl      = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
   const navItems    = buildNav(username, appUrl);
   const initial     = displayName.charAt(0).toUpperCase();
+  const pageTitle   = getMobilePageTitle(pathname);
 
   // Close on route change
   useEffect(() => { setMobileOpen(false); }, [pathname]);
@@ -67,6 +84,12 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
         <span style={mobileLogoStyle}>
           kiima<span style={{ color: '#D7D744' }}>.</span>
         </span>
+
+        {/* Page title — absolutely centered, non-interactive so logo/hamburger stay clickable */}
+        {pageTitle && (
+          <span style={mobilePageTitleStyle}>{pageTitle}</span>
+        )}
+
         <button
           aria-label="Open navigation"
           onClick={() => setMobileOpen(true)}
@@ -190,6 +213,19 @@ const mobileLogoStyle: React.CSSProperties = {
   fontSize: 20,
   color: '#ffffff',
   letterSpacing: '-0.02em',
+};
+
+const mobilePageTitleStyle: React.CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  textAlign: 'center',
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 700,
+  fontSize: '15px',
+  color: '#ffffff',
+  letterSpacing: '-0.2px',
+  pointerEvents: 'none',
 };
 
 const sectionLabelStyle: React.CSSProperties = {

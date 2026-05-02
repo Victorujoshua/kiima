@@ -442,6 +442,19 @@ social_links (
   created_at     timestamptz DEFAULT now(),
   UNIQUE(user_id, platform)   -- one per platform per creator, enforced at DB level
 )
+
+-- Creator notification inbox (written by webhook service role; read/updated by creator)
+notifications (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid REFERENCES profiles(id) ON DELETE CASCADE,
+  type        text NOT NULL,   -- 'gift_received' | 'pool_contribution' | 'pool_goal_reached'
+  title       text NOT NULL,
+  body        text NOT NULL,
+  metadata    jsonb DEFAULT '{}',
+  -- { amount, sender_name, tag_used, contribution_id, pool_title, pool_id, pool_goal }
+  is_read     boolean DEFAULT false,
+  created_at  timestamptz DEFAULT now()
+)
 ```
 
 ### RLS Policies
@@ -571,8 +584,8 @@ Keep this updated as components are built. Before building any new component, ch
 | `ContributionRow` | `shared/ContributionRow.tsx` | `contribution: Contribution, isLast?: boolean, source?: string` |
 | `CurrencyInput` | `shared/CurrencyInput.tsx` | `currency: Currency, value, onChange?, readOnly?` |
 | `KiimaButton` | `shared/KiimaButton.tsx` | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
-| `SocialLinksRow` | `shared/SocialLinksRow.tsx` | `links: SocialLink[]` |
-| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice: number, currency: Currency, selectedQty: number, onSelect: (qty: number) => void` — pills 1/3/5 + square custom input; no total display |
+| `SocialLinksRow` | `shared/SocialLinksRow.tsx` | `links: SocialLink[], onDark?: boolean` — pass `onDark` when rendering on black backgrounds |
+| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice: number, currency: Currency, selectedQty: number, onSelect: (qty: number) => void` — pills 1/3/5 + square custom input; no total display. Redesigned: warm #F6F3EE tray, subtle border, white pills, olive selected state (no hard shadow) |
 | `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@` |
 
 ### Layout Components
@@ -597,7 +610,7 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, bio, links` — no fee breakdown display; fee still calculated server-side |
+| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount` — bio/links removed; now rendered in hero block on `[username]/page.tsx`. Redesigned: white cards on black page; orange "Send gift" label + CTA; olive quantity pills; custom toggle switch; orange supporter count badge; minimal separator rows |
 
 ### Auth Pages
 
@@ -628,6 +641,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` |
 | `lib/actions/admin.actions.ts` | `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment` |
 | `lib/actions/link.actions.ts` | `getSocialLinks`, `upsertSocialLink`, `deleteSocialLink` |
+| `lib/actions/notification.actions.ts` | `getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead` |
 
 ### Paystack Library
 
@@ -670,6 +684,9 @@ Keep this updated as components are built. Before building any new component, ch
 | `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts |
 | `Toast` | `dashboard/Toast.tsx` | `message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s |
 | `BankAccountSection` | `dashboard/BankAccountSection.tsx` | `userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP |
+| `NotificationBell` | `dashboard/NotificationBell.tsx` | `userId, initialNotifications, initialUnreadCount` — bell button + unread badge + real-time subscription; renders panel on click |
+| `NotificationPanel` | `dashboard/NotificationPanel.tsx` | `notifications, unreadCount, onMarkAsRead, onMarkAllAsRead` — dropdown panel, 380px, empty state, footer mark-all button |
+| `NotificationToast` | `dashboard/NotificationToast.tsx` | `notification, onDismiss` — fixed top-right slide-in, auto-dismisses after 4s |
 
 ### Edit Page Section Components (`components/dashboard/edit/`)
 
@@ -744,6 +761,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `supabase/migrations/009_contribution_note.sql` | ADD note text column to contributions |
 | `supabase/migrations/010_bank_details.sql` | ADD bank_name, bank_code, account_number, account_name, paystack_subaccount_code to profiles |
 | `supabase/migrations/011_profile_theme_color.sql` | ADD theme_color text DEFAULT '#C87B5C' to profiles |
+| `supabase/migrations/012_notifications.sql` | CREATE notifications table, indexes, RLS policies |
 
 ---
 

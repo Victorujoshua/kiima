@@ -5,6 +5,137 @@
 ---
 
 ```
+Date: 2026-05-02 (session 4)
+Session: Redesign — Creator public gift page (minimal black canvas)
+
+WHAT WAS CHANGED:
+
+  app/[username]/page.tsx:
+    - Page background changed to #000000 (full black canvas)
+    - Hero section: no card wrapper — creator identity sits directly on black bg
+    - Avatar: 88px square, 2px olive (#D7D744) border, olive corner accent dot (12px)
+    - Creator name: 38px, white, weight 800, tight letter-spacing
+    - @username: olive (#D7D744), uppercase, 11px
+    - Olive stripe (3px) transition bar between hero and gift cards
+    - Payment-failed banner adapted for dark background (no hard border)
+    - Suspended card: clean white on black (no neobrutalist shadow)
+
+  components/pages/GiftPageClient.tsx:
+    - Gift card: pure white (#ffffff), no border/shadow — contrast vs black does the work
+    - Added "Send a gift" orange section label above gift heading
+    - Note textarea: underline-only style (border-bottom: 2px solid #000), warm #F6F3EE bg
+    - Anonymous toggle: custom CSS pill switch (olive when on, grey when off, black thumb)
+    - Submit button: pure orange (#FF5C00), 56px tall, no border, no shadow
+    - Supporters card: white, 2px gap from gift card (tight stacking)
+    - Supporter count badge: orange bg, white text, inline with "SUPPORTERS" label
+    - Contributor rows: subtle rgba separator (no hard black line), olive named avatars
+    - Footer "kiima": orange, weight 800, on white/35% text color
+    - Hover/active on submit: CSS class k-gift-submit darkens orange
+
+  components/shared/DrinkQuantitySelector.tsx:
+    - Tray: warm #F6F3EE background, subtle 1.5px rgba border (no heavy black)
+    - Pills: white bg, subtle border; selected = olive fill, borderless shadow
+    - Custom input: matches pill sizing; selected = olive
+
+  app/globals.css:
+    - k-gift-submit hover/active: changed from neobrutalist lift+shadow to
+      darkened orange background (#E05200 hover, #CC4A00 active)
+
+WHAT TO BUILD NEXT:
+  - Pool page (/[username]/pool/[slug]) — redesign to match the new black canvas style
+  - Consider gift/success page refresh to match
+
+OPEN ISSUES:
+  - None (design-only change, no DB or action changes)
+```
+
+---
+
+```
+Date: 2026-05-02 (session 3)
+
+Built: Full creator notification system
+
+Part 1 — Database
+  - supabase/migrations/012_notifications.sql
+    (NOTE: task spec said 011 but that's taken by profile_theme_color → used 012)
+    CREATE notifications table + 2 indexes + RLS: authenticated SELECT/UPDATE,
+    service_role INSERT only
+  - types/index.ts: added NotificationType, NotificationMetadata, Notification interfaces
+
+Part 2 — Webhook integration
+  - app/api/webhooks/paystack/route.ts: added createContributionNotification() helper
+    - direct gift → inserts 'gift_received' notification
+    - pool contribution → inserts 'pool_contribution' notification
+    - if this contribution crosses goal threshold → also inserts 'pool_goal_reached'
+    - fire-and-forget (like email), never blocks confirmation
+
+Part 3–4 — UI components
+  - components/dashboard/NotificationBell.tsx
+    client component; receives SSR initial data; real-time INSERT subscription via
+    supabase channel; renders bell + unread badge (red dot or 9+);
+    closes on outside click; renders NotificationPanel + NotificationToast
+  - components/dashboard/NotificationPanel.tsx
+    dropdown 380px × max 480px; header + divider + scrollable list + footer;
+    empty state (😴); marks read on click + navigates to relevant page;
+    mark-all button in footer
+  - components/dashboard/NotificationToast.tsx
+    fixed top-right, slide-in from right, auto-dismiss 4s, manual X dismiss
+
+Part 5 — Server actions
+  - lib/actions/notification.actions.ts:
+    getNotifications, getUnreadCount, markAsRead, markAllAsRead
+
+Part 6 — Dashboard layout
+  - app/dashboard/layout.tsx: fetch initial notifications server-side;
+    split k-dash-main padding into k-dash-topbar + k-dash-inner;
+    topbar mounts NotificationBell (hidden on mobile via CSS)
+  - app/globals.css: k-dash-topbar (56px sticky), k-dash-inner (content padding),
+    k-notif-toast slide-in animation; k-dash-main padding removed (moved to inner)
+
+Next:
+  - Run migration 012 in Supabase SQL Editor
+  - Enable real-time for notifications table in Supabase dashboard
+    (Table Editor → notifications → Enable Realtime)
+  - Test: send a gift → confirm bell badge appears
+
+Open issues:
+  - None (build: 0 errors, tsc: 0 errors)
+```
+
+---
+
+```
+Date: 2026-05-02 (session 2)
+
+Built:
+- Creator page full redesign (app/[username]/page.tsx + components/pages/GiftPageClient.tsx)
+  - New layout: single centered column (max 560px), removed two-column desktop grid
+  - Black hero card with olive hard shadow (6px 6px 0 0 var(--kiima-olive)):
+      avatar with olive square border, display name in white weight 800,
+      @username in olive uppercase, bio rendered as HTML (dangerouslySetInnerHTML),
+      social icons white/dimmed on dark background
+  - Gift card: white bg, orange hard shadow (4px 4px 0 0 var(--kiima-orange))
+  - Supporters card: white bg, black hard shadow
+  - Submit button: orange bg, white text, black border + shadow, hover lifts
+  - bio + links props removed from GiftPageClient (hero block handles them)
+- DrinkQuantitySelector: olive selected state, black border tray, neobrutalist
+- SocialLinksRow: added onDark?: boolean prop for white icons on dark backgrounds
+- globals.css: added .k-bio-prose / .k-bio-prose--dark classes for Tiptap HTML,
+  .k-gift-submit hover/active states; updated .k-gift-shell to single column;
+  deprecated .k-gift-profile-bio and .k-gift-about-mobile
+
+Next:
+- Consider redesigning the pool page (/[username]/pool/[slug]) to match this style
+- Consider redesigning the dashboard home to align with new brand direction
+
+Open issues:
+- None
+```
+
+---
+
+```
 Date: 2026-05-02
 Session: Feat — Theme color applied to public gift page
 

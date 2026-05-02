@@ -126,7 +126,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // 5d. Send notification email to creator (fire-and-forget — never throws)
+    // 5d. Insert in-app notification (fire-and-forget — never throws)
+    try {
+      await createContributionNotification(supabase, contribution);
+    } catch (notifErr) {
+      console.error('[webhook] In-app notification failed:', notifErr);
+    }
+
+    // 5e. Send notification email to creator (fire-and-forget — never throws)
     try {
       const emailResult = await sendCreatorNotificationEmail(supabase, contribution);
       console.log('[webhook] Email result:', JSON.stringify(emailResult));
@@ -266,6 +273,126 @@ async function sendCreatorNotificationEmail(
       poolUrl:     `${appUrl}/${profile.username}/pool/${pool.slug}`,
       isGoalReached,
     });
+  }
+}
+
+// ─── In-app notification helper ──────────────────────────────────────────────
+
+async function createContributionNotification(
+  supabase: ReturnType<typeof createAdminClient>,
+  contribution: {
+    id: string;
+    recipient_id: string;
+    pool_id: string | null;
+    tag_id: string | null;
+    gift_amount: number;
+    currency: string;
+    display_name: string | null;
+    is_anonymous: boolean;
+  }
+) {
+  const senderName = contribution.is_anonymous || !contribution.display_name
+    ? 'Someone'
+    : (() => {
+        const social = parseSocialHandle(contribution.display_name);
+        if (social) {
+          const label = social.platform.charAt(0).toUpperCase() + social.platform.slice(1);
+          return `${social.handle} · ${label}`;
+        }
+        return contribution.display_name;
+      })();
+
+  const formattedAmount = formatCurrency(
+    contribution.gift_amount,
+    contribution.currency as import('@/types').Currency
+  );
+
+  const notifications: {
+    user_id: string;
+    type: string;
+    title: string;
+    body: string;
+    metadata: Record<string, unknown>;
+  }[] = [];
+
+  if (!contribution.pool_id) {
+    // ── Direct gift ──────────────────────────────────────────────────────
+    let tagLabel: string | null = null;
+    if (contribution.tag_id) {
+      const { data: tag } = await supabase
+        .from('gift_tags')
+        .select('label, amount')
+        .eq('id', contribution.tag_id)
+        .single();
+      if (tag) {
+        const qty = tag.amount > 0
+          ? Math.round(Number(contribution.gift_amount) / Number(tag.amount))
+          : 1;
+        tagLabel = qty > 1 ? `${qty}× ${tag.label}` : tag.label;
+      }
+    }
+
+    notifications.push({
+      user_id:  contribution.recipient_id,
+      type:     'gift_received',
+      title:    'New gift received 🥤',
+      body:     `${senderName} sent you ${formattedAmount}`,
+      metadata: {
+        amount:          contribution.gift_amount,
+        sender_name:     senderName,
+        tag_used:        tagLabel,
+        contribution_id: contribution.id,
+      },
+    });
+  } else {
+    // ── Pool contribution ─────────────────────────────────────────────────
+    const { data: pool } = await supabase
+      .from('support_pools')
+      .select('title, raised, goal_amount, currency')
+      .eq('id', contribution.pool_id)
+      .single();
+
+    if (!pool) return;
+
+    const newRaised  = Number(pool.raised);
+    const goalAmount = Number(pool.goal_amount);
+    const oldRaised  = newRaised - Number(contribution.gift_amount);
+
+    notifications.push({
+      user_id:  contribution.recipient_id,
+      type:     'pool_contribution',
+      title:    'New pool contribution 🎯',
+      body:     `${senderName} contributed ${formattedAmount} to "${pool.title}"`,
+      metadata: {
+        amount:      contribution.gift_amount,
+        sender_name: senderName,
+        pool_title:  pool.title,
+        pool_id:     contribution.pool_id,
+      },
+    });
+
+    // Fire goal-reached notification only when THIS contribution crosses the threshold
+    if (oldRaised < goalAmount && newRaised >= goalAmount) {
+      const formattedGoal = formatCurrency(
+        goalAmount,
+        pool.currency as import('@/types').Currency
+      );
+      notifications.push({
+        user_id:  contribution.recipient_id,
+        type:     'pool_goal_reached',
+        title:    'Pool goal reached! 🎉',
+        body:     `"${pool.title}" has reached its goal of ${formattedGoal}`,
+        metadata: {
+          pool_title: pool.title,
+          pool_goal:  goalAmount,
+          pool_id:    contribution.pool_id,
+        },
+      });
+    }
+  }
+
+  if (notifications.length > 0) {
+    await supabase.from('notifications').insert(notifications);
   }
 }
 

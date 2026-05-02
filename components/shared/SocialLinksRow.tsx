@@ -5,6 +5,7 @@ import type { SocialLink, SocialPlatform } from '@/types';
 
 interface Props {
   links: SocialLink[];
+  onDark?: boolean;
 }
 
 // Platform brand colours used on hover
@@ -65,7 +66,7 @@ function PlatformSvg({ platform }: { platform: SocialPlatform }) {
   }
 }
 
-export default function SocialLinksRow({ links }: Props) {
+export default function SocialLinksRow({ links, onDark = false }: Props) {
   const [hovered, setHovered] = useState<SocialPlatform | null>(null);
 
   if (!links || links.length === 0) return null;
@@ -99,8 +100,12 @@ export default function SocialLinksRow({ links }: Props) {
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              background: isHovered ? `${color}18` : 'transparent',
-              color: isHovered ? color : 'var(--color-text-muted)',
+              background: isHovered
+                ? (onDark ? 'rgba(255,255,255,0.1)' : `${color}18`)
+                : 'transparent',
+              color: isHovered
+                ? (onDark ? '#ffffff' : color)
+                : (onDark ? 'rgba(255,255,255,0.55)' : 'var(--color-text-muted)'),
               textDecoration: 'none',
               transition: 'all 0.15s ease',
               flexShrink: 0,

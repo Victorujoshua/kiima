@@ -328,38 +328,44 @@ p {
   color: #000000 !important;                      /* ensure legibility on olive */
 }
 
-/* ─── Public gift page — desktop two-column layout ───────── */
+/* ─── Public gift page — single centered column ──────────── */
 .k-gift-shell {
-  max-width: 480px;
+  max-width: 560px;
   margin: 0 auto;
-  padding: 0 20px;
-}
-@media (min-width: 820px) {
-  .k-gift-shell {
-    max-width: 1060px;
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 48px;
-    align-items: start;
-    padding: 32px 48px 0;
-    margin: 0 auto;
-  }
+  padding: 32px 20px 72px;
 }
 
-/* Bio + social shown in left column on desktop, hidden on mobile */
-.k-gift-profile-bio {
-  display: none;
-}
-@media (min-width: 820px) {
-  .k-gift-profile-bio { display: block; margin-top: 24px; }
-}
+/* legacy — no longer rendered */
+.k-gift-profile-bio { display: none; }
+.k-gift-about-mobile { display: none; }
 
-/* Bio card inside GiftPageClient — shown on mobile, hidden on desktop */
-.k-gift-about-mobile {
-  display: block;
+/* ─── Bio prose (Tiptap HTML output) ─────────────────────── */
+.k-bio-prose {
+  font-family: var(--kiima-font);
+  font-size: 14px;
+  line-height: 1.65;
+  margin-top: 16px;
+  color: var(--color-text-secondary);
 }
-@media (min-width: 820px) {
-  .k-gift-about-mobile { display: none; }
+.k-bio-prose p { margin: 0; }
+.k-bio-prose p + p { margin-top: 8px; }
+.k-bio-prose a { text-decoration: underline; }
+.k-bio-prose strong { font-weight: 700; }
+
+/* Dark variant — used in black hero card */
+.k-bio-prose--dark {
+  color: rgba(255, 255, 255, 0.65);
+}
+.k-bio-prose--dark a { color: var(--kiima-olive); }
+.k-bio-prose--dark strong { color: rgba(255, 255, 255, 0.9); }
+
+/* ─── Gift page submit button hover ──────────────────────── */
+.k-gift-submit:hover:not(:disabled) {
+  background: #E05200 !important;
+}
+.k-gift-submit:active:not(:disabled) {
+  background: #CC4A00 !important;
+  transform: scale(0.99);
 }
 
 /* Stat cards — single column on mobile, 3-column on desktop */
@@ -576,13 +582,43 @@ p {
   margin-left: 260px;
   min-height: 100vh;
   background: #F4F4F4;
-  padding: 32px 100px;
+  /* padding lives in k-dash-topbar + k-dash-inner */
 }
 @media (max-width: 767px) {
-  .k-dash-main {
-    margin-left: 0;
-    padding: 72px 16px 80px;
-  }
+  .k-dash-main { margin-left: 0; }
+}
+
+/* Sticky topbar — houses the notification bell */
+.k-dash-topbar {
+  height: 56px;
+  background: #F4F4F4;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 100px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+@media (max-width: 767px) {
+  .k-dash-topbar { display: none; }
+}
+
+/* Inner content wrapper — replaces the old k-dash-main padding */
+.k-dash-inner {
+  padding: 8px 100px 40px;
+}
+@media (max-width: 767px) {
+  .k-dash-inner { padding: 72px 16px 80px; }
+}
+
+/* ─── Notification toast slide-in ────────────────────── */
+@keyframes k-notif-slide-in {
+  from { opacity: 0; transform: translateX(110%); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+.k-notif-toast {
+  animation: k-notif-slide-in 0.25s ease forwards;
 }
 
 /* ─── Signup flow — profile step responsive grid ─────── */

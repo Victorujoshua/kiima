@@ -95,3 +95,26 @@ export interface SocialLink {
   display_order: number;
   created_at: string;
 }
+
+export type NotificationType = 'gift_received' | 'pool_contribution' | 'pool_goal_reached';
+
+export interface NotificationMetadata {
+  amount?: number;
+  sender_name?: string;
+  tag_used?: string | null;
+  contribution_id?: string;
+  pool_title?: string;
+  pool_id?: string;
+  pool_goal?: number;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  metadata: NotificationMetadata;
+  is_read: boolean;
+  created_at: string;
+}

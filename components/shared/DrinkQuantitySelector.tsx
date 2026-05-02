@@ -15,7 +15,6 @@ interface Props {
 }
 
 export default function DrinkQuantitySelector({ selectedQty, onSelect }: Props) {
-
   const [customInput, setCustomInput] = useState('');
 
   const customNum = parseInt(customInput, 10);
@@ -37,14 +36,12 @@ export default function DrinkQuantitySelector({ selectedQty, onSelect }: Props) 
     const raw = e.target.value.replace(/[^0-9]/g, '');
     setCustomInput(raw);
     const num = parseInt(raw, 10);
-    if (!isNaN(num) && num >= 1) {
-      onSelect(num);
-    }
+    if (!isNaN(num) && num >= 1) onSelect(num);
   }
 
   return (
     <div style={trayStyle}>
-      <span style={{ fontSize: '22px', lineHeight: 1 }}>🥤</span>
+      <span style={emojiStyle}>🥤</span>
       <span style={timesStyle}>×</span>
 
       {FIXED_QUANTITIES.map((qty) => (
@@ -63,7 +60,7 @@ export default function DrinkQuantitySelector({ selectedQty, onSelect }: Props) 
         min={1}
         value={customInput}
         onChange={handleCustomChange}
-        placeholder="10"
+        placeholder="?"
         style={isInputSelected ? selectedInputStyle : inputStyle}
         aria-label="Custom quantity"
       />
@@ -74,74 +71,77 @@ export default function DrinkQuantitySelector({ selectedQty, onSelect }: Props) 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const trayStyle: React.CSSProperties = {
-  background: 'var(--color-accent-soft)',
-  borderRadius: 'var(--radius-md)',
+  background: '#F6F3EE',
+  border: '1.5px solid rgba(0,0,0,0.08)',
   padding: '12px 16px',
   display: 'flex',
   alignItems: 'center',
-  gap: '10px',
+  gap: '8px',
   flexWrap: 'wrap',
 };
 
-const timesStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 500,
+const emojiStyle: React.CSSProperties = {
   fontSize: '18px',
-  color: 'var(--color-text-secondary)',
+  lineHeight: 1,
+};
+
+const timesStyle: React.CSSProperties = {
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 700,
+  fontSize: '15px',
+  color: '#9A9089',
   lineHeight: 1,
 };
 
 const basePillStyle: React.CSSProperties = {
-  minWidth: '48px',
-  height: '44px',
-  borderRadius: 'var(--radius-full)',
-  border: '1.5px solid var(--color-accent)',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: '15px',
+  minWidth: '44px',
+  height: '40px',
+  border: '1.5px solid rgba(0,0,0,0.15)',
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 700,
+  fontSize: '14px',
   cursor: 'pointer',
-  padding: '0 14px',
-  transition: 'all 0.15s ease',
+  padding: '0 12px',
+  transition: 'background 0.12s ease, border-color 0.12s ease',
+  background: '#ffffff',
 };
 
 const pillStyle: React.CSSProperties = {
   ...basePillStyle,
-  background: 'var(--color-surface)',
-  color: 'var(--color-accent)',
+  color: '#1C1916',
 };
 
 const selectedPillStyle: React.CSSProperties = {
   ...basePillStyle,
-  background: 'var(--color-accent)',
-  color: '#fff',
-  boxShadow: '0 2px 8px rgba(200, 123, 92, 0.35)',
+  background: '#D7D744',
+  borderColor: '#D7D744',
+  color: '#000000',
 };
 
 const baseInputStyle: React.CSSProperties = {
-  width: '52px',
-  height: '44px',
-  borderRadius: '15%',
-  border: '1.5px solid var(--color-accent)',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: '15px',
+  width: '48px',
+  height: '40px',
+  border: '1.5px solid rgba(0,0,0,0.15)',
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 700,
+  fontSize: '14px',
   textAlign: 'center',
   padding: '0 4px',
   boxSizing: 'border-box',
   outline: 'none',
-  transition: 'all 0.15s ease',
+  transition: 'background 0.12s ease, border-color 0.12s ease',
   cursor: 'text',
+  background: '#ffffff',
+  color: '#1C1916',
 };
 
 const inputStyle: React.CSSProperties = {
   ...baseInputStyle,
-  background: 'var(--color-surface)',
-  color: 'var(--color-accent)',
 };
 
 const selectedInputStyle: React.CSSProperties = {
   ...baseInputStyle,
-  background: 'var(--color-accent)',
-  color: '#fff',
-  boxShadow: '0 2px 8px rgba(200, 123, 92, 0.35)',
+  background: '#D7D744',
+  borderColor: '#D7D744',
+  color: '#000000',
 };
