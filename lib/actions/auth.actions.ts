@@ -338,6 +338,35 @@ export async function updateProfile(
   return { success: true };
 }
 
+// ─── Update Profile (direct — for edit-page sections) ─────────────────────────
+// Unlike updateProfile (FormData), this accepts plain objects so each section
+// on /dashboard/edit-page can save independently without a form submission.
+
+export async function updateProfileDirect(
+  userId: string,
+  updates: {
+    display_name?: string;
+    bio?: string | null;
+    avatar_url?: string | null;
+    theme_color?: string;
+  }
+): Promise<{ success?: boolean; error?: string }> {
+  if (!userId) return { error: 'Something went wrong — try again.' };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId);
+
+  if (error) {
+    console.error('[updateProfileDirect] error:', error.message);
+    return { error: 'Something went wrong — try again.' };
+  }
+
+  return { success: true };
+}
+
 // ─── Create Profile (email/password signup Step 3) ────────────────────────────
 
 export async function createProfile(data: {

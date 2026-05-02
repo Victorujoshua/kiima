@@ -3,23 +3,25 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Target, Tag, Settings, X, Sun, Moon } from 'lucide-react';
+import { Home, Target, Tag, Settings, X, Sun, Moon, Pencil } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const NAV_ITEMS = [
-  { href: '/dashboard',          label: 'Home',     Icon: Home     },
-  { href: '/dashboard/pools',    label: 'Pools',    Icon: Target   },
-  { href: '/dashboard/tags',     label: 'Tags',     Icon: Tag      },
-  { href: '/dashboard/settings', label: 'Settings', Icon: Settings },
+  { href: '/dashboard',           label: 'Home',      Icon: Home     },
+  { href: '/dashboard/edit-page', label: 'Edit page', Icon: Pencil   },
+  { href: '/dashboard/pools',     label: 'Pools',     Icon: Target   },
+  { href: '/dashboard/tags',      label: 'Tags',      Icon: Tag      },
+  { href: '/dashboard/settings',  label: 'Settings',  Icon: Settings },
 ];
 
 const PAGE_TITLES: { prefix: string; label: string }[] = [
   { prefix: '/dashboard/transactions', label: 'Transactions' },
-  { prefix: '/dashboard/pools',        label: 'Pools'        },
-  { prefix: '/dashboard/tags',         label: 'Tags'         },
-  { prefix: '/dashboard/settings',     label: 'Settings'     },
-  { prefix: '/dashboard/links',        label: 'Links'        },
-  { prefix: '/dashboard',              label: 'Home'         },
+  { prefix: '/dashboard/edit-page',    label: 'Edit page'   },
+  { prefix: '/dashboard/pools',        label: 'Pools'       },
+  { prefix: '/dashboard/tags',         label: 'Tags'        },
+  { prefix: '/dashboard/settings',     label: 'Settings'    },
+  { prefix: '/dashboard/links',        label: 'Links'       },
+  { prefix: '/dashboard',              label: 'Home'        },
 ];
 
 function getPageTitle(pathname: string) {

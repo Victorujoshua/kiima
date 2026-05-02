@@ -540,6 +540,16 @@ p {
   }
 }
 
+/* ─── Edit page — live preview panel (desktop only) ─── */
+.k-edit-preview-col {
+  display: none;
+}
+@media (min-width: 1200px) {
+  .k-edit-preview-col {
+    display: block;
+  }
+}
+
 /* ─── Bottom-sheet modal animations ──────────────────── */
 @keyframes slide-up {
   from { transform: translateY(100%); }

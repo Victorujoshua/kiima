@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Target, Tag, Settings, Sun, Moon } from 'lucide-react';
+import { Home, Target, Tag, Settings, Sun, Moon, ExternalLink, Pencil } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const NAV_ITEMS = [
-  { href: '/dashboard',          label: 'Home',     Icon: Home     },
-  { href: '/dashboard/pools',    label: 'Pools',    Icon: Target   },
-  { href: '/dashboard/tags',     label: 'Tags',     Icon: Tag      },
-  { href: '/dashboard/settings', label: 'Settings', Icon: Settings },
+  { href: '/dashboard',           label: 'Home',      Icon: Home,         sub: false },
+  { href: '/dashboard/pools',     label: 'Pools',     Icon: Target,       sub: false },
+  { href: '/dashboard/tags',      label: 'Tags',      Icon: Tag,          sub: false },
+  { href: '/dashboard/settings',  label: 'Settings',  Icon: Settings,     sub: false },
 ];
 
 export default function DashboardSidebar() {

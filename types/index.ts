@@ -9,6 +9,7 @@ export interface Profile {
   bio: string | null;
   avatar_url: string | null;
   currency: Currency;
+  theme_color: string;  // accent colour for gift page, default '#C87B5C'
   created_at: string;
 }
 

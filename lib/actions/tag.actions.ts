@@ -148,6 +148,34 @@ export async function updateTag(
   return { success: true, tag: data as GiftTag };
 }
 
+// ─── Update default tag ────────────────────────────────────────────────────
+// Updates the label and amount of the creator's default gift tag.
+// This is the only path that can modify a default tag (updateTag blocks it).
+// Used by the GiftLabelSection on /dashboard/edit-page.
+
+export async function updateDefaultTag(
+  userId: string,
+  label: string,
+  amount: number
+): Promise<{ success?: boolean; error?: string }> {
+  if (!userId || !label) return { error: 'Something went wrong — try again.' };
+  if (amount <= 0) return { error: 'Please enter a valid amount.' };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('gift_tags')
+    .update({ label, amount })
+    .eq('user_id', userId)
+    .eq('is_default', true);
+
+  if (error) {
+    console.error('[updateDefaultTag] error:', error.message);
+    return { error: 'Something went wrong — try again.' };
+  }
+
+  return { success: true };
+}
+
 // ─── Delete tag ────────────────────────────────────────────────────────────
 // Deletes a custom tag. Section 4.2: the default tag MUST NEVER be deleted.
 // This function checks is_default before touching the database, and returns
