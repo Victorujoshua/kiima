@@ -72,9 +72,10 @@ export default function DrinkQuantitySelector({ selectedQty, onSelect, emoji = '
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const trayStyle: React.CSSProperties = {
-  background: '#F6F3EE',
+  background: 'var(--color-bg)',
   border: '1.5px solid rgba(0,0,0,0.08)',
-  padding: '12px 16px',
+  borderRadius: '12px',
+  padding: '10px 14px',
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
@@ -88,27 +89,28 @@ const emojiStyle: React.CSSProperties = {
 
 const timesStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontWeight: 700,
+  fontWeight: 500,
   fontSize: '15px',
-  color: '#9A9089',
+  color: '#B5AAAA',
   lineHeight: 1,
 };
 
 const basePillStyle: React.CSSProperties = {
-  minWidth: '44px',
-  height: '40px',
-  border: '1.5px solid rgba(0,0,0,0.15)',
+  minWidth: '40px',
+  height: '36px',
+  borderRadius: '100px',
+  border: '1.5px solid rgba(0,0,0,0.1)',
   fontFamily: 'var(--kiima-font)',
   fontWeight: 700,
   fontSize: '14px',
   cursor: 'pointer',
-  padding: '0 12px',
-  transition: 'background 0.12s ease, border-color 0.12s ease',
-  background: '#ffffff',
+  padding: '0 14px',
+  transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease',
 };
 
 const pillStyle: React.CSSProperties = {
   ...basePillStyle,
+  background: '#ffffff',
   color: '#1C1916',
 };
 
@@ -121,8 +123,9 @@ const selectedPillStyle: React.CSSProperties = {
 
 const baseInputStyle: React.CSSProperties = {
   width: '48px',
-  height: '40px',
-  border: '1.5px solid rgba(0,0,0,0.15)',
+  height: '36px',
+  borderRadius: '10px',
+  border: '1.5px solid rgba(0,0,0,0.1)',
   fontFamily: 'var(--kiima-font)',
   fontWeight: 700,
   fontSize: '14px',
@@ -130,7 +133,7 @@ const baseInputStyle: React.CSSProperties = {
   padding: '0 4px',
   boxSizing: 'border-box',
   outline: 'none',
-  transition: 'background 0.12s ease, border-color 0.12s ease',
+  transition: 'background 0.15s ease, border-color 0.15s ease',
   cursor: 'text',
   background: '#ffffff',
   color: '#1C1916',

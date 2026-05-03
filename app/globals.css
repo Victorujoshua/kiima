@@ -362,10 +362,12 @@ p {
 /* ─── Gift page submit button hover ──────────────────────── */
 .k-gift-submit:hover:not(:disabled) {
   background: #E05200 !important;
+  box-shadow: 0 6px 20px rgba(255,92,0,0.35) !important;
 }
 .k-gift-submit:active:not(:disabled) {
   background: #CC4A00 !important;
   transform: scale(0.99);
+  box-shadow: 0 2px 8px rgba(255,92,0,0.2) !important;
 }
 
 /* Stat cards — single column on mobile, 3-column on desktop */

@@ -58,7 +58,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
       <main style={pageStyle}>
         <PublicHeader />
         <div style={suspendedCardStyle}>
-          <p style={{ fontSize: '32px', margin: '0 0 var(--space-sm)' }}>🔒</p>
+          <p style={{ fontSize: '32px', margin: '0 0 8px' }}>🔒</p>
           <p style={suspendedHeadingStyle}>This creator is unavailable</p>
           <p style={suspendedBodyStyle}>This page is temporarily unavailable.</p>
         </div>
@@ -112,44 +112,50 @@ export default async function UserPage({ params, searchParams }: PageProps) {
           {/* ── LEFT: Creator profile ── */}
           <div className="k-creator-profile-sticky">
             <div style={profileCardStyle}>
-              {/* Olive top accent */}
-              <div style={oliveAccentStyle} />
 
               {/* Avatar */}
-              <div style={avatarWrapStyle}>
-                {profile.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.display_name}
-                    style={avatarImgStyle}
-                  />
-                ) : (
-                  <div style={avatarFallbackStyle}>
-                    {profile.display_name.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
+              <div style={avatarOuterStyle}>
+                <div style={avatarWrapStyle}>
+                  {profile.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={profile.avatar_url}
+                      alt={profile.display_name}
+                      style={avatarImgStyle}
+                    />
+                  ) : (
+                    <div style={avatarFallbackStyle}>
+                      {profile.display_name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <h1 style={displayNameStyle}>{profile.display_name}</h1>
-              <p style={usernameTagStyle}>@{profile.username}</p>
+              {/* Name + username */}
+              <div style={profileTextBlockStyle}>
+                <h1 style={displayNameStyle}>{profile.display_name}</h1>
+                <p style={usernameTagStyle}>@{profile.username}</p>
+              </div>
+
+              {/* Divider */}
+              {(profile.bio || (links as SocialLink[]).length > 0) && (
+                <div style={profileDividerStyle} />
+              )}
 
               {profile.bio && (
                 <div
                   className="k-bio-prose"
-                  style={{ marginTop: '16px', padding: '0 28px' }}
+                  style={bioStyle}
                   dangerouslySetInnerHTML={{ __html: profile.bio }}
                 />
               )}
 
               {(links as SocialLink[]).length > 0 && (
-                <div style={{ marginTop: '20px', padding: '0 20px' }}>
+                <div style={socialLinksWrapStyle}>
                   <SocialLinksRow links={links as SocialLink[]} />
                 </div>
               )}
 
-              {/* Bottom spacer */}
-              <div style={{ height: '28px' }} />
             </div>
           </div>
 
@@ -182,24 +188,27 @@ const pageStyle: React.CSSProperties = {
 };
 
 const profileCardStyle: React.CSSProperties = {
-  background: 'var(--color-surface)',
-  border: '2px solid #000000',
-  boxShadow: '4px 4px 0 0 #000000',
+  background: '#ffffff',
+  borderRadius: '20px',
+  border: '1px solid rgba(0,0,0,0.07)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.05)',
   overflow: 'hidden',
+  paddingBottom: '28px',
 };
 
-const oliveAccentStyle: React.CSSProperties = {
-  height: '4px',
-  background: '#D7D744',
+const avatarOuterStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  paddingTop: '32px',
 };
 
 const avatarWrapStyle: React.CSSProperties = {
-  width: '80px',
-  height: '80px',
-  border: '2px solid #000000',
-  margin: '28px 28px 0',
+  width: '84px',
+  height: '84px',
+  borderRadius: '50%',
   overflow: 'hidden',
   flexShrink: 0,
+  boxShadow: '0 0 0 3px #ffffff, 0 0 0 5px rgba(0,0,0,0.08)',
 };
 
 const avatarImgStyle: React.CSSProperties = {
@@ -219,30 +228,47 @@ const avatarFallbackStyle: React.CSSProperties = {
   justifyContent: 'center',
   fontFamily: 'var(--kiima-font)',
   fontWeight: 800,
-  fontSize: '24px',
+  fontSize: '26px',
+};
+
+const profileTextBlockStyle: React.CSSProperties = {
+  textAlign: 'center',
+  padding: '16px 24px 0',
 };
 
 const displayNameStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontWeight: 800,
-  fontSize: '26px',
+  fontSize: '22px',
   color: '#1C1916',
-  margin: '16px 28px 0',
-  letterSpacing: '-0.8px',
-  lineHeight: 1.15,
+  margin: '0 0 4px',
+  letterSpacing: '-0.5px',
+  lineHeight: 1.2,
 };
 
 const usernameTagStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontSize: '11px',
-  fontWeight: 700,
-  color: '#D7D744',
-  background: '#000000',
-  display: 'inline-block',
-  margin: '8px 28px 0',
-  padding: '3px 8px',
-  textTransform: 'uppercase',
-  letterSpacing: '0.1em',
+  fontSize: '13px',
+  fontWeight: 500,
+  color: '#9A9089',
+  margin: 0,
+  letterSpacing: '0.01em',
+};
+
+const profileDividerStyle: React.CSSProperties = {
+  height: '1px',
+  background: 'rgba(0,0,0,0.06)',
+  margin: '20px 24px 0',
+};
+
+const bioStyle: React.CSSProperties = {
+  marginTop: '16px',
+  padding: '0 24px',
+};
+
+const socialLinksWrapStyle: React.CSSProperties = {
+  marginTop: '16px',
+  padding: '0 16px',
 };
 
 const paymentFailedBannerStyle: React.CSSProperties = {
@@ -253,31 +279,33 @@ const paymentFailedBannerStyle: React.CSSProperties = {
   fontSize: '13px',
   color: 'var(--color-danger)',
   background: 'var(--color-danger-soft)',
-  border: '1px solid var(--color-danger)',
+  borderRadius: '10px',
+  border: '1px solid rgba(224,112,112,0.3)',
 };
 
 const suspendedCardStyle: React.CSSProperties = {
-  maxWidth: '480px',
+  maxWidth: '400px',
   margin: '80px auto 0',
-  background: 'var(--color-surface)',
-  border: '2px solid #000000',
-  boxShadow: '4px 4px 0 0 #000000',
-  padding: '40px',
+  background: '#ffffff',
+  borderRadius: '20px',
+  border: '1px solid rgba(0,0,0,0.07)',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+  padding: '48px 40px',
   textAlign: 'center',
 };
 
 const suspendedHeadingStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontWeight: 800,
-  fontSize: '22px',
+  fontWeight: 700,
+  fontSize: '18px',
   color: '#1C1916',
-  margin: '0 0 var(--space-xs)',
+  margin: '0 0 6px',
 };
 
 const suspendedBodyStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontSize: '14px',
-  color: '#5A4D44',
+  color: '#9A9089',
   margin: 0,
-  lineHeight: 1.65,
+  lineHeight: 1.6,
 };

@@ -5,6 +5,58 @@
 ---
 
 ```
+Date: 2026-05-03 (session 2)
+Session: Redesign — Creator gift page neo-brutalism → minimal
+
+DESIGN DIRECTION:
+  Removed all neo-brutalist structural elements (thick black borders, hard offset shadows,
+  square avatars, black pill badges). Replaced with a soft-minimal system:
+    • Cards: border-radius 20px, 1px rgba border, dual-layer soft box-shadow
+    • Surfaces float on the warm #F6F3EE page without harsh boundaries
+    • Color as signal only: olive = active/selected, orange = single CTA
+    • Typography carries hierarchy — not borders
+
+WHAT WAS CHANGED:
+
+  app/[username]/page.tsx:
+    - Profile card: rounded-20, soft shadow, no hard border
+    - Avatar: 84px circle (border-radius 50%), ring shadow instead of solid border
+    - Display name: centered, 22px, weight 800
+    - @username: plain muted text (#9A9089), no black pill background
+    - Removed olive top accent stripe
+    - Bio + social links section separated by a 1px rgba divider
+    - Suspended card: rounded-20, soft shadow
+
+  components/pages/GiftPageClient.tsx:
+    - Single shared cardStyle (rounded-20, soft shadow) for gift + supporters
+    - Cards stacked with gap: 16px (not 2px)
+    - Submit button: border-radius 12px, orange glow shadow
+    - Anonymous toggle: pill (border-radius 100px), circular thumb
+    - Note textarea: rounded-10, rgba border
+    - Supporter count badge: orange text on soft orange tint, pill shape
+    - Supporter avatars: circular (50%), olive for named / soft grey for anon
+    - Supporter rows: 1px rgba(0,0,0,0.05) dividers (not hard black)
+    - Footer: #B5AAAA muted text, orange "kiima" link
+
+  components/shared/DrinkQuantitySelector.tsx:
+    - Tray: rounded-12, rgba border on warm bg
+    - Quantity pills: border-radius 100px (true pill shape)
+    - Custom input: border-radius 10px
+    - Selected state: olive fill, no box-shadow
+
+  app/globals.css:
+    - k-gift-submit hover: orange glow shadow added
+
+WHAT TO BUILD NEXT:
+  - Pool page minimal redesign to match
+
+OPEN ISSUES:
+  - None
+```
+
+---
+
+```
 Date: 2026-05-03
 Session: Fix — Dynamic emoji in quantity selector (gift page)
 

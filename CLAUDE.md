@@ -585,7 +585,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `CurrencyInput` | `shared/CurrencyInput.tsx` | `currency: Currency, value, onChange?, readOnly?` |
 | `KiimaButton` | `shared/KiimaButton.tsx` | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
 | `SocialLinksRow` | `shared/SocialLinksRow.tsx` | `links: SocialLink[], onDark?: boolean` — pass `onDark` when rendering on black backgrounds |
-| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice, currency, selectedQty, onSelect, emoji?: string` — emoji defaults to 🎁; renders `{emoji} × [1][3][5][?]`; warm #F6F3EE tray, subtle border, white pills, olive selected state |
+| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice, currency, selectedQty, onSelect, emoji?: string` — emoji defaults to 🎁; renders `{emoji} × [1][3][5][?]`; rounded-12 tray on warm bg; pill-shaped (100px radius) quantity buttons; olive selected state |
 | `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@` |
 
 ### Layout Components
@@ -610,7 +610,7 @@ Keep this updated as components are built. Before building any new component, ch
 
 | Component | File | Key Props |
 |---|---|---|
-| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions` — supporters section hidden when `showContributions=false`; white cards on warm bg; orange section label + CTA; olive quantity pills; custom pill toggle; orange supporter count badge |
+| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions` — minimal style: rounded-20 white cards, soft shadow, no hard borders; orange section label + rounded CTA with glow shadow; olive pill qty selector; circular supporter avatars; pill count badge; supporters hidden when showContributions=false |
 
 ### Auth Pages
 

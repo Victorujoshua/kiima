@@ -31,7 +31,6 @@ function timeAgo(dateStr: string): string {
 }
 
 function extractEmoji(label: string): string {
-  // Matches any emoji character(s) at the end of the string
   const emojiRegex = /\p{Emoji_Presentation}[\p{Emoji}️‍]*/gu;
   const matches = label.match(emojiRegex);
   return matches ? matches[matches.length - 1] : '🎁';
@@ -58,16 +57,18 @@ function SubmitButton({ label }: { label: string }) {
       className="k-gift-submit"
       style={{
         width: '100%',
-        height: '56px',
-        background: pending ? '#aaaaaa' : '#FF5C00',
+        height: '52px',
+        background: pending ? '#cccccc' : '#FF5C00',
         color: '#ffffff',
         border: 'none',
+        borderRadius: '12px',
         fontFamily: 'var(--kiima-font)',
-        fontWeight: 800,
-        fontSize: '16px',
+        fontWeight: 700,
+        fontSize: '15px',
         cursor: pending ? 'not-allowed' : 'pointer',
-        transition: 'background 0.15s ease, transform 0.12s ease',
-        letterSpacing: '-0.3px',
+        transition: 'background 0.15s ease, opacity 0.15s ease',
+        letterSpacing: '-0.2px',
+        boxShadow: pending ? 'none' : '0 4px 14px rgba(255,92,0,0.25)',
       }}
     >
       {pending ? 'Redirecting…' : label}
@@ -98,14 +99,12 @@ export default function GiftPageClient({
   const displayNamePreview = isAnonymous ? 'Anonymous' : (nameValue.trim() || 'Anonymous');
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       {/* ── Gift card ── */}
-      <div style={giftCardStyle}>
-
-        {/* Section label */}
+      <div style={cardStyle}>
         <p style={sectionLabelStyle}>Send a gift</p>
-        <h2 style={giftCardHeadingStyle}>{defaultTag.label}</h2>
+        <h2 style={giftHeadingStyle}>{defaultTag.label}</h2>
 
         <DrinkQuantitySelector
           drinkPrice={defaultTag.amount}
@@ -117,7 +116,7 @@ export default function GiftPageClient({
 
         <form
           action={formAction}
-          style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}
+          style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '18px' }}
         >
           <input type="hidden" name="recipient_id" value={recipientId} />
           <input type="hidden" name="tag_id" value={defaultTag.id} />
@@ -146,33 +145,31 @@ export default function GiftPageClient({
 
           {/* Anonymous toggle */}
           <label style={anonRowStyle}>
-            <div style={{
-              position: 'relative',
-              width: '36px',
-              height: '20px',
-              flexShrink: 0,
-            }}>
+            <div style={{ position: 'relative', width: '40px', height: '24px', flexShrink: 0 }}>
               <input
                 type="checkbox"
                 checked={isAnonymous}
                 onChange={e => setIsAnonymous(e.target.checked)}
-                style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', margin: 0, cursor: 'pointer', zIndex: 1 }}
+                style={{ position: 'absolute', opacity: 0, inset: 0, margin: 0, cursor: 'pointer', zIndex: 1 }}
               />
               <div style={{
-                width: '36px',
-                height: '20px',
+                width: '40px',
+                height: '24px',
+                borderRadius: '100px',
                 background: isAnonymous ? '#D7D744' : 'rgba(0,0,0,0.12)',
-                transition: 'background 0.15s ease',
+                transition: 'background 0.18s ease',
                 position: 'relative',
               }}>
                 <div style={{
                   position: 'absolute',
                   top: '3px',
                   left: isAnonymous ? '19px' : '3px',
-                  width: '14px',
-                  height: '14px',
-                  background: '#000000',
-                  transition: 'left 0.15s ease',
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '50%',
+                  background: isAnonymous ? '#000000' : '#ffffff',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                  transition: 'left 0.18s ease',
                 }} />
               </div>
             </div>
@@ -185,8 +182,8 @@ export default function GiftPageClient({
               ) : (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px' }}>
                   <PlatformIcon platform={selectedPlatform} />
-                  <span style={{ fontFamily: 'var(--kiima-font)', fontSize: '12px', color: '#9A9089' }}>|</span>
-                  <span style={{ fontFamily: 'var(--kiima-font)', fontSize: '12px', fontWeight: 700, color: '#1C1916' }}>
+                  <span style={{ fontFamily: 'var(--kiima-font)', fontSize: '12px', color: '#9A9089' }}>·</span>
+                  <span style={{ fontFamily: 'var(--kiima-font)', fontSize: '12px', fontWeight: 600, color: '#1C1916' }}>
                     {nameValue.replace(/^@/, '')}
                   </span>
                 </span>
@@ -197,8 +194,8 @@ export default function GiftPageClient({
           {/* Note */}
           <div>
             <label style={labelStyle}>
-              Leave a note{' '}
-              <span style={{ color: '#9A9089', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+              Leave a note
+              <span style={{ color: '#B5AAAA', fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: '4px' }}>(optional)</span>
             </label>
             <textarea
               name="note"
@@ -209,9 +206,9 @@ export default function GiftPageClient({
               style={{
                 width: '100%',
                 background: 'var(--color-bg)',
-                border: 'none',
-                borderBottom: '2px solid #000000',
-                padding: '10px 0',
+                border: '1.5px solid rgba(0,0,0,0.1)',
+                borderRadius: '10px',
+                padding: '12px 14px',
                 fontFamily: 'var(--kiima-font)',
                 fontSize: '14px',
                 lineHeight: 1.6,
@@ -219,11 +216,12 @@ export default function GiftPageClient({
                 outline: 'none',
                 resize: 'none',
                 boxSizing: 'border-box',
+                transition: 'border-color 0.15s ease',
               }}
             />
           </div>
 
-          <SubmitButton label={`Send ${formatCurrency(giftAmount, currency)}${tagEmoji ? ` ${tagEmoji}` : ''}`} />
+          <SubmitButton label={`Send ${formatCurrency(giftAmount, currency)} ${tagEmoji}`} />
 
           {state && typeof state === 'object' && 'error' in state && state.error && (
             <p style={errorStyle}>{state.error as string}</p>
@@ -231,52 +229,52 @@ export default function GiftPageClient({
         </form>
       </div>
 
-      {/* ── Supporters — only shown if creator has enabled it ── */}
-      {showContributions && <div style={supportersCardStyle}>
+      {/* ── Supporters ── */}
+      {showContributions && (
+        <div style={cardStyle}>
+          <div style={supportersHeaderStyle}>
+            <h3 style={supportersLabelStyle}>Supporters</h3>
+            {contributorCount > 0 && (
+              <span style={countBadgeStyle}>{contributorCount}</span>
+            )}
+          </div>
 
-        {/* Header row */}
-        <div style={supportersHeaderRowStyle}>
-          <h3 style={supportersHeadingStyle}>Supporters</h3>
-          {contributorCount > 0 && (
-            <span style={countBadgeStyle}>{contributorCount}</span>
+          {contributions.length === 0 ? (
+            <p style={emptyStyle}>Be the first to support {creatorName}! 🙏</p>
+          ) : (
+            <div>
+              {contributions.map((c, i) => {
+                const name = resolveDisplayName(c.display_name, c.is_anonymous);
+                const isLast = i === contributions.length - 1;
+                const isAnon = c.is_anonymous || !c.display_name;
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px 0',
+                      borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.05)',
+                    }}
+                  >
+                    <div style={isAnon ? anonAvatarStyle : namedAvatarStyle}>
+                      {isAnon ? '?' : getInitials(c.display_name!)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={contributorNameStyle}>{name}</p>
+                      <p style={contributorSubStyle}>
+                        {activityLine(c.gift_amount, defaultTag.amount, currency, tagEmoji)}
+                      </p>
+                    </div>
+                    <span style={timeAgoStyle}>{timeAgo(c.created_at)}</span>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
-
-        {contributions.length === 0 ? (
-          <p style={emptyStyle}>Be the first to support {creatorName}! 🙏</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-            {contributions.map((c, i) => {
-              const name = resolveDisplayName(c.display_name, c.is_anonymous);
-              const isLast = i === contributions.length - 1;
-              const isAnon = c.is_anonymous || !c.display_name;
-              return (
-                <div
-                  key={c.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '14px 0',
-                    borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.06)',
-                  }}
-                >
-                  <div style={isAnon ? anonAvatarStyle : namedAvatarStyle}>
-                    {isAnon ? '?' : getInitials(c.display_name!)}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={contributorNameStyle}>{name}</p>
-                    <p style={contributorSubStyle}>
-                      {activityLine(c.gift_amount, defaultTag.amount, currency, tagEmoji)}
-                    </p>
-                  </div>
-                  <span style={timeAgoStyle}>{timeAgo(c.created_at)}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>}
+      )}
 
       {/* Footer */}
       <p style={footerStyle}>
@@ -285,7 +283,7 @@ export default function GiftPageClient({
           href="https://kiima.app"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#FF5C00', textDecoration: 'none', fontWeight: 800 }}
+          style={{ color: '#FF5C00', textDecoration: 'none', fontWeight: 700 }}
         >
           kiima
         </a>
@@ -296,72 +294,70 @@ export default function GiftPageClient({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const giftCardStyle: React.CSSProperties = {
+const cardStyle: React.CSSProperties = {
   background: '#ffffff',
-  padding: '28px 28px 32px',
+  borderRadius: '20px',
+  border: '1px solid rgba(0,0,0,0.07)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.05)',
+  padding: '28px',
 };
 
 const sectionLabelStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontSize: '10px',
-  fontWeight: 700,
+  fontSize: '11px',
+  fontWeight: 600,
   color: '#FF5C00',
   textTransform: 'uppercase',
-  letterSpacing: '0.14em',
+  letterSpacing: '0.1em',
   margin: '0 0 6px',
 };
 
-const giftCardHeadingStyle: React.CSSProperties = {
+const giftHeadingStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontWeight: 800,
-  fontSize: '22px',
+  fontSize: '20px',
   color: '#1C1916',
-  margin: '0 0 20px',
-  letterSpacing: '-0.5px',
+  margin: '0 0 16px',
+  letterSpacing: '-0.4px',
 };
 
-const supportersCardStyle: React.CSSProperties = {
-  background: '#ffffff',
-  padding: '24px 28px 28px',
-  marginTop: '2px',
-};
-
-const supportersHeaderRowStyle: React.CSSProperties = {
+const supportersHeaderStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: '10px',
+  gap: '8px',
   marginBottom: '4px',
 };
 
-const supportersHeadingStyle: React.CSSProperties = {
+const supportersLabelStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontWeight: 800,
-  fontSize: '13px',
-  color: '#1C1916',
+  fontWeight: 700,
+  fontSize: '12px',
+  color: '#9A9089',
   margin: 0,
   textTransform: 'uppercase',
-  letterSpacing: '0.1em',
+  letterSpacing: '0.08em',
 };
 
 const countBadgeStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontSize: '13px',
-  fontWeight: 800,
-  color: '#ffffff',
-  background: '#FF5C00',
-  padding: '2px 8px',
-  lineHeight: '18px',
+  fontSize: '11px',
+  fontWeight: 700,
+  color: '#FF5C00',
+  background: 'rgba(255,92,0,0.08)',
+  borderRadius: '100px',
+  padding: '2px 9px',
+  lineHeight: '20px',
 };
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontFamily: 'var(--kiima-font)',
-  fontWeight: 700,
-  fontSize: '10px',
+  fontWeight: 600,
+  fontSize: '11px',
   color: '#9A9089',
   marginBottom: '8px',
   textTransform: 'uppercase',
-  letterSpacing: '0.1em',
+  letterSpacing: '0.08em',
 };
 
 const anonRowStyle: React.CSSProperties = {
@@ -377,7 +373,7 @@ const anonLabelStyle: React.CSSProperties = {
   color: '#1C1916',
   fontWeight: 600,
   display: 'block',
-  marginBottom: '3px',
+  marginBottom: '2px',
 };
 
 const anonSubStyle: React.CSSProperties = {
@@ -387,9 +383,12 @@ const anonSubStyle: React.CSSProperties = {
   color: '#9A9089',
 };
 
-const baseAvatarStyle: React.CSSProperties = {
-  width: '36px',
-  height: '36px',
+const namedAvatarStyle: React.CSSProperties = {
+  width: '34px',
+  height: '34px',
+  borderRadius: '50%',
+  background: '#D7D744',
+  color: '#000000',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -399,21 +398,24 @@ const baseAvatarStyle: React.CSSProperties = {
   flexShrink: 0,
 };
 
-const namedAvatarStyle: React.CSSProperties = {
-  ...baseAvatarStyle,
-  background: '#D7D744',
-  color: '#000000',
-};
-
 const anonAvatarStyle: React.CSSProperties = {
-  ...baseAvatarStyle,
-  background: '#000000',
-  color: '#D7D744',
+  width: '34px',
+  height: '34px',
+  borderRadius: '50%',
+  background: 'rgba(0,0,0,0.07)',
+  color: '#9A9089',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: 'var(--kiima-font)',
+  fontWeight: 700,
+  fontSize: '13px',
+  flexShrink: 0,
 };
 
 const contributorNameStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontWeight: 700,
+  fontWeight: 600,
   fontSize: '14px',
   color: '#1C1916',
   margin: 0,
@@ -424,7 +426,7 @@ const contributorNameStyle: React.CSSProperties = {
 
 const contributorSubStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
-  fontSize: '13px',
+  fontSize: '12px',
   color: '#9A9089',
   margin: '2px 0 0',
 };
@@ -432,11 +434,9 @@ const contributorSubStyle: React.CSSProperties = {
 const timeAgoStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontSize: '11px',
-  fontWeight: 700,
+  fontWeight: 500,
   color: '#B5AAAA',
   flexShrink: 0,
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
 };
 
 const errorStyle: React.CSSProperties = {
@@ -450,16 +450,16 @@ const errorStyle: React.CSSProperties = {
 const emptyStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontSize: '14px',
-  color: '#9A9089',
+  color: '#B5AAAA',
   margin: '12px 0 0',
   textAlign: 'center',
-  padding: '12px 0',
+  padding: '8px 0',
 };
 
 const footerStyle: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
   fontSize: '12px',
-  color: 'var(--color-text-muted)',
+  color: '#B5AAAA',
   textAlign: 'center',
-  margin: '28px 0 0',
+  margin: '4px 0 0',
 };
