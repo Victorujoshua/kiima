@@ -287,17 +287,32 @@ export default function GiftPageClient({
       )}
 
       {/* Footer */}
-      <p style={footerStyle}>
-        Powered by{' '}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+        <p style={footerStyle}>
+          Powered by{' '}
+          <a
+            href="https://kiima.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#FF5C00', textDecoration: 'none', fontWeight: 700 }}
+          >
+            kiima
+          </a>
+        </p>
         <a
-          href="https://kiima.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#FF5C00', textDecoration: 'none', fontWeight: 700 }}
+          href="/signup"
+          style={{
+            fontFamily: 'var(--kiima-font)',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#FF5C00',
+            textDecoration: 'none',
+            letterSpacing: '-0.1px',
+          }}
         >
-          kiima
+          Create your own Kiima page →
         </a>
-      </p>
+      </div>
     </div>
   );
 }
