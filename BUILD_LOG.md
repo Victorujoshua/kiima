@@ -5,6 +5,34 @@
 ---
 
 ```
+Date: 2026-05-03 (session 8)
+Session: Force light mode on public creator gift page
+
+What was built:
+- app/[username]/layout.tsx (NEW): wrapper div with colorScheme: 'light' — locks
+  the entire username route subtree to light mode at the layout level
+- app/[username]/page.tsx: pageStyle.background hardcoded to '#F6F3EE' (was
+  var(--color-bg)); added colorScheme: 'light' to pageStyle; added
+  data-page="gift-page" to both <main> return branches
+- components/pages/GiftPageClient.tsx: added data-page="gift-page" and
+  colorScheme: 'light' to outermost div
+- app/globals.css: added [data-page="gift-page"] rule forcing color-scheme: light
+  and background-color: #F6F3EE with !important
+
+No Tailwind dark: classes were found in any of the affected files.
+
+Build result: No TypeScript changes — all edits are style/attribute additions.
+
+What to build next:
+- Pending from session 3: Run migrations 013 and 014 in Supabase SQL Editor (Victor)
+
+Open issues:
+- Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
 Date: 2026-05-03 (session 7)
 Session: Fix dashboard sidebar logo variant + enlarge
 

@@ -701,6 +701,12 @@ p {
   }
 }
 
+/* ─── Creator gift page — force light mode ───────────── */
+[data-page="gift-page"] {
+  color-scheme: light !important;
+  background-color: #F6F3EE !important;
+}
+
 /* ─── Bottom-sheet modal animations ──────────────────── */
 @keyframes slide-up {
   from { transform: translateY(100%); }

@@ -106,7 +106,7 @@ export default function GiftPageClient({
   const displayNamePreview = isAnonymous ? 'Anonymous' : (nameValue.trim() || 'Anonymous');
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div data-page="gift-page" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px', colorScheme: 'light' }}>
 
       {/* ── Gift card ── */}
       <div style={cardStyle}>

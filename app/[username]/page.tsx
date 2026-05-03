@@ -55,7 +55,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 
   if ((profile as Profile & { suspended: boolean }).suspended) {
     return (
-      <main style={pageStyle}>
+      <main style={pageStyle} data-page="gift-page">
         <PublicHeader />
         <div style={suspendedCardStyle}>
           <p style={{ fontSize: '32px', margin: '0 0 8px' }}>🔒</p>
@@ -97,7 +97,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
   const paymentFailed = searchParams.payment_failed === '1';
 
   return (
-    <main style={pageStyle}>
+    <main style={pageStyle} data-page="gift-page">
       <PublicHeader />
 
       {paymentFailed && (
@@ -183,8 +183,10 @@ export default async function UserPage({ params, searchParams }: PageProps) {
 
 const pageStyle: React.CSSProperties = {
   minHeight: '100vh',
-  background: 'var(--color-bg)',
+  background: '#F6F3EE',
+  backgroundColor: '#F6F3EE',
   paddingTop: '68px',
+  colorScheme: 'light',
 };
 
 const profileCardStyle: React.CSSProperties = {
