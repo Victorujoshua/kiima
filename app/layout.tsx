@@ -26,9 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-force-color-scheme="light">
       {/* Inline script prevents flash of wrong theme before hydration */}
       <head>
+        <meta name="color-scheme" content="light only" />
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             try {
