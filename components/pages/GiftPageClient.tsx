@@ -54,27 +54,28 @@ function getInitials(name: string): string {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, disabled: extraDisabled }: { label: string; disabled?: boolean }) {
   const { pending } = useFormStatus();
+  const isDisabled = pending || extraDisabled;
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={isDisabled}
       className="k-gift-submit"
       style={{
         width: '100%',
         height: '52px',
-        background: pending ? '#cccccc' : '#FF5C00',
+        background: isDisabled ? '#cccccc' : '#FF5C00',
         color: '#ffffff',
         border: 'none',
         borderRadius: '12px',
         fontFamily: 'var(--kiima-font)',
         fontWeight: 700,
         fontSize: '15px',
-        cursor: pending ? 'not-allowed' : 'pointer',
+        cursor: isDisabled ? 'not-allowed' : 'pointer',
         transition: 'background 0.15s ease, opacity 0.15s ease',
         letterSpacing: '-0.2px',
-        boxShadow: pending ? 'none' : '0 4px 14px rgba(255,92,0,0.25)',
+        boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(255,92,0,0.25)',
       }}
     >
       {pending ? 'Redirecting…' : label}
@@ -227,7 +228,10 @@ export default function GiftPageClient({
             />
           </div>
 
-          <SubmitButton label={`Send ${formatCurrency(giftAmount, currency)} ${tagEmoji}`} />
+          <SubmitButton
+            label={`Send ${formatCurrency(giftAmount, currency)} ${tagEmoji}`}
+            disabled={!isAnonymous && nameValue.trim() === ''}
+          />
 
           {state && typeof state === 'object' && 'error' in state && state.error && (
             <p style={errorStyle}>{state.error as string}</p>
