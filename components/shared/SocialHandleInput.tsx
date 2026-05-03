@@ -85,11 +85,13 @@ export default function SocialHandleInput({
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        border: '1.5px solid var(--color-border)',
-        borderRadius: 'var(--radius-md)',
-        background: disabled ? 'var(--color-bg)' : 'var(--color-surface)',
+        border: '1.5px solid rgba(28,25,22,0.1)',
+        borderRadius: '14px',
+        background: disabled ? '#F6F3EE' : '#ffffff',
+        backgroundColor: disabled ? '#F6F3EE' : '#ffffff',
         overflow: 'hidden',
         transition: 'border-color 0.15s ease',
+        colorScheme: 'light',
       }}>
         {/* Platform picker — only shown when value starts with @ */}
         {showSocialPicker && (
@@ -132,11 +134,13 @@ export default function SocialHandleInput({
             height: '48px',
             border: 'none',
             background: 'transparent',
+            backgroundColor: 'transparent',
             fontFamily: 'var(--font-body)',
             fontSize: '15px',
-            color: disabled ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
+            color: disabled ? '#9A9089' : '#1C1916',
             padding: '0 14px',
             outline: 'none',
+            colorScheme: 'light',
           }}
         />
       </div>
@@ -147,13 +151,15 @@ export default function SocialHandleInput({
           position: 'absolute',
           top: 'calc(100% + 4px)',
           left: 0,
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-md)',
-          boxShadow: 'var(--shadow-card-hover)',
+          background: '#ffffff',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(28,25,22,0.08)',
+          borderRadius: '14px',
+          boxShadow: '0 6px 28px rgba(28,25,22,0.09)',
           zIndex: 50,
           minWidth: '160px',
           overflow: 'hidden',
+          colorScheme: 'light',
         }}>
           {PLATFORMS.map((p) => {
             const active = selectedPlatform === p.id;

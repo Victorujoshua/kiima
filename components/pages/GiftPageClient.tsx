@@ -66,6 +66,7 @@ function SubmitButton({ label, disabled: extraDisabled }: { label: string; disab
         width: '100%',
         height: '52px',
         background: isDisabled ? '#cccccc' : '#FF5C00',
+        backgroundColor: isDisabled ? '#cccccc' : '#FF5C00',
         color: '#ffffff',
         border: 'none',
         borderRadius: '12px',
@@ -76,6 +77,7 @@ function SubmitButton({ label, disabled: extraDisabled }: { label: string; disab
         transition: 'background 0.15s ease, opacity 0.15s ease',
         letterSpacing: '-0.2px',
         boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(255,92,0,0.25)',
+        colorScheme: 'light',
       }}
     >
       {pending ? 'Redirecting…' : label}
@@ -212,18 +214,20 @@ export default function GiftPageClient({
               rows={3}
               style={{
                 width: '100%',
-                background: 'var(--color-bg)',
+                background: '#f8f8f8',
+                backgroundColor: '#f8f8f8',
                 border: '1.5px solid rgba(0,0,0,0.1)',
                 borderRadius: '10px',
                 padding: '12px 14px',
                 fontFamily: 'var(--kiima-font)',
                 fontSize: '14px',
                 lineHeight: 1.6,
-                color: 'var(--color-text-primary)',
+                color: '#1C1916',
                 outline: 'none',
                 resize: 'none',
                 boxSizing: 'border-box',
                 transition: 'border-color 0.15s ease',
+                colorScheme: 'light',
               }}
             />
           </div>
@@ -321,10 +325,12 @@ export default function GiftPageClient({
 
 const cardStyle: React.CSSProperties = {
   background: '#ffffff',
+  backgroundColor: '#ffffff',
   borderRadius: '20px',
   border: '1px solid rgba(0,0,0,0.07)',
   boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.05)',
   padding: '28px',
+  colorScheme: 'light',
 };
 
 const sectionLabelStyle: React.CSSProperties = {

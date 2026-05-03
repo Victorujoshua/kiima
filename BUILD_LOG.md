@@ -5,6 +5,35 @@
 ---
 
 ```
+Date: 2026-05-03 (session 9)
+Session: Fix dark mode element tinting on Android gift page
+
+What was built:
+- tailwind.config.ts: darkMode changed from implicit 'media' → 'class'.
+  dark: Tailwind variants now only fire when a .dark class is on <html>,
+  which Kiima never adds. Prevents all Tailwind dark: overrides globally.
+- components/shared/DrinkQuantitySelector.tsx: trayStyle background
+  changed from var(--color-bg) → hardcoded #FDF1EC; added colorScheme: light.
+- components/shared/SocialHandleInput.tsx: wrapper div background
+  changed from var(--color-surface/color-bg) → hardcoded #ffffff/#F6F3EE;
+  input color changed from CSS vars → hardcoded #1C1916/#9A9089; dropdown
+  background changed from var(--color-surface) → #ffffff. All with
+  colorScheme: light.
+- components/pages/GiftPageClient.tsx:
+  • textarea background/color: CSS vars → #f8f8f8 / #1C1916 + colorScheme: light
+  • SubmitButton: added backgroundColor (duplicate of background) + colorScheme: light
+  • cardStyle: added backgroundColor: '#ffffff' + colorScheme: light
+
+What to build next:
+- Pending from session 3: Run migrations 013 and 014 in Supabase SQL Editor (Victor)
+
+Open issues:
+- Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
 Date: 2026-05-03 (session 8)
 Session: Force light mode on public creator gift page
 

@@ -72,7 +72,8 @@ export default function DrinkQuantitySelector({ selectedQty, onSelect, emoji = '
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const trayStyle: React.CSSProperties = {
-  background: 'var(--color-bg)',
+  background: '#FDF1EC',
+  backgroundColor: '#FDF1EC',
   border: '1.5px solid rgba(0,0,0,0.08)',
   borderRadius: '12px',
   padding: '10px 14px',
@@ -80,6 +81,7 @@ const trayStyle: React.CSSProperties = {
   alignItems: 'center',
   gap: '8px',
   flexWrap: 'wrap',
+  colorScheme: 'light',
 };
 
 const emojiStyle: React.CSSProperties = {
