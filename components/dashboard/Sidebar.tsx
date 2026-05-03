@@ -82,7 +82,7 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
       {/* Mobile top bar — hamburger trigger, hidden on desktop via CSS */}
       <div className="k-mob-topbar">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-white.svg" alt="Kiima" height={26} width={74} style={{ display: 'block' }} />
+        <img src="/logo-white.svg" alt="Kiima" height={30} width={85} style={{ display: 'block' }} />
 
         {/* Page title — absolutely centered, non-interactive so logo/hamburger stay clickable */}
         {pageTitle && (
@@ -111,7 +111,7 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
       {/* Logo + mobile close */}
       <div style={{ padding: '24px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-white.svg" alt="Kiima" height={29} width={82} style={{ display: 'block' }} />
+        <img src="/logo-black.svg" alt="Kiima" height={34} width={96} style={{ display: 'block' }} />
         <button
           className="k-mob-close-btn"
           aria-label="Close navigation"

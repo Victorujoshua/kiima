@@ -5,6 +5,28 @@
 ---
 
 ```
+Date: 2026-05-03 (session 7)
+Session: Fix dashboard sidebar logo variant + enlarge
+
+What was built:
+- components/dashboard/Sidebar.tsx:
+  • Desktop sidebar logo: logo-white.svg → logo-black.svg (sidebar bg is white #ffffff)
+    Size: h=29→34, w=82→96
+  • Mobile topbar logo: stays logo-white.svg (topbar bg is black #000000)
+    Size: h=26→30, w=74→85
+
+Build result: ✓ 0 TypeScript errors.
+
+What to build next:
+- Pending from session 3: Run migrations 013 and 014 in Supabase SQL Editor (Victor)
+
+Open issues:
+- Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
 Date: 2026-05-03 (session 6)
 Session: Logo variant correctness + 20% size increase across all pages
 
