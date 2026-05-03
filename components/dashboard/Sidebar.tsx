@@ -81,9 +81,8 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
     <>
       {/* Mobile top bar — hamburger trigger, hidden on desktop via CSS */}
       <div className="k-mob-topbar">
-        <span style={mobileLogoStyle}>
-          kiima<span style={{ color: '#D7D744' }}>.</span>
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-white.svg" alt="Kiima" height={22} width={62} style={{ display: 'block' }} />
 
         {/* Page title — absolutely centered, non-interactive so logo/hamburger stay clickable */}
         {pageTitle && (
@@ -111,9 +110,8 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
     <aside className={`k-sidebar${mobileOpen ? ' k-sidebar-open' : ''}`}>
       {/* Logo + mobile close */}
       <div style={{ padding: '24px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={logoStyle}>
-          kiima<span style={{ color: '#D7D744' }}>.</span>
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-white.svg" alt="Kiima" height={24} width={68} style={{ display: 'block' }} />
         <button
           className="k-mob-close-btn"
           aria-label="Close navigation"
@@ -199,21 +197,6 @@ export default function Sidebar({ displayName, username, avatarUrl }: Props) {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const logoStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 800,
-  fontSize: 22,
-  color: '#1C1916',
-  letterSpacing: '-0.02em',
-};
-
-const mobileLogoStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 800,
-  fontSize: 20,
-  color: '#ffffff',
-  letterSpacing: '-0.02em',
-};
 
 const mobilePageTitleStyle: React.CSSProperties = {
   position: 'absolute',

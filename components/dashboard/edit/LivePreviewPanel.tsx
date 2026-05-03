@@ -28,7 +28,8 @@ export default function LivePreviewPanel({ displayName, username, avatarUrl, bio
 
         {/* Header bar */}
         <div style={headerBarStyle}>
-          <span style={headerLogoStyle}>kiima<span style={{ color: '#D7D744' }}>.</span></span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-white.svg" alt="Kiima" height={10} width={28} style={{ display: 'block' }} />
         </div>
 
         {/* Content area */}

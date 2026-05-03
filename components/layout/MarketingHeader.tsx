@@ -83,8 +83,9 @@ export default function MarketingHeader() {
         borderBottom: '2px solid #000000',
       }}>
         <div className="mh-wrap">
-          <Link href="/" style={logoStyle}>
-            kiima<span style={{ color: '#D7D744' }}>.</span>
+          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-white.svg" alt="Kiima" height={28} width={79} style={{ display: 'block' }} />
           </Link>
 
           <div className="mh-nav-right">
@@ -109,11 +110,3 @@ export default function MarketingHeader() {
   );
 }
 
-const logoStyle: React.CSSProperties = {
-  fontFamily: 'var(--kiima-font)',
-  fontWeight: 800,
-  fontSize: '26px',
-  color: '#ffffff',
-  textDecoration: 'none',
-  letterSpacing: '-0.02em',
-};

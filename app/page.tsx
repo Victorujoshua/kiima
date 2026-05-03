@@ -310,8 +310,9 @@ export default function LandingPage() {
           borderBottom: '2px solid #000000',
         }}>
           <div className="lp-wrap lp-nav-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
-            <Link href="/" style={logoStyle}>
-              kiima<span style={{ color: 'var(--kiima-olive)' }}>.</span>
+            <Link href="/" style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-white.svg" alt="Kiima" height={28} width={79} style={{ display: 'block' }} />
             </Link>
             <div className="lp-nav-right">
               <a href="#features" className="lp-nav-link">Features</a>
@@ -671,8 +672,9 @@ export default function LandingPage() {
         <footer style={{ background: 'var(--color-text-primary)', borderTop: '1px solid rgba(246,243,238,0.07)', padding: '40px 0' }}>
           <div className="lp-wrap">
             <div className="lp-footer-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24, paddingBottom: 28, borderBottom: '1px solid rgba(246,243,238,0.07)' }}>
-              <Link href="/" style={logoStyle}>
-                kiima<span style={{ color: 'var(--kiima-olive)' }}>.</span>
+              <Link href="/" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-white.svg" alt="Kiima" height={26} width={74} style={{ display: 'block' }} />
               </Link>
               <div className="lp-footer-links" style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
                 {[{ label: 'Product', href: '/product' }, { label: 'Creators', href: '/creators' }, { label: 'Privacy', href: '/privacy' }, { label: 'Terms', href: '/terms' }].map(({ label, href }) => (
@@ -692,15 +694,6 @@ export default function LandingPage() {
 }
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
-
-const logoStyle: React.CSSProperties = {
-  fontFamily: 'var(--kiima-font)',
-  fontWeight: 800,
-  fontSize: 26,
-  color: '#ffffff',
-  textDecoration: 'none',
-  letterSpacing: '-0.02em',
-};
 
 const sectionH2Style: React.CSSProperties = {
   fontFamily: 'var(--kiima-font)',
@@ -862,7 +855,7 @@ function GiftTagsMockup() {
       </div>
       <div style={{ background: '#F6F3EE', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9A9089', margin: 0, lineHeight: 1.55 }}>
-          You're sending ₦2,000 · Processing fee ₦130 · <strong style={{ color: '#1C1916' }}>Total ₦2,130</strong>
+          You&apos;re sending ₦2,000 · Processing fee ₦130 · <strong style={{ color: '#1C1916' }}>Total ₦2,130</strong>
         </p>
       </div>
       <div style={{ background: '#1C1916', borderRadius: 12, padding: '13px', textAlign: 'center' }}>

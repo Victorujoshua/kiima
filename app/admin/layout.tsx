@@ -66,16 +66,8 @@ export default async function AdminLayout({
             gap: 8,
           }}
         >
-          <span
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 18,
-              fontWeight: 500,
-              color: 'var(--color-text-primary)',
-            }}
-          >
-            Kiima
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-black.svg" alt="Kiima" height={22} width={62} style={{ display: 'block' }} />
           <span
             style={{
               fontFamily: 'var(--font-body)',

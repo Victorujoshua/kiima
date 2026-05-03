@@ -5,6 +5,96 @@
 ---
 
 ```
+Date: 2026-05-03 (session 5)
+Session: Apply real logo SVGs across the entire application
+
+What was built:
+- assets/logo black.svg and assets/logo white.svg copied to public/ as
+  logo-black.svg and logo-white.svg so Next.js can serve them as static assets.
+
+- All text-based "kiima." logos replaced with <img> tags pointing to the SVG files:
+  • components/layout/PublicHeader.tsx       → /logo-white.svg (black navbar)
+  • components/layout/MarketingHeader.tsx    → /logo-white.svg (black navbar)
+  • components/dashboard/Sidebar.tsx         → /logo-white.svg ×2 (mobile topbar + sidebar)
+  • components/dashboard/edit/LivePreviewPanel.tsx → /logo-white.svg (phone mockup header, 10px)
+  • app/page.tsx                             → /logo-white.svg ×2 (navbar + dark footer)
+  • app/admin/layout.tsx                     → /logo-black.svg (light sidebar) + kept "Admin" label
+
+- Removed now-unused logoStyle and mobileLogoStyle constants from PublicHeader,
+  MarketingHeader, Sidebar, and page.tsx.
+
+Build result: ✓ 0 TypeScript errors.
+
+Logo sizing used:
+  Navbars (68px tall):  height 28px, width 79px
+  Sidebar panel:        height 24px, width 68px
+  Mobile topbar:        height 22px, width 62px
+  Admin sidebar:        height 22px, width 62px
+  LivePreview mockup:   height 10px, width 28px
+  Landing footer:       height 26px, width 74px
+
+What to build next:
+- Pending from session 3: Run migrations 013 and 014 in Supabase SQL Editor (Victor)
+
+Open issues:
+- Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
+Date: 2026-05-03 (session 4)
+Session: Landing page redesign — Neo-brutalism → Minimalism
+
+What was built:
+- app/page.tsx — Full visual redesign from neo-brutalism to minimalism.
+  ALL content, sections, copy, CTAs, and structure preserved exactly.
+  Changed: every visual property.
+
+  DESIGN SYSTEM CHANGES:
+  • Navbar: frosted glass (rgba(255,255,255,0.88) + backdrop-filter blur(20px))
+    instead of solid black. Fraunces 300 logo with yellow dot. 1px #F0ECE8 border.
+  • Buttons: pill-shaped (border-radius 100px), weight 500, no borders/offset shadows.
+    lp-btn-dark (#1C1916 fill), lp-btn-ghost (transparent + 1px #D0CBC5 border),
+    lp-btn-white (white fill on dark bg). lp-text-cta = underlined text link.
+  • Hero: Fraunces weight 300 at 80px, letter-spacing -3px; "your fans" underlined
+    with 3px #D7D744 line; eyebrow = transparent pill, 1px #E8E3DD border.
+  • Section backgrounds: alternating #ffffff / #FAFAF8 (no colored fills).
+    Only dark section: final CTA (#1C1916).
+  • How it works: step numbers Fraunces 300 36px #D7D744 (not olive boxes).
+  • Feature sections: all light bg, text in #1C1916/#6B6560, CTAs as text links.
+  • Pricing: floating numbers Fraunces 300 56px, separated by 1px #EEEBE7 dividers.
+    No cards or colored boxes.
+  • Testimonials: white cards, 1px #EEEBE7 border, 20px radius, no shadow.
+    Fraunces 300 italic quote, #D7D744 quote marks at opacity 0.4.
+  • Footer: white background (was dark).
+
+  REMOVED:
+  • KiimaCoin floating coin decoration (entirely removed)
+  • All colored section fills (green, dark, terracotta backgrounds)
+  • All thick black borders and offset box-shadows
+  • Weight 800 typography throughout
+
+  MOCKUP REDESIGN (all 4 components):
+  • GiftPageMockup: white bg, border-radius 24px, 1px #EEEBE7 border,
+    shadow 0 24px 64px rgba(0,0,0,0.06), muted browser chrome dots.
+  • DashboardMockup: white bg, same border/shadow, #F8F5F2 stat tiles.
+  • GiftTagsMockup: same treatment, dark pill for selected tag.
+  • PoolMockup: white bg, terracotta gradient progress bar on #F0ECE8 track.
+
+Build result: ✓ 0 TypeScript errors.
+
+What to build next:
+- Pending from session 3: Run migrations 013 and 014 in Supabase SQL Editor (Victor)
+- Continue with next product feature
+
+Open issues:
+- Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
 Date: 2026-05-03 (session 3)
 Session: Fix gift tag label historical accuracy (tag snapshot)
 
