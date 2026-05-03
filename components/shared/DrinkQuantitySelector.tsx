@@ -12,9 +12,10 @@ interface Props {
   currency: Currency;
   selectedQty: DrinkQty;
   onSelect: (qty: DrinkQty) => void;
+  emoji?: string;
 }
 
-export default function DrinkQuantitySelector({ selectedQty, onSelect }: Props) {
+export default function DrinkQuantitySelector({ selectedQty, onSelect, emoji = '🎁' }: Props) {
   const [customInput, setCustomInput] = useState('');
 
   const customNum = parseInt(customInput, 10);
@@ -41,7 +42,7 @@ export default function DrinkQuantitySelector({ selectedQty, onSelect }: Props) 
 
   return (
     <div style={trayStyle}>
-      <span style={emojiStyle}>🥤</span>
+      <span style={emojiStyle}>{emoji}</span>
       <span style={timesStyle}>×</span>
 
       {FIXED_QUANTITIES.map((qty) => (

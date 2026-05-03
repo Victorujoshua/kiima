@@ -585,7 +585,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `CurrencyInput` | `shared/CurrencyInput.tsx` | `currency: Currency, value, onChange?, readOnly?` |
 | `KiimaButton` | `shared/KiimaButton.tsx` | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
 | `SocialLinksRow` | `shared/SocialLinksRow.tsx` | `links: SocialLink[], onDark?: boolean` — pass `onDark` when rendering on black backgrounds |
-| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice: number, currency: Currency, selectedQty: number, onSelect: (qty: number) => void` — pills 1/3/5 + square custom input; no total display. Redesigned: warm #F6F3EE tray, subtle border, white pills, olive selected state (no hard shadow) |
+| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice, currency, selectedQty, onSelect, emoji?: string` — emoji defaults to 🎁; renders `{emoji} × [1][3][5][?]`; warm #F6F3EE tray, subtle border, white pills, olive selected state |
 | `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@` |
 
 ### Layout Components

@@ -5,6 +5,31 @@
 ---
 
 ```
+Date: 2026-05-03
+Session: Fix — Dynamic emoji in quantity selector (gift page)
+
+WHAT WAS CHANGED:
+
+  components/shared/DrinkQuantitySelector.tsx:
+    - Added emoji?: string prop (default '🎁')
+    - Replaced hardcoded 🥤 with {emoji} in the tray render
+
+  components/pages/GiftPageClient.tsx:
+    - Upgraded extractEmoji() to use \p{Emoji_Presentation} unicode regex
+      with '🎁' fallback (was splitting on whitespace, returning '' on no match)
+    - Passes emoji={tagEmoji} to DrinkQuantitySelector
+    - Submit button and activityLine already used tagEmoji — no change needed
+
+WHAT TO BUILD NEXT:
+  - Run migration 013 in Supabase SQL Editor
+
+OPEN ISSUES:
+  - None
+```
+
+---
+
+```
 Date: 2026-05-02 (session 6)
 Session: Fix/Feat — Remove public page dark mode; add show-contributions toggle to edit page
 

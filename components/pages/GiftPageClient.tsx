@@ -31,9 +31,10 @@ function timeAgo(dateStr: string): string {
 }
 
 function extractEmoji(label: string): string {
-  const parts = label.trim().split(/\s+/);
-  const last = parts[parts.length - 1] ?? '';
-  return /[^\x00-\x7F]/.test(last) ? last : '';
+  // Matches any emoji character(s) at the end of the string
+  const emojiRegex = /\p{Emoji_Presentation}[\p{Emoji}️‍]*/gu;
+  const matches = label.match(emojiRegex);
+  return matches ? matches[matches.length - 1] : '🎁';
 }
 
 function activityLine(giftAmount: number, drinkPrice: number, currency: Currency, emoji: string): string {
@@ -111,6 +112,7 @@ export default function GiftPageClient({
           currency={currency}
           selectedQty={selectedQty}
           onSelect={setSelectedQty}
+          emoji={tagEmoji}
         />
 
         <form
