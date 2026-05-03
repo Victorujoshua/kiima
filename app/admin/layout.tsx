@@ -67,7 +67,7 @@ export default async function AdminLayout({
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-black.svg" alt="Kiima" height={22} width={62} style={{ display: 'block' }} />
+          <img src="/logo-black.svg" alt="Kiima" height={26} width={74} style={{ display: 'block' }} />
           <span
             style={{
               fontFamily: 'var(--font-body)',

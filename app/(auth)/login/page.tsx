@@ -43,19 +43,8 @@ export default function LoginPage() {
         }}
       >
         {/* Wordmark */}
-        <h1
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontWeight: 800,
-            fontSize: '28px',
-            color: 'var(--color-text-primary)',
-            textAlign: 'center',
-            letterSpacing: '-0.02em',
-            marginBottom: 'var(--space-xs)',
-          }}
-        >
-          kiima<span style={{ color: '#D7D744' }}>.</span>
-        </h1>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-black.svg" alt="Kiima" height={34} width={96} style={{ display: 'block', margin: '0 auto var(--space-xs)' }} />
         <p
           style={{
             fontFamily: 'var(--font-body)',

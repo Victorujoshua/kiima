@@ -312,7 +312,7 @@ export default function LandingPage() {
           <div className="lp-wrap lp-nav-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 68 }}>
             <Link href="/" style={{ display: 'inline-flex', alignItems: 'center' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-white.svg" alt="Kiima" height={28} width={79} style={{ display: 'block' }} />
+              <img src="/logo-white.svg" alt="Kiima" height={34} width={96} style={{ display: 'block' }} />
             </Link>
             <div className="lp-nav-right">
               <a href="#features" className="lp-nav-link">Features</a>
@@ -674,7 +674,7 @@ export default function LandingPage() {
             <div className="lp-footer-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24, paddingBottom: 28, borderBottom: '1px solid rgba(246,243,238,0.07)' }}>
               <Link href="/" style={{ display: 'inline-flex', alignItems: 'center' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-white.svg" alt="Kiima" height={26} width={74} style={{ display: 'block' }} />
+                <img src="/logo-white.svg" alt="Kiima" height={31} width={88} style={{ display: 'block' }} />
               </Link>
               <div className="lp-footer-links" style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
                 {[{ label: 'Product', href: '/product' }, { label: 'Creators', href: '/creators' }, { label: 'Privacy', href: '/privacy' }, { label: 'Terms', href: '/terms' }].map(({ label, href }) => (

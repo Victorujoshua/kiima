@@ -29,7 +29,7 @@ export default function LivePreviewPanel({ displayName, username, avatarUrl, bio
         {/* Header bar */}
         <div style={headerBarStyle}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-white.svg" alt="Kiima" height={10} width={28} style={{ display: 'block' }} />
+          <img src="/logo-white.svg" alt="Kiima" height={12} width={34} style={{ display: 'block' }} />
         </div>
 
         {/* Content area */}

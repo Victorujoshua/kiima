@@ -85,7 +85,7 @@ export default function MarketingHeader() {
         <div className="mh-wrap">
           <Link href="/" style={{ display: 'inline-flex', alignItems: 'center' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-white.svg" alt="Kiima" height={28} width={79} style={{ display: 'block' }} />
+            <img src="/logo-white.svg" alt="Kiima" height={34} width={96} style={{ display: 'block' }} />
           </Link>
 
           <div className="mh-nav-right">

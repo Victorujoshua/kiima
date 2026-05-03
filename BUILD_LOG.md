@@ -5,6 +5,37 @@
 ---
 
 ```
+Date: 2026-05-03 (session 6)
+Session: Logo variant correctness + 20% size increase across all pages
+
+What was built:
+- All existing SVG logo img tags resized +20% (height × 1.2, width = round(h × 153/54)):
+  • components/layout/PublicHeader.tsx       → h=28→34, w=79→96
+  • components/layout/MarketingHeader.tsx    → h=28→34, w=79→96
+  • components/dashboard/Sidebar.tsx mobile  → h=22→26, w=62→74
+  • components/dashboard/Sidebar.tsx desktop → h=24→29, w=68→82
+  • components/dashboard/edit/LivePreviewPanel.tsx → h=10→12, w=28→34
+  • app/page.tsx navbar                      → h=28→34, w=79→96
+  • app/page.tsx footer                      → h=26→31, w=74→88
+  • app/admin/layout.tsx                     → h=22→26, w=62→74
+
+- Three remaining text-based logos converted to SVG images (light bg → logo-black.svg):
+  • app/(auth)/signup/page.tsx   → <img src="/logo-black.svg" h=34 w=96>; removed logoStyle const
+  • app/(auth)/login/page.tsx    → <img src="/logo-black.svg" h=34 w=96>; removed wordmark <h1>
+  • app/onboarding/page.tsx      → <img src="/logo-black.svg" h=34 w=96>; removed logoStyle const
+
+Build result: ✓ 0 TypeScript errors.
+
+What to build next:
+- Pending from session 3: Run migrations 013 and 014 in Supabase SQL Editor (Victor)
+
+Open issues:
+- Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
 Date: 2026-05-03 (session 5)
 Session: Apply real logo SVGs across the entire application
 

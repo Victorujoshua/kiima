@@ -42,9 +42,8 @@ export default function SignupPage() {
       {/* Form area */}
       <div style={formAreaStyle}>
         {/* Logo */}
-        <p style={logoStyle}>
-          kiima<span style={{ color: '#D7D744' }}>.</span>
-        </p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-black.svg" alt="Kiima" height={34} width={96} style={{ display: 'block', margin: '0 0 32px' }} />
 
         {/* Progress bar */}
         <SignupProgressBar step={step} total={4} />
@@ -125,11 +124,3 @@ const formAreaStyle: React.CSSProperties = {
   padding: '48px 24px 120px',
 };
 
-const logoStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 800,
-  fontSize: 28,
-  color: '#1C1916',
-  letterSpacing: '-0.02em',
-  margin: '0 0 32px',
-};

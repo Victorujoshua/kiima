@@ -151,7 +151,8 @@ export default function OnboardingPage() {
     <main style={pageStyle}>
       <div style={cardStyle}>
         {/* Logo */}
-        <p style={logoStyle}>kiima<span style={{ color: 'var(--color-accent)' }}>.</span></p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-black.svg" alt="Kiima" height={34} width={96} style={{ display: 'block', margin: '0 auto var(--space-lg)' }} />
 
         {/* Progress */}
         <div style={progressBarWrapStyle}>
@@ -288,14 +289,6 @@ const cardStyle: React.CSSProperties = {
   width: '100%',
 };
 
-const logoStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontWeight: 500,
-  fontSize: '28px',
-  color: 'var(--color-accent)',
-  textAlign: 'center',
-  margin: '0 0 var(--space-lg)',
-};
 
 const progressBarWrapStyle: React.CSSProperties = {
   display: 'flex',
