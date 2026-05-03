@@ -73,7 +73,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
     admin.from('platform_settings').select('platform_fee_percent').limit(1).single(),
     supabase
       .from('contributions')
-      .select('id, gift_amount, display_name, is_anonymous, created_at, tag_id')
+      .select('id, gift_amount, display_name, is_anonymous, created_at, tag_id, tag_label')
       .eq('recipient_id', profile.id)
       .eq('status', 'confirmed')
       .is('pool_id', null)

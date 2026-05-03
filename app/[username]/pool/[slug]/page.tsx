@@ -100,7 +100,7 @@ export default async function PoolPage({ params }: PageProps) {
   const contribQuery = pool.show_contributors
     ? supabase
         .from('contributions')
-        .select('*, tag:gift_tags(*)')
+        .select('*')
         .eq('pool_id', pool.id)
         .eq('status', 'confirmed')
         .order('created_at', { ascending: false })

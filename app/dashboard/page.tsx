@@ -35,7 +35,7 @@ export default async function DashboardPage() {
     // Last 5 for Recent Supporters
     supabase
       .from('contributions')
-      .select('*, tag:gift_tags!tag_id(*)')
+      .select('*')
       .eq('recipient_id', userId)
       .eq('status', 'confirmed')
       .order('created_at', { ascending: false })

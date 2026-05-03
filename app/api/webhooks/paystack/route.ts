@@ -67,7 +67,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // 5a. Look up contribution by paystack_ref — include all fields needed for emails
     const { data: contribution, error: lookupError } = await supabase
       .from('contributions')
-      .select('id, recipient_id, pool_id, tag_id, gift_amount, currency, display_name, is_anonymous, status, note')
+      .select('id, recipient_id, pool_id, tag_id, tag_label, gift_amount, currency, display_name, is_anonymous, status, note')
       .eq('paystack_ref', paystackRef)
       .single();
 
@@ -175,6 +175,7 @@ async function sendCreatorNotificationEmail(
     recipient_id: string;
     pool_id: string | null;
     tag_id: string | null;
+    tag_label: string | null;
     gift_amount: number;
     currency: string;
     display_name: string | null;
@@ -226,19 +227,8 @@ async function sendCreatorNotificationEmail(
   );
 
   if (!contribution.pool_id) {
-    // Direct gift — fetch tag label if there is one
-    let tagLabel: string | null = null;
-    if (contribution.tag_id) {
-      const { data: tag } = await supabase
-        .from('gift_tags')
-        .select('label, amount')
-        .eq('id', contribution.tag_id)
-        .single();
-      if (tag) {
-        const qty = tag.amount > 0 ? Math.round(Number(contribution.gift_amount) / Number(tag.amount)) : 1;
-        tagLabel = qty > 1 ? `${qty}× ${tag.label}` : tag.label;
-      }
-    }
+    // Direct gift — use snapshotted tag label (set at insert time)
+    const tagLabel = contribution.tag_label ?? null;
 
     await sendGiftReceivedEmail({
       creatorEmail,
@@ -285,6 +275,7 @@ async function createContributionNotification(
     recipient_id: string;
     pool_id: string | null;
     tag_id: string | null;
+    tag_label: string | null;
     gift_amount: number;
     currency: string;
     display_name: string | null;
@@ -317,20 +308,8 @@ async function createContributionNotification(
 
   if (!contribution.pool_id) {
     // ── Direct gift ──────────────────────────────────────────────────────
-    let tagLabel: string | null = null;
-    if (contribution.tag_id) {
-      const { data: tag } = await supabase
-        .from('gift_tags')
-        .select('label, amount')
-        .eq('id', contribution.tag_id)
-        .single();
-      if (tag) {
-        const qty = tag.amount > 0
-          ? Math.round(Number(contribution.gift_amount) / Number(tag.amount))
-          : 1;
-        tagLabel = qty > 1 ? `${qty}× ${tag.label}` : tag.label;
-      }
-    }
+    // Use snapshotted tag label (set at insert time)
+    const tagLabel = contribution.tag_label ?? null;
 
     notifications.push({
       user_id:  contribution.recipient_id,

@@ -41,8 +41,9 @@ export function resolveDisplayName(
  */
 export function formatContributionLine(contribution: Contribution): string {
   // Section 4.5: special phrasing for anonymous + default tag
-  if (contribution.is_anonymous && contribution.tag?.is_default) {
-    return 'Anonymous bought a coffee ☕';
+  // Use tag_id (always on the row) instead of tag?.is_default (requires JOIN)
+  if (contribution.is_anonymous && contribution.tag_id !== null) {
+    return 'Anonymous sent a gift 🎁';
   }
 
   const name = resolveDisplayName(contribution.display_name, contribution.is_anonymous);

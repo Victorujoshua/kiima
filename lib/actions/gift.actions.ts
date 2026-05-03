@@ -58,6 +58,17 @@ export async function initializeGift(
     return { error: 'Something went wrong — try again.' };
   }
 
+  // Snapshot the tag label at insert time so historical records stay accurate
+  let tagLabel: string | null = null;
+  if (tagId) {
+    const { data: tagRow } = await supabase
+      .from('gift_tags')
+      .select('label')
+      .eq('id', tagId)
+      .single();
+    tagLabel = tagRow?.label ?? null;
+  }
+
   // For pool contributions, fetch the pool slug for the callback URL
   let poolSlug: string | null = null;
   if (poolId) {
@@ -84,6 +95,7 @@ export async function initializeGift(
       recipient_id:   recipientId,
       pool_id:        poolId,
       tag_id:         tagId,
+      tag_label:      tagLabel,
       gift_amount:    fees.gift_amount,
       paystack_fee:   fees.paystack_fee,
       kiima_fee:      fees.kiima_fee,

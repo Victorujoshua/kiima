@@ -16,7 +16,7 @@ export default async function TransactionsPage() {
   const [{ data: contributions }, { data: profile }] = await Promise.all([
     supabase
       .from('contributions')
-      .select('*, tag:gift_tags!tag_id(*), pool:support_pools!pool_id(title)')
+      .select('*, pool:support_pools!pool_id(title)')
       .eq('recipient_id', session.user.id)
       .eq('status', 'confirmed')
       .order('created_at', { ascending: false })

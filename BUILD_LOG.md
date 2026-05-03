@@ -5,6 +5,61 @@
 ---
 
 ```
+Date: 2026-05-03 (session 3)
+Session: Fix gift tag label historical accuracy (tag snapshot)
+
+What was built:
+- supabase/migrations/014_contribution_tag_snapshot.sql
+    ALTER TABLE contributions ADD COLUMN IF NOT EXISTS tag_label text;
+    UPDATE backfill from gift_tags for existing rows.
+    ⚠️ Victor must run this in Supabase SQL Editor.
+
+- lib/actions/gift.actions.ts — initializeGift now fetches tag.label and
+  stores it as tag_label on the contribution row at insert time.
+
+- types/index.ts — Contribution.tag_label: string | null added as a direct
+  column field with documentation note.
+
+- lib/utils/display-name.ts — formatContributionLine now checks tag_id !== null
+  instead of tag?.is_default (removes JOIN dependency).
+
+- components/dashboard/RecentGifts.tsx — uses c.tag_label instead of
+  (c as any).tag?.label.
+
+- app/dashboard/page.tsx — removed gift_tags JOIN from recent contributions query.
+
+- app/dashboard/transactions/page.tsx — removed gift_tags JOIN from query.
+
+- app/[username]/pool/[slug]/page.tsx — removed gift_tags JOIN.
+
+- app/dashboard/pools/[id]/page.tsx — removed gift_tags JOIN.
+
+- app/[username]/page.tsx — added tag_label to contributions select.
+
+- components/pages/GiftPageClient.tsx — activityLine now uses historical emoji
+  from c.tag_label (extractEmoji) per contribution instead of always using
+  the current defaultTag emoji.
+
+- app/api/webhooks/paystack/route.ts — contribution fetch now includes tag_label;
+  email and notification helpers use contribution.tag_label directly, removing
+  two redundant gift_tags DB lookups per webhook event.
+
+- CLAUDE.md — Section 5 contributions table updated; Section 8 TypeScript types
+  updated; Section 7 migration table updated.
+
+Build result: ✓ 0 errors, 33 routes compiled.
+
+What to build next:
+- Run migration 014 in Supabase SQL Editor (Victor)
+- Run migration 013 in Supabase SQL Editor if not yet done (show_contributions)
+
+Open issues:
+- Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
 Date: 2026-05-03 (session 2)
 Session: Redesign — Creator gift page neo-brutalism → minimal
 

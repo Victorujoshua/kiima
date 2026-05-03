@@ -39,7 +39,7 @@ export default async function PoolDetailPage({ params }: PageProps) {
       .single(),
     supabase
       .from('contributions')
-      .select('*, tag:gift_tags(*)')
+      .select('*')
       .eq('pool_id', pool.id)
       .order('created_at', { ascending: false }),
   ]);

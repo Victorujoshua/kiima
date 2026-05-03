@@ -274,7 +274,7 @@ export default function GiftPageClient({
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={contributorNameStyle}>{name}</p>
                       <p style={contributorSubStyle}>
-                        {activityLine(c.gift_amount, defaultTag.amount, currency, tagEmoji)}
+                        {activityLine(c.gift_amount, defaultTag.amount, currency, c.tag_label ? extractEmoji(c.tag_label) : tagEmoji)}
                       </p>
                     </div>
                     <span style={timeAgoStyle}>{timeAgo(c.created_at)}</span>

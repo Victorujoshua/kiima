@@ -394,6 +394,7 @@ contributions (
   recipient_id    uuid REFERENCES profiles(id),
   pool_id         uuid REFERENCES support_pools(id),    -- null if direct gift
   tag_id          uuid REFERENCES gift_tags(id),        -- null if custom amount
+  tag_label       text,                                 -- snapshotted at insert time; use for display, not tag.label
   gift_amount     numeric NOT NULL,                     -- amount gifter intends to send creator
   paystack_fee    numeric NOT NULL DEFAULT 0,           -- 1.5% + ₦100 — paid by gifter on top
   kiima_fee       numeric NOT NULL DEFAULT 0,           -- 3% platform fee — deducted from creator
@@ -764,6 +765,7 @@ Keep this updated as components are built. Before building any new component, ch
 | `supabase/migrations/011_profile_theme_color.sql` | ADD theme_color text DEFAULT '#C87B5C' to profiles |
 | `supabase/migrations/012_notifications.sql` | CREATE notifications table, indexes, RLS policies |
 | `supabase/migrations/013_profile_show_contributions.sql` | ADD show_contributions boolean DEFAULT true to profiles |
+| `supabase/migrations/014_contribution_tag_snapshot.sql` | ADD tag_label text to contributions; backfill from gift_tags |
 
 ---
 
@@ -778,6 +780,11 @@ paystack_fee    // 1.5% + ₦100 — added on top, paid by gifter
 kiima_fee       // 3% platform fee — deducted from creator via split
 creator_amount  // gift_amount - kiima_fee (what creator receives)
 total_charged   // gift_amount + paystack_fee (what Paystack charges)
+
+// tag_label: snapshotted at insert time — ALWAYS use this for display.
+//   Never join gift_tags just to get a label; that causes stale labels when
+//   the creator renames their tag after contributions already exist.
+//   tag_id is kept as a FK reference but tag?.label is unreliable for history.
 
 // Always display gift_amount, never total_charged, in contribution feeds.
 // PlatformSettings.platform_fee_percent — never hardcode 3.

@@ -44,7 +44,7 @@ export default function RecentGifts({ contributions, currency, creatorName }: Pr
           {contributions.map((c, i) => {
             const name     = resolveDisplayName(c.display_name, c.is_anonymous);
             const isAnon   = name === 'Anonymous';
-            const tagLabel = (c as any).tag?.label ?? 'Custom amount';
+            const tagLabel = c.tag_label ?? 'Custom amount';
             const isLast   = i === contributions.length - 1;
             const social   = !c.is_anonymous ? parseSocialHandle(c.display_name) : null;
             const initial  = isAnon ? '🥤' : name.charAt(0).toUpperCase();

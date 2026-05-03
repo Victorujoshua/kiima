@@ -41,19 +41,20 @@ export interface Contribution {
   recipient_id: string;
   pool_id: string | null;
   tag_id: string | null;
-  gift_amount: number;      // amount gifter intends to send to creator
-  paystack_fee: number;     // 1.5% + ₦100 — added on top, paid by gifter
-  kiima_fee: number;        // 3% platform fee — deducted from creator via split
-  creator_amount: number;   // gift_amount - kiima_fee (what creator receives)
-  total_charged: number;    // gift_amount + paystack_fee (what gifter pays)
+  tag_label: string | null;    // snapshotted at payment time — use this for display, not tag?.label
+  gift_amount: number;         // amount gifter intends to send to creator
+  paystack_fee: number;        // 1.5% + ₦100 — added on top, paid by gifter
+  kiima_fee: number;           // 3% platform fee — deducted from creator via split
+  creator_amount: number;      // gift_amount - kiima_fee (what creator receives)
+  total_charged: number;       // gift_amount + paystack_fee (what gifter pays)
   currency: Currency;
-  display_name: string | null;   // null = anonymous
+  display_name: string | null; // null = anonymous
   is_anonymous: boolean;
   paystack_ref: string;
   status: ContributionStatus;
   note: string | null;
   created_at: string;
-  // Joined fields
+  // Joined fields (only present when explicitly joined — prefer tag_label for display)
   tag?: GiftTag;
 }
 
