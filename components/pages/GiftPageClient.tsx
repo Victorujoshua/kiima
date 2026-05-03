@@ -31,9 +31,15 @@ function timeAgo(dateStr: string): string {
 }
 
 function extractEmoji(label: string): string {
-  const emojiRegex = /\p{Emoji_Presentation}[\p{Emoji}️‍]*/gu;
-  const matches = label.match(emojiRegex);
-  return matches ? matches[matches.length - 1] : '🎁';
+  // Spread handles surrogate pairs so emoji code points are read correctly
+  const chars = [...label.trim()];
+  for (let i = chars.length - 1; i >= 0; i--) {
+    const cp = chars[i].codePointAt(0) ?? 0;
+    if ((cp >= 0x1F000 && cp <= 0x1FFFF) || (cp >= 0x2600 && cp <= 0x27FF)) {
+      return chars[i];
+    }
+  }
+  return '🎁';
 }
 
 function activityLine(giftAmount: number, drinkPrice: number, currency: Currency, emoji: string): string {
