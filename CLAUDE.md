@@ -621,6 +621,7 @@ kiima/
 │   │   ├── auth.actions.ts
 │   │   ├── bank.actions.ts
 │   │   ├── notification.actions.ts
+│   │   ├── embed.actions.ts         ← fetchTwitterOembed (server-side oEmbed fetch)
 │   │   └── admin.actions.ts
 │   └── utils/
 │       ├── currency.ts
@@ -663,7 +664,7 @@ Component	File	Key Props
 `DrinkQuantitySelector`	`shared/DrinkQuantitySelector.tsx`	`drinkPrice, currency, selectedQty, onSelect, emoji?: string` — emoji defaults to 🎁; renders `{emoji} × [1][3][5][?]`; rounded-12 tray on warm bg; pill-shaped (100px radius) quantity buttons; olive selected state
 `SocialHandleInput`	`shared/SocialHandleInput.tsx`	`value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@`
 `StickyGiftButton`	`shared/StickyGiftButton.tsx`	`label: string, amount: number, currency: Currency, username: string` — fixed bottom-right `<a>` link; navigates to /[username]/gift; always visible on storefront page
-`EmbedBlock`	`shared/EmbedBlock.tsx`	`url: string` — detects YouTube/Twitter/Spotify; renders appropriate embed; renders nothing for unsupported or empty URLs
+`EmbedBlock`	`shared/EmbedBlock.tsx`	`url: string, twitterEmbedHtml?: string | null` — detects YouTube/Twitter/Spotify; Twitter renders oEmbed HTML via dangerouslySetInnerHTML + loads widgets.js in useEffect; falls back to TwitterCard link if twitterEmbedHtml is null; renders nothing for unsupported or empty URLs
 Layout Components
 Component	File	Notes
 `PublicHeader`	`layout/PublicHeader.tsx`	Fixed black header (68px): logo left, dark/light toggle right. Used on public gifter page.
@@ -702,6 +703,7 @@ Action file	Exports
 `lib/actions/admin.actions.ts`	`suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment`
 `lib/actions/link.actions.ts`	`getSocialLinks`, `upsertSocialLink`, `deleteSocialLink`, `getCreatorLinks`, `upsertCreatorLink`, `deleteCreatorLink`, `reorderCreatorLinks`
 `lib/actions/notification.actions.ts`	`getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead`
+`lib/actions/embed.actions.ts`	`fetchTwitterOembed(url): Promise<string | null>` — server-side Twitter oEmbed fetch; cached 1hr via revalidate
 Paystack Library
 File	Exports
 `lib/paystack/initialize.ts`	`initializePaystackTransaction`

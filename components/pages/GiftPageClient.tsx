@@ -22,6 +22,7 @@ interface Props {
   showContributions: boolean;
   creatorLinks: CreatorLink[];
   embedUrl: string | null;
+  twitterEmbedHtml?: string | null;
 }
 
 function timeAgo(dateStr: string): string {
@@ -100,6 +101,7 @@ export default function GiftPageClient({
   showContributions,
   creatorLinks,
   embedUrl,
+  twitterEmbedHtml,
 }: Props) {
   const [state, formAction] = useFormState(initializeGift, null);
   const [selectedQty, setSelectedQty] = useState<DrinkQty>(1);
@@ -119,7 +121,7 @@ export default function GiftPageClient({
     <div data-page="gift-page" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px', colorScheme: 'light' }}>
 
       {/* ── Embed block ── */}
-      {embedUrl && <EmbedBlock url={embedUrl} />}
+      {embedUrl && <EmbedBlock url={embedUrl} twitterEmbedHtml={twitterEmbedHtml} />}
 
       {/* ── Creator link cards ── */}
       {activeLinks.map(link => (

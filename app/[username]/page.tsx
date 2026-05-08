@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTagsByUser } from '@/lib/actions/tag.actions';
 import { getSocialLinks, getCreatorLinks } from '@/lib/actions/link.actions';
+import { fetchTwitterOembed } from '@/lib/actions/embed.actions';
 import GiftPageClient from '@/components/pages/GiftPageClient';
 import PublicHeader from '@/components/layout/PublicHeader';
 import SocialLinksRow from '@/components/shared/SocialLinksRow';
@@ -93,6 +94,13 @@ export default async function UserPage({ params, searchParams }: PageProps) {
   const contributorCount = countResult.count ?? 0;
   const embedUrl = (profile as Profile & { embed_url?: string | null }).embed_url ?? null;
 
+  const isTwitterUrl = embedUrl
+    ? embedUrl.includes('twitter.com') || embedUrl.includes('x.com')
+    : false;
+  const twitterEmbedHtml = isTwitterUrl && embedUrl
+    ? await fetchTwitterOembed(embedUrl)
+    : null;
+
   const defaultTag = (tags as GiftTag[]).find(t => t.is_default);
   if (!defaultTag) notFound();
 
@@ -171,6 +179,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
               showContributions={(profile as any).show_contributions ?? true}
               creatorLinks={creatorLinks as CreatorLink[]}
               embedUrl={embedUrl}
+              twitterEmbedHtml={twitterEmbedHtml}
             />
           </div>
 

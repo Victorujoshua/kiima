@@ -5,6 +5,53 @@
 ---
 
 ```
+Date: 2026-05-08 (session 12)
+Session: Twitter/X oEmbed — proper embed support via server-side API
+
+WHAT WAS BUILT:
+
+  lib/actions/embed.actions.ts (NEW)
+    - Server action: fetchTwitterOembed(url: string): Promise<string | null>
+    - Calls https://publish.twitter.com/oembed?url={encoded}&omit_script=false
+    - Returns the `html` field from the JSON response
+    - Returns null on any error (network, non-200, missing html field)
+    - Cached 1 hour via Next.js fetch revalidate: 3600
+
+  components/shared/EmbedBlock.tsx (UPDATED)
+    - New prop: twitterEmbedHtml?: string | null
+    - Added TwitterEmbed subcomponent: renders oEmbed HTML via dangerouslySetInnerHTML
+    - useEffect loads platform.twitter.com/widgets.js after mount (idempotent:
+      calls twttr.widgets.load() if already loaded, otherwise injects script tag once)
+    - TwitterCard fallback still used when twitterEmbedHtml is null
+    - YouTube and Spotify iframes unchanged
+
+  components/pages/GiftPageClient.tsx (UPDATED)
+    - New prop: twitterEmbedHtml?: string | null
+    - Passed through to EmbedBlock alongside existing embedUrl prop
+
+  app/[username]/page.tsx (UPDATED)
+    - Detects if embedUrl is a Twitter/X URL
+    - Calls fetchTwitterOembed(embedUrl) server-side if so (after the Promise.all block)
+    - Passes twitterEmbedHtml to GiftPageClient
+
+  CLAUDE.md (UPDATED)
+    - Section 6: added embed.actions.ts to lib/actions/ file tree
+    - Section 7: updated EmbedBlock entry with new twitterEmbedHtml prop
+    - Section 7 server actions table: added embed.actions.ts row
+
+WHAT TO BUILD NEXT:
+  - Test with a real Twitter/X post URL set as embed_url in Supabase
+  - If Twitter oEmbed returns null (private tweet / invalid URL), TwitterCard fallback renders
+
+OPEN ISSUES:
+  - Twitter's publish.twitter.com/oembed API is public but may return 404 for deleted
+    or private tweets — gracefully handled (falls back to TwitterCard link)
+  - TypeScript: check tsc --noEmit before pushing if there are concerns
+```
+
+---
+
+```
 Date: 2026-05-08 (session 11)
 Session: Storefront / gift page split — public creator page restructure
 

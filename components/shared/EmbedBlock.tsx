@@ -1,7 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
+
 interface Props {
   url: string;
+  twitterEmbedHtml?: string | null;
 }
 
 function getYouTubeId(url: string): string | null {
@@ -23,6 +26,31 @@ function isTwitter(url: string): boolean {
   return url.includes('twitter.com') || url.includes('x.com');
 }
 
+function TwitterEmbed({ html }: { html: string }) {
+  useEffect(() => {
+    const win = window as typeof window & { twttr?: { widgets?: { load?: () => void } } };
+    if (win.twttr?.widgets?.load) {
+      win.twttr.widgets.load();
+      return;
+    }
+    if (!document.getElementById('twitter-widgets-script')) {
+      const script = document.createElement('script');
+      script.id = 'twitter-widgets-script';
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.async = true;
+      script.charset = 'utf-8';
+      document.body.appendChild(script);
+    }
+  }, [html]);
+
+  return (
+    <div
+      style={twitterEmbedWrapStyle}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 function TwitterCard({ url }: { url: string }) {
   return (
     <a
@@ -33,7 +61,6 @@ function TwitterCard({ url }: { url: string }) {
       className="k-creator-link-card"
     >
       <div style={twitterIconStyle}>
-        {/* X / Twitter bird icon */}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
@@ -57,7 +84,7 @@ function TwitterCard({ url }: { url: string }) {
   );
 }
 
-export default function EmbedBlock({ url }: Props) {
+export default function EmbedBlock({ url, twitterEmbedHtml }: Props) {
   if (!url) return null;
 
   const ytId = getYouTubeId(url);
@@ -103,6 +130,9 @@ export default function EmbedBlock({ url }: Props) {
   }
 
   if (isTwitter(url)) {
+    if (twitterEmbedHtml) {
+      return <TwitterEmbed html={twitterEmbedHtml} />;
+    }
     return <TwitterCard url={url} />;
   }
 
@@ -120,6 +150,13 @@ const youtubeWrapperStyle: React.CSSProperties = {
 const spotifyWrapperStyle: React.CSSProperties = {
   borderRadius: 20,
   overflow: 'hidden',
+};
+
+const twitterEmbedWrapStyle: React.CSSProperties = {
+  borderRadius: 20,
+  overflow: 'hidden',
+  background: '#ffffff',
+  colorScheme: 'light',
 };
 
 const twitterCardStyle: React.CSSProperties = {
