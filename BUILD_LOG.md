@@ -5,6 +5,57 @@
 ---
 
 ```
+Date: 2026-05-08 (session 11)
+Session: Storefront / gift page split — public creator page restructure
+
+WHAT WAS BUILT:
+
+  app/[username]/page.tsx (REWRITTEN — storefront only)
+    - Removed: GiftPageClient, feePercent fetch, contributions fetch, paymentFailed banner
+    - Removed: createAdminClient (no longer needed here)
+    - Kept: profile card, embed block, creator link cards
+    - Added: EmbedBlock + CreatorLinkCards rendered inline in the right column
+    - Changed: StickyGiftButton now receives `username` prop, navigates to /[username]/gift
+
+  app/[username]/gift/page.tsx (NEW ROUTE)
+    - Compact creator header: 52px avatar circle + display name + "← Back to page" link
+    - Full gift form via GiftPageClient
+    - Supporters list (controlled by show_contributions flag)
+    - paymentFailed banner (handles ?payment_failed=1 searchParam)
+    - Suspended creator guard (same as storefront)
+    - Max-width 480px, centered shell
+    - generateMetadata: "Send [name] a gift" title
+
+  components/shared/StickyGiftButton.tsx (REWRITTEN)
+    - Removed: onClick scroll-to-element behavior, targetId prop, 'use client'
+    - Now a server component — plain <a> tag linking to /[username]/gift
+    - Accepts `username: string` instead of `targetId?: string`
+
+  components/pages/GiftPageClient.tsx (UPDATED)
+    - Removed: creatorLinks prop, embedUrl prop
+    - Removed: EmbedBlock, CreatorLinkCard, StickyGiftButton imports
+    - Removed: activeLinks filter, embed/link JSX blocks, StickyGiftButton render
+    - Now renders only: gift form + supporters + footer
+    - Used exclusively on /[username]/gift
+
+  CLAUDE.md (UPDATED)
+    - Section 4.11: updated "On click" description
+    - Section 6: added gift/ subfolder under [username]/
+    - Section 7: updated GiftPageClient and StickyGiftButton entries
+    - Section 7 public pages table: added /[username]/gift route
+
+WHAT TO BUILD NEXT:
+  - gift.actions.ts callbackUrl currently redirects to /gift/success (fine as-is)
+  - Consider adding a /[username]/gift/not-found.tsx for unknown usernames
+  - Verify gift page renders correctly on mobile (480px max-width centered)
+
+OPEN ISSUES:
+  - TypeScript: PASSED clean (tsc --noEmit)
+```
+
+---
+
+```
 Date: 2026-05-08 (session 10)
 Session: Creator public page upgrade — StickyGiftButton, EmbedBlock, CreatorLinkCard, LinksManager, EmbedSection
 

@@ -329,7 +329,7 @@ Rules:
   - Position: fixed, bottom-right corner
   - Label: creator's default tag label (e.g. "Buy me a coffee ☕")
   - Amount: default tag amount formatted in creator's currency (e.g. ₦2,000)
-  - On click: scrolls to the gift card section on the page
+  - On click: navigates to /[username]/gift (the dedicated gift form page)
   - Reads from existing gift_tags — no new DB changes required
   - Renders on both mobile and desktop
   - Must not obscure any critical page content
@@ -548,7 +548,9 @@ kiima/
 │   │   ├── webhooks/page.tsx
 │   │   └── settings/page.tsx
 │   ├── [username]/
-│   │   ├── page.tsx
+│   │   ├── page.tsx              ← storefront: profile + embed + link cards only
+│   │   ├── gift/
+│   │   │   └── page.tsx          ← gift form: compact header + gift form + supporters
 │   │   └── pool/[slug]/page.tsx
 │   └── api/webhooks/paystack/route.ts
 ├── components/
@@ -660,7 +662,7 @@ Component	File	Key Props
 `SocialLinksRow`	`shared/SocialLinksRow.tsx`	`links: SocialLink[], onDark?: boolean` — pass `onDark` when rendering on black backgrounds
 `DrinkQuantitySelector`	`shared/DrinkQuantitySelector.tsx`	`drinkPrice, currency, selectedQty, onSelect, emoji?: string` — emoji defaults to 🎁; renders `{emoji} × [1][3][5][?]`; rounded-12 tray on warm bg; pill-shaped (100px radius) quantity buttons; olive selected state
 `SocialHandleInput`	`shared/SocialHandleInput.tsx`	`value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@`
-`StickyGiftButton`	`shared/StickyGiftButton.tsx`	`label: string, amount: number, currency: Currency, targetId?: string` — fixed bottom-right; on click scrolls to gift card; always visible on public creator page
+`StickyGiftButton`	`shared/StickyGiftButton.tsx`	`label: string, amount: number, currency: Currency, username: string` — fixed bottom-right `<a>` link; navigates to /[username]/gift; always visible on storefront page
 `EmbedBlock`	`shared/EmbedBlock.tsx`	`url: string` — detects YouTube/Twitter/Spotify; renders appropriate embed; renders nothing for unsupported or empty URLs
 Layout Components
 Component	File	Notes
@@ -676,7 +678,7 @@ Component	File	Key Props
 `VerifyBankStep`	`auth/VerifyBankStep.tsx`	`userId, email` — OTP verification + searchable bank dropdown + account name lookup + saveBankDetails
 Page Components
 Component	File	Key Props
-`GiftPageClient`	`pages/GiftPageClient.tsx`	`recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions, creatorLinks, embedUrl` — renders embed block, link cards, sticky gift button, gift card, supporters
+`GiftPageClient`	`pages/GiftPageClient.tsx`	`recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions` — renders gift form + supporters + footer; used only on /[username]/gift
 `CreatorLinkCard`	`pages/CreatorLinkCard.tsx`	`link: CreatorLink` — renders a single external link as a rich card with thumbnail, title, description, and CTA arrow; follows standard card system
 Auth Pages
 Route	File
@@ -755,7 +757,8 @@ Route	File
 Public Pages
 Route	File
 `/`	`app/page.tsx`
-`/[username]`	`app/[username]/page.tsx`
+`/[username]`	`app/[username]/page.tsx` — storefront: profile card + embed + link cards; no gift form
+`/[username]/gift`	`app/[username]/gift/page.tsx` — gift form only: compact creator header + GiftPageClient
 `/[username]/pool/[slug]`	`app/[username]/pool/[slug]/page.tsx`
 `/gift/success`	`app/gift/success/page.tsx`
 `/gift/cancelled`	`app/gift/cancelled/page.tsx`

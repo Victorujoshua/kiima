@@ -1,5 +1,3 @@
-'use client';
-
 import { formatCurrency } from '@/lib/utils/currency';
 import type { Currency } from '@/types';
 
@@ -7,33 +5,20 @@ interface Props {
   label: string;
   amount: number;
   currency: Currency;
-  targetId?: string;
+  username: string;
 }
 
-export default function StickyGiftButton({
-  label,
-  amount,
-  currency,
-  targetId = 'gift-card',
-}: Props) {
-  function handleClick() {
-    const el = document.getElementById(targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
+export default function StickyGiftButton({ label, amount, currency, username }: Props) {
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      aria-label={`Send a gift: ${label}`}
+    <a
+      href={`/${username}/gift`}
       className="k-sticky-gift-btn"
       style={buttonStyle}
+      aria-label={`Send a gift: ${label}`}
     >
       <span style={labelStyle}>{label}</span>
       <span style={amountStyle}>{formatCurrency(amount, currency)}</span>
-    </button>
+    </a>
   );
 }
 
@@ -49,13 +34,11 @@ const buttonStyle: React.CSSProperties = {
   background: '#FF5C00',
   backgroundColor: '#FF5C00',
   color: '#ffffff',
-  border: 'none',
+  textDecoration: 'none',
   borderRadius: '100px',
   padding: '12px 22px',
-  cursor: 'pointer',
   boxShadow: '0 8px 24px rgba(255, 92, 0, 0.35)',
   transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-  fontFamily: 'var(--font-body)',
   colorScheme: 'light',
 };
 

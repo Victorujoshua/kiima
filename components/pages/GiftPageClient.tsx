@@ -7,10 +7,7 @@ import { formatCurrency } from '@/lib/utils/currency';
 import { resolveDisplayName } from '@/lib/utils/display-name';
 import DrinkQuantitySelector, { type DrinkQty } from '@/components/shared/DrinkQuantitySelector';
 import SocialHandleInput, { PlatformIcon, type SocialPlatformOption } from '@/components/shared/SocialHandleInput';
-import EmbedBlock from '@/components/shared/EmbedBlock';
-import CreatorLinkCard from '@/components/pages/CreatorLinkCard';
-import StickyGiftButton from '@/components/shared/StickyGiftButton';
-import type { GiftTag, Currency, Contribution, CreatorLink } from '@/types';
+import type { GiftTag, Currency, Contribution } from '@/types';
 
 interface Props {
   recipientId: string;
@@ -21,8 +18,6 @@ interface Props {
   contributions: Contribution[];
   contributorCount: number;
   showContributions: boolean;
-  creatorLinks: CreatorLink[];
-  embedUrl: string | null;
 }
 
 function timeAgo(dateStr: string): string {
@@ -99,8 +94,6 @@ export default function GiftPageClient({
   contributions,
   contributorCount,
   showContributions,
-  creatorLinks,
-  embedUrl,
 }: Props) {
   const [state, formAction] = useFormState(initializeGift, null);
   const [selectedQty, setSelectedQty] = useState<DrinkQty>(1);
@@ -114,18 +107,8 @@ export default function GiftPageClient({
   const tagEmoji = extractEmoji(defaultTag.label);
   const displayNamePreview = isAnonymous ? 'Anonymous' : (nameValue.trim() || 'Anonymous');
 
-  const activeLinks = creatorLinks.filter(l => l.is_active);
-
   return (
     <div data-page="gift-page" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px', colorScheme: 'light' }}>
-
-      {/* ── Embed block ── */}
-      {embedUrl && <EmbedBlock url={embedUrl} />}
-
-      {/* ── Creator link cards ── */}
-      {activeLinks.map(link => (
-        <CreatorLinkCard key={link.id} link={link} />
-      ))}
 
       {/* ── Gift card ── */}
       <div id="gift-card" style={cardStyle}>
@@ -335,13 +318,6 @@ export default function GiftPageClient({
         </a>
       </div>
 
-      {/* ── Sticky gift button ── */}
-      <StickyGiftButton
-        label={defaultTag.label}
-        amount={defaultTag.amount}
-        currency={currency}
-        targetId="gift-card"
-      />
     </div>
   );
 }

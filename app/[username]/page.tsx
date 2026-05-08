@@ -1,13 +1,14 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { getTagsByUser } from '@/lib/actions/tag.actions';
 import { getSocialLinks, getCreatorLinks } from '@/lib/actions/link.actions';
-import GiftPageClient from '@/components/pages/GiftPageClient';
 import PublicHeader from '@/components/layout/PublicHeader';
 import SocialLinksRow from '@/components/shared/SocialLinksRow';
-import type { Profile, Currency, SocialLink, GiftTag, Contribution, CreatorLink } from '@/types';
+import EmbedBlock from '@/components/shared/EmbedBlock';
+import CreatorLinkCard from '@/components/pages/CreatorLinkCard';
+import StickyGiftButton from '@/components/shared/StickyGiftButton';
+import type { Profile, Currency, SocialLink, GiftTag, CreatorLink } from '@/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
 
@@ -39,10 +40,9 @@ export async function generateMetadata({ params }: { params: { username: string 
 
 interface PageProps {
   params: { username: string };
-  searchParams: { payment_failed?: string };
 }
 
-export default async function UserPage({ params, searchParams }: PageProps) {
+export default async function UserPage({ params }: PageProps) {
   const supabase = createClient();
 
   const { data: profile } = await supabase
@@ -66,47 +66,20 @@ export default async function UserPage({ params, searchParams }: PageProps) {
     );
   }
 
-  const admin = createAdminClient();
-  const [tags, links, creatorLinks, settingsResult, recentResult, countResult] = await Promise.all([
+  const [tags, links, creatorLinks] = await Promise.all([
     getTagsByUser(profile.id),
     getSocialLinks(profile.id),
     getCreatorLinks(profile.id, true),
-    admin.from('platform_settings').select('platform_fee_percent').limit(1).single(),
-    supabase
-      .from('contributions')
-      .select('id, gift_amount, display_name, is_anonymous, created_at, tag_id, tag_label')
-      .eq('recipient_id', profile.id)
-      .eq('status', 'confirmed')
-      .is('pool_id', null)
-      .order('created_at', { ascending: false })
-      .limit(10),
-    supabase
-      .from('contributions')
-      .select('id', { count: 'exact', head: true })
-      .eq('recipient_id', profile.id)
-      .eq('status', 'confirmed')
-      .is('pool_id', null),
   ]);
-
-  const feePercent = settingsResult.data?.platform_fee_percent ?? 3;
-  const contributions = (recentResult.data ?? []) as Contribution[];
-  const contributorCount = countResult.count ?? 0;
-  const embedUrl = (profile as Profile & { embed_url?: string | null }).embed_url ?? null;
 
   const defaultTag = (tags as GiftTag[]).find(t => t.is_default);
   if (!defaultTag) notFound();
 
-  const paymentFailed = searchParams.payment_failed === '1';
+  const embedUrl = (profile as Profile & { embed_url?: string | null }).embed_url ?? null;
 
   return (
     <main style={pageStyle} data-page="gift-page">
       <PublicHeader />
-
-      {paymentFailed && (
-        <div style={paymentFailedBannerStyle}>
-          Payment didn&apos;t go through — please try again.
-        </div>
-      )}
 
       <div className="k-creator-shell">
         <div className="k-creator-grid">
@@ -115,7 +88,6 @@ export default async function UserPage({ params, searchParams }: PageProps) {
           <div className="k-creator-profile-sticky">
             <div style={profileCardStyle}>
 
-              {/* Avatar */}
               <div style={avatarOuterStyle}>
                 <div style={avatarWrapStyle}>
                   {profile.avatar_url ? (
@@ -133,13 +105,11 @@ export default async function UserPage({ params, searchParams }: PageProps) {
                 </div>
               </div>
 
-              {/* Name + username */}
               <div style={profileTextBlockStyle}>
                 <h1 style={displayNameStyle}>{profile.display_name}</h1>
                 <p style={usernameTagStyle}>@{profile.username}</p>
               </div>
 
-              {/* Divider */}
               {(profile.bio || (links as SocialLink[]).length > 0) && (
                 <div style={profileDividerStyle} />
               )}
@@ -161,24 +131,23 @@ export default async function UserPage({ params, searchParams }: PageProps) {
             </div>
           </div>
 
-          {/* ── RIGHT: Gift form + supporters ── */}
-          <div>
-            <GiftPageClient
-              recipientId={profile.id}
-              creatorName={profile.display_name}
-              defaultTag={defaultTag}
-              feePercent={feePercent}
-              currency={profile.currency as Currency}
-              contributions={contributions}
-              contributorCount={contributorCount}
-              showContributions={(profile as any).show_contributions ?? true}
-              creatorLinks={creatorLinks as CreatorLink[]}
-              embedUrl={embedUrl}
-            />
+          {/* ── RIGHT: Embed + link cards ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {embedUrl && <EmbedBlock url={embedUrl} />}
+            {(creatorLinks as CreatorLink[]).map(link => (
+              <CreatorLinkCard key={link.id} link={link} />
+            ))}
           </div>
 
         </div>
       </div>
+
+      <StickyGiftButton
+        label={defaultTag.label}
+        amount={defaultTag.amount}
+        currency={profile.currency as Currency}
+        username={profile.username}
+      />
     </main>
   );
 }
@@ -275,18 +244,6 @@ const bioStyle: React.CSSProperties = {
 const socialLinksWrapStyle: React.CSSProperties = {
   marginTop: '16px',
   padding: '0 16px',
-};
-
-const paymentFailedBannerStyle: React.CSSProperties = {
-  maxWidth: '1080px',
-  margin: '0 auto',
-  padding: '12px 20px',
-  fontFamily: 'var(--kiima-font)',
-  fontSize: '13px',
-  color: 'var(--color-danger)',
-  background: 'var(--color-danger-soft)',
-  borderRadius: '10px',
-  border: '1px solid rgba(224,112,112,0.3)',
 };
 
 const suspendedCardStyle: React.CSSProperties = {
