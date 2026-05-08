@@ -7,6 +7,7 @@ import DisplayNameSection        from '@/components/dashboard/edit/DisplayNameSe
 import GiftLabelSection          from '@/components/dashboard/edit/GiftLabelSection';
 import ThemeColorSection         from '@/components/dashboard/edit/ThemeColorSection';
 import ShowContributionsSection  from '@/components/dashboard/edit/ShowContributionsSection';
+import EmbedSection              from '@/components/dashboard/edit/EmbedSection';
 import LivePreviewPanel          from '@/components/dashboard/edit/LivePreviewPanel';
 import type { Currency } from '@/types';
 
@@ -26,6 +27,7 @@ interface Props {
   initialTagLabel: string;
   initialTagAmount: number;
   initialShowContributions: boolean;
+  initialEmbedUrl: string;
   currency: Currency;
 }
 
@@ -39,6 +41,7 @@ export default function EditPageClient({
   initialTagLabel,
   initialTagAmount,
   initialShowContributions,
+  initialEmbedUrl,
   currency,
 }: Props) {
   const [displayName, setDisplayName] = useState(initialDisplayName);
@@ -94,6 +97,11 @@ export default function EditPageClient({
           <ShowContributionsSection
             userId={userId}
             initialValue={initialShowContributions}
+          />
+
+          <EmbedSection
+            userId={userId}
+            initialEmbedUrl={initialEmbedUrl}
           />
         </div>
 

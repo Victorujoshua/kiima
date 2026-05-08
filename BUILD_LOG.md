@@ -5,6 +5,107 @@
 ---
 
 ```
+Date: 2026-05-08 (session 10)
+Session: Creator public page upgrade — StickyGiftButton, EmbedBlock, CreatorLinkCard, LinksManager, EmbedSection
+
+WHAT WAS BUILT:
+
+  components/shared/StickyGiftButton.tsx (NEW)
+    - Fixed bottom-right pill button (position: fixed, bottom: 24, right: 24, z-index: 40)
+    - Shows creator's default tag label + formatted amount
+    - On click: scrollIntoView('gift-card', smooth)
+    - className="k-sticky-gift-btn" — hover CSS in globals.css
+
+  components/shared/EmbedBlock.tsx (NEW)
+    - Accepts a single `url` prop
+    - YouTube: extracts video ID, renders 16:9 responsive iframe
+    - Spotify: extracts type+id, renders 152px-tall Spotify embed iframe
+    - Twitter/X: dynamically loads widgets.js, inserts blockquote via useEffect
+    - Returns null for empty or unsupported URL (silent, no error)
+    - Wrapped in white card with border-radius 20 + border
+
+  components/pages/CreatorLinkCard.tsx (NEW)
+    - Server component — renders a single creator_link as a rich card
+    - Layout: thumbnail (52×52, border-radius 12) + text block + arrow icon
+    - Uses className="k-creator-link-card" for hover CSS
+    - Title truncated to single line; description truncated if present
+
+  components/dashboard/LinksManager.tsx (NEW)
+    - Client component — full CRUD for creator_links table
+    - Add link form: title, url, description, thumbnail_url fields
+    - Per-row: thumbnail preview, title, url, active toggle (Live/Hidden pill),
+      up/down reorder arrows, edit pencil, delete trash button
+    - Max 10 links enforced (hides Add button at limit)
+    - Flash feedback ("Link saved!", "Link deleted.") + inline error display
+    - Calls upsertCreatorLink, deleteCreatorLink, reorderCreatorLinks server actions
+
+  components/dashboard/edit/EmbedSection.tsx (NEW)
+    - URL input with validation (YouTube, Twitter/X, Spotify only)
+    - Clear button when value is present
+    - "Save embed" or "Remove embed" label based on whether input is populated
+    - Saves via updateProfileDirect(userId, { embed_url })
+    - Empty URL saves null (clears the embed)
+
+  lib/actions/link.actions.ts (UPDATED)
+    - Added CreatorLink import to types
+    - Added getCreatorLinks(userId, activeOnly?) — optional activeOnly filter
+    - Added upsertCreatorLink(userId, link) — validates https://, title, url; max 10 guard
+    - Added deleteCreatorLink(userId, linkId) — deletes by id + user_id
+    - Added reorderCreatorLinks(userId, orderedIds) — bulk sort_order update
+
+  types/index.ts (UPDATED)
+    - Added embed_url: string | null to Profile interface
+    - Added CreatorLink interface (id, user_id, title, url, description, thumbnail_url,
+      sort_order, is_active, created_at)
+
+  lib/actions/auth.actions.ts (UPDATED)
+    - updateProfileDirect: added embed_url?: string | null to updates param type
+
+  components/pages/GiftPageClient.tsx (UPDATED)
+    - New props: creatorLinks: CreatorLink[], embedUrl: string | null
+    - Renders EmbedBlock (if embedUrl), CreatorLinkCard list (active only),
+      gift card (id="gift-card"), supporters, StickyGiftButton (fixed)
+    - Imports EmbedBlock, CreatorLinkCard, StickyGiftButton
+
+  app/[username]/page.tsx (UPDATED)
+    - Fetches getCreatorLinks(profile.id, true) alongside existing data fetches
+    - Extracts embed_url from profile
+    - Passes creatorLinks and embedUrl to GiftPageClient
+
+  app/dashboard/links/page.tsx (UPDATED)
+    - Now shows two sections: "Link cards" (LinksManager) + "Social profiles" (SocialLinksForm)
+    - Fetches both socialLinks and creatorLinks in parallel
+    - Clear visual separation with divider and section headings
+
+  app/dashboard/edit-page/EditPageClient.tsx (UPDATED)
+    - New prop: initialEmbedUrl: string
+    - Mounts EmbedSection below ShowContributionsSection
+
+  app/dashboard/edit-page/page.tsx (UPDATED)
+    - Reads embed_url from profile data
+    - Passes initialEmbedUrl to EditPageClient
+
+  app/globals.css (UPDATED)
+    - Added .k-creator-link-card — base styles + hover + active
+    - Added .k-sticky-gift-btn:hover and :active — lift + shadow increase
+
+WHAT TO BUILD NEXT:
+  - Verify migrations 015 (creator_links) and 016 (embed_url) are run in Supabase
+    before testing — both marked Run in CLAUDE.md Section 5 but confirm
+  - Run migrations 013 and 014 if not yet run (show_contributions, tag_label)
+  - Test StickyGiftButton scroll behaviour on mobile
+  - Test EmbedBlock with a real YouTube URL, Spotify URL, and Tweet URL
+
+OPEN ISSUES:
+  - Migration 015 (creator_links table) must exist in Supabase before LinksManager writes work
+  - Migration 016 (embed_url column) must exist in Supabase before EmbedSection saves work
+  - TypeScript: PASSED clean (tsc --noEmit)
+  - Stray file '7db9643e-2808-4731-b0e0-5cab58575979 1.svg' in root — delete manually
+```
+
+---
+
+```
 Date: 2026-05-03 (session 9)
 Session: Fix dark mode element tinting on Android gift page
 

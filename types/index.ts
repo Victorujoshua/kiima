@@ -11,6 +11,19 @@ export interface Profile {
   currency: Currency;
   theme_color: string;           // accent colour for gift page, default '#C87B5C'
   show_contributions: boolean;   // whether gifters see the supporters list, default true
+  embed_url: string | null;      // single embed slot (YouTube/Twitter/Spotify URL)
+  created_at: string;
+}
+
+export interface CreatorLink {
+  id: string;
+  user_id: string;
+  title: string;
+  url: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  sort_order: number;
+  is_active: boolean;
   created_at: string;
 }
 

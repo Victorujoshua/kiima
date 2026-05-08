@@ -350,6 +350,7 @@ export async function updateProfileDirect(
     avatar_url?: string | null;
     theme_color?: string;
     show_contributions?: boolean;
+    embed_url?: string | null;
   }
 ): Promise<{ success?: boolean; error?: string }> {
   if (!userId) return { error: 'Something went wrong — try again.' };

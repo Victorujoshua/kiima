@@ -1,14 +1,9 @@
-﻿# CLAUDE.md — Kiima
-
+﻿CLAUDE.md — Kiima
 > This file is the single source of truth for all development decisions on Kiima.
 > Read this entire file before writing any code. Every session, every feature, every component.
-
 ---
-
-## ⚡ STANDING RULES — APPLY EVERY SESSION WITHOUT EXCEPTION
-
+⚡ STANDING RULES — APPLY EVERY SESSION WITHOUT EXCEPTION
 These rules are always active. They do not need to be re-stated by the user.
-
 ```
 1. After creating or modifying ANY component:
    → Immediately update Section 7 (Component Inventory) in this file.
@@ -33,61 +28,43 @@ These rules are always active. They do not need to be re-stated by the user.
    → BUILD_LOG.md is updated ✓
    All three. Not one. Not two. All three.
 ```
-
 ---
-
-## 1. WHAT IS KIIMA
-
-Kiima is a **social gifting and support pool platform**. It lets creators receive monetary gifts through a personalized link, create collaborative funding pools, and offer preset or custom gifting options (Gift Tags).
-
-### The one-line creative direction
+1. WHAT IS KIIMA
+Kiima is a social gifting and creator support platform. It lets creators receive monetary gifts through a personalized link, create collaborative funding pools, share external links as rich cards, and offer preset or custom gifting options (Gift Tags). Kiima is the only link-in-bio tool a creator needs — it replaces Linktree while adding native monetization.
+The one-line creative direction
 > "A soft, modern digital space where giving feels natural."
-
-### What Kiima is NOT
-- Not a donation platform
-- Not a fintech dashboard
-- Not a banking app
-- Not a generic payment link tool
-
-### Core emotional tone
+What Kiima is NOT
+Not a donation platform
+Not a fintech dashboard
+Not a banking app
+Not a generic payment link tool
+Core emotional tone
 Light. Friendly. Effortless. Human. Every word, every interaction, every UI state must feel like this.
-
 ---
-
-## 2. TECH STACK
-
-### Locked decisions — do not suggest alternatives
-
-| Layer | Choice | Reason |
-|---|---|---|
-| Framework | Next.js 14 App Router | SSR for profile pages, server actions for mutations |
-| Language | TypeScript (strict) | Type safety across all layers |
-| Styling | Tailwind CSS + CSS variables | Utility classes + design token system |
-| Database + Auth | Supabase | Postgres, RLS, storage, auth in one |
-| Payments | **Paystack only** | Nigeria-compatible, NGN native support |
-| UI Base | shadcn/ui | Headless, unstyled, fully customisable |
-| Fonts | Fraunces (display) + Plus Jakarta Sans (body) | Warm, editorial, non-corporate |
-| Deployment | Vercel | Next.js native |
-| Email | Resend | Transactional emails only |
-
-### Never suggest
-- Stripe (not Nigeria-compatible for V1)
-- Prisma (Supabase client is used directly)
-- Pages Router
-- MongoDB
-- Any real-time solution (V1 explicitly excludes this)
-- Any wallet or payout system (V2+)
-
+2. TECH STACK
+Locked decisions — do not suggest alternatives
+Layer	Choice	Reason
+Framework	Next.js 14 App Router	SSR for profile pages, server actions for mutations
+Language	TypeScript (strict)	Type safety across all layers
+Styling	Tailwind CSS + CSS variables	Utility classes + design token system
+Database + Auth	Supabase	Postgres, RLS, storage, auth in one
+Payments	Paystack only	Nigeria-compatible, NGN native support
+UI Base	shadcn/ui	Headless, unstyled, fully customisable
+Fonts	Fraunces (display) + Plus Jakarta Sans (body)	Warm, editorial, non-corporate
+Deployment	Vercel	Next.js native
+Email	Resend	Transactional emails only
+Never suggest
+Stripe (not Nigeria-compatible for V1)
+Prisma (Supabase client is used directly)
+Pages Router
+MongoDB
+Any real-time solution (V1 explicitly excludes this)
+Any wallet or payout system (V2+)
 ---
-
-## 3. DESIGN SYSTEM CONTRACT
-
+3. DESIGN SYSTEM CONTRACT
 This is law. Every component must follow these rules exactly.
-
-### 3.1 Design Tokens
-
+3.1 Design Tokens
 All tokens live in `styles/tokens.css` and are referenced as CSS variables throughout the app. Never hardcode values.
-
 ```css
 /* Colours */
 --color-bg:           #F6F3EE;   /* Page background — warm off-white */
@@ -132,9 +109,7 @@ All tokens live in `styles/tokens.css` and are referenced as CSS variables throu
 --shadow-card-hover: 0 6px 28px rgba(28, 25, 22, 0.09);
 --shadow-btn:        0 8px 24px rgba(28, 25, 22, 0.20);
 ```
-
-### 3.2 Typography Rules
-
+3.2 Typography Rules
 ```
 Display headings  → font-family: var(--font-display), weight 400–500
 Section headings  → font-family: var(--font-body), weight 600
@@ -142,13 +117,9 @@ Body copy         → font-family: var(--font-body), weight 400, size 14px, line
 Labels/metadata   → font-family: var(--font-body), weight 700, size 11px, uppercase, letter-spacing 0.08em
 Amounts/numbers   → font-family: var(--font-body), weight 700
 ```
-
 Never use system fonts. Never use Arial, Inter, or Roboto.
-
-### 3.3 Card System
-
+3.3 Card System
 Every UI surface is a card. Cards are the atomic layout unit of Kiima.
-
 ```
 Base card styles:
   background:    var(--color-surface)
@@ -162,36 +133,27 @@ Hover state:
   transform:     translateY(-1px)
   transition:    all 0.22s ease
 ```
-
 Cards must never:
-- Have heavy gradients as backgrounds
-- Use coloured borders (except for focus/error states)
-- Contain more than one primary purpose
-
-### 3.4 Interaction Standards
-
+Have heavy gradients as backgrounds
+Use coloured borders (except for focus/error states)
+Contain more than one primary purpose
+3.4 Interaction Standards
 ```
 Hover:   translateY(-1px) + shadow increase
 Click:   scale(0.98)
 Focus:   border-color → var(--color-accent), background → white
 All transitions: 0.15s–0.22s ease — never instant, never slow
 ```
-
-### 3.5 Language & Copy Rules
-
-| Don't say | Say instead |
-|---|---|
-| "Make payment" | "Send gift ❤️" |
-| "Transaction successful" | "Your gift was sent! Thank you 🙏" |
-| "Submit" | "Send love" / "Support this 🤍" |
-| "User" | "Creator" or name |
-| "Amount" (as a title) | Use contextually — "How much?" |
-| "Error occurred" | "Something went wrong — try again" |
-
+3.5 Language & Copy Rules
+Don't say	Say instead
+"Make payment"	"Send gift ❤️"
+"Transaction successful"	"Your gift was sent! Thank you 🙏"
+"Submit"	"Send love" / "Support this 🤍"
+"User"	"Creator" or name
+"Amount" (as a title)	Use contextually — "How much?"
+"Error occurred"	"Something went wrong — try again"
 Copy must always be short, warm, and slightly casual. Never corporate. Never financial.
-
-### 3.6 Grid Layout
-
+3.6 Grid Layout
 ```
 Desktop:  Multi-column card grid — 2 or 3 columns depending on page
 Mobile:   Single column, cards stack vertically
@@ -199,38 +161,27 @@ Spacing:  16px gap between cards
 Padding:  20px horizontal page padding
 Max-width: 1080px, centered
 ```
-
 ---
-
-## 4. DOMAIN RULES & BUSINESS LOGIC
-
+4. DOMAIN RULES & BUSINESS LOGIC
 These rules are non-negotiable. They come from the product spec. Never work around them, never "improve" them without explicit instruction.
-
-### 4.1 Currency
-
-- Every creator sets ONE currency on signup: NGN (₦), USD ($), GBP (£), EUR (€)
-- All transactions for that creator use their selected currency
-- **No currency conversion in V1 — ever**
-- Display format: `₦2,000` / `$20` / `£15` — always with symbol, always with locale-formatted number
-- Default currency for all UI examples and tests: **NGN (₦)**
-
-### 4.2 Gift Tags
-
-Each creator has exactly **ONE gift tag** (`is_default = true`). There are no custom tags and no multi-tag support.
-
-- The tag is created automatically at signup (trigger on `profiles` insert)
-- The creator edits its **label** and **amount** from `/dashboard/edit-page` via `GiftLabelSection`
-- `updateDefaultTag(userId, label, amount)` is the only write path — `createTag` and `deleteTag` no longer exist
-- The gift page always shows this single tag:
-  - Label drives the card heading and the submit button emoji
-  - Amount drives the `DrinkQuantitySelector` (×1, ×3, ×5, or custom multiplier)
-  - Submit button: `"Send ₦[total] [emoji from label]"`
-- `getTagsByUser(userId)` is still used on the public gift page — returns the one default tag
-
-### 4.3 Anonymous Identity Logic
-
+4.1 Currency
+Every creator sets ONE currency on signup: NGN (₦), USD ($), GBP (£), EUR (€)
+All transactions for that creator use their selected currency
+No currency conversion in V1 — ever
+Display format: `₦2,000` / `$20` / `£15` — always with symbol, always with locale-formatted number
+Default currency for all UI examples and tests: NGN (₦)
+4.2 Gift Tags
+Each creator has exactly ONE gift tag (`is_default = true`). There are no custom tags and no multi-tag support.
+The tag is created automatically at signup (trigger on `profiles` insert)
+The creator edits its label and amount from `/dashboard/edit-page` via `GiftLabelSection`
+`updateDefaultTag(userId, label, amount)` is the only write path — `createTag` and `deleteTag` no longer exist
+The gift page always shows this single tag:
+Label drives the card heading and the submit button emoji
+Amount drives the `DrinkQuantitySelector` (×1, ×3, ×5, or custom multiplier)
+Submit button: `"Send ₦[total] [emoji from label]"`
+`getTagsByUser(userId)` is still used on the public gift page — returns the one default tag
+4.3 Anonymous Identity Logic
 This is the most important UX rule in the product. Get this right every time.
-
 ```
 Rule 1: The contribution-level anonymous choice ALWAYS overrides any other state.
 
@@ -245,30 +196,23 @@ Rule 4: The UI must always show the user how they'll appear:
   - Toggle ON  → "👤 You'll appear as Anonymous"
   - Toggle OFF → "👤 You'll appear as [name]" or "👤 You'll appear as your name"
 ```
-
-### 4.4 Support Pools
-
-- Any creator can create a support pool with: title, optional description, target amount
-- Pool URL: `kiima.app/{username}/pool/{pool-slug}`
-- Pool states: `open` | `closed`
-- Only the creator can close a pool
-- When a pool is closed: show "This support pool is closed" banner; disable inputs/CTA; keep history, progress bar, and totals visible
-- Progress is calculated: `(total_raised / goal_amount) * 100`
-- Pool totals update on page refresh — **no real-time in V1**
-
-### 4.5 Contribution Display Format
-
+4.4 Support Pools
+Any creator can create a support pool with: title, optional description, target amount
+Pool URL: `kiima.app/{username}/pool/{pool-slug}`
+Pool states: `open` | `closed`
+Only the creator can close a pool
+When a pool is closed: show "This support pool is closed" banner; disable inputs/CTA; keep history, progress bar, and totals visible
+Progress is calculated: `(total_raised / goal_amount) * 100`
+Pool totals update on page refresh — no real-time in V1
+4.5 Contribution Display Format
 Always render exactly as:
 ```
 "{DisplayName} sent {CurrencySymbol}{Amount}"       → Victor sent ₦5,000
 "Anonymous sent {CurrencySymbol}{Amount}"           → Anonymous sent ₦2,000
 "Anonymous bought a drink 🥤"                        → when default tag + anonymous
 ```
-
 Latest contributions always appear first (descending by created_at).
-
-### 4.6 Payment Flow & Fee Model
-
+4.6 Payment Flow & Fee Model
 > ✅ **FEE MODEL — REFACTORED:**
 >
 > Two separate fees apply, paid by different parties:
@@ -298,31 +242,24 @@ Latest contributions always appear first (descending by created_at).
 > - Pool raised total increments by gift_amount (₦10,000) — not total_charged
 > - platform_fee_percent (default 3) is stored in platform_settings — never hardcoded
 > - Use calculateAllFees() from lib/utils/fee.ts — never inline fee math
-
-- Gifter enters amount → GiftForm/ContributeForm shows live fee breakdown via `formatFeeBreakdown()`
-- On submit → `initializeGift` recalculates all fees server-side, creates PENDING contribution with all 5 fee fields
-- Initialises Paystack transaction: `amount = toKobo(total_charged)`, `transaction_charge = toKobo(kiima_fee)`, `bearer = 'account'`
-- Gifter redirected to Paystack checkout; on completion → redirected to `/gift/success`
-- Paystack fires webhook → verify HMAC SHA512, handle only `charge.success`
-- Webhook: update contribution `pending → confirmed`; if `pool_id` → increment `pool.raised` by `gift_amount`
-- All webhook paths log to `webhook_logs` and return 200
-
-**Critical:** Never record a contribution before webhook confirmation. The redirect success page is UI only — DB write happens in webhook only. If webhook fails, contribution stays 'pending' — visible in admin webhook log.
-
-### 4.7 Creator Dashboard Data
-
-The dashboard is **read-only aggregated data**. It shows:
-- Total gifts received (sum of all direct gifts)
-- Total pool contributions (sum of all pool contributions)
-- Total gift count (count of all contributions)
-- Transaction list (all contributions, newest first)
-- Gift tag management (CRUD, except default tag)
-- Support pool list with status and progress
-
-### 4.8 Social Links
-
+Gifter enters amount → GiftForm/ContributeForm shows live fee breakdown via `formatFeeBreakdown()`
+On submit → `initializeGift` recalculates all fees server-side, creates PENDING contribution with all 5 fee fields
+Initialises Paystack transaction: `amount = toKobo(total_charged)`, `transaction_charge = toKobo(kiima_fee)`, `bearer = 'account'`
+Gifter redirected to Paystack checkout; on completion → redirected to `/gift/success`
+Paystack fires webhook → verify HMAC SHA512, handle only `charge.success`
+Webhook: update contribution `pending → confirmed`; if `pool_id` → increment `pool.raised` by `gift_amount`
+All webhook paths log to `webhook_logs` and return 200
+Critical: Never record a contribution before webhook confirmation. The redirect success page is UI only — DB write happens in webhook only. If webhook fails, contribution stays 'pending' — visible in admin webhook log.
+4.7 Creator Dashboard Data
+The dashboard is read-only aggregated data. It shows:
+Total gifts received (sum of all direct gifts)
+Total pool contributions (sum of all pool contributions)
+Total gift count (count of all contributions)
+Transaction list (all contributions, newest first)
+Gift tag management (CRUD, except default tag)
+Support pool list with status and progress
+4.8 Social Links
 Creators can add links to their social media profiles. These appear as icon buttons at the bottom of the ProfileCard on the public gift page.
-
 ```
 Supported platforms (V1): instagram, tiktok, twitter, youtube, linkedin, website
 
@@ -342,27 +279,82 @@ Display:
 ProfileCard copy-link bar: ONLY shown in dashboard (showLinkBar={true}).
 NEVER on public gift page (showLinkBar defaults false).
 ```
+4.9 Creator Link Cards
+Creators can add external links that render as rich cards on their public page.
+This replaces Linktree entirely — Kiima is the only link-in-bio tool a creator needs.
+```
+Rules:
+  - Max 10 links per creator
+  - All URLs must begin with https://
+  - Fields: title (required), url (required), description (optional), thumbnail_url (optional)
+  - sort_order controls display sequence — creator can reorder from dashboard
+  - is_active toggle — inactive links are hidden on public page, not deleted
+  - Managed from /dashboard/links
 
+Display (public creator page):
+  - Renders as cards with thumbnail, title, description, and a CTA arrow
+  - Only active links (is_active = true) render
+  - Ordered by sort_order ascending
+  - Sits below the embed block, above the gift tag section
+  - Follows the standard card system (Section 3.3)
+
+Component: components/pages/CreatorLinkCard.tsx (public page render)
+Dashboard: components/dashboard/LinksManager.tsx (CRUD management)
+Actions:   lib/actions/link.actions.ts — getCreatorLinks, upsertCreatorLink, deleteCreatorLink, reorderCreatorLinks
+```
+4.10 Embed Slot
+Each creator can embed one piece of external content directly on their public page.
+```
+Rules:
+  - One embed per creator (embed_url column on profiles table)
+  - Supported sources ONLY: YouTube, Twitter/X, Spotify
+  - Stored as a plain URL — rendered as oEmbed or iframe on the public page
+  - Empty/null = no embed block rendered (no error, no placeholder)
+  - Managed from /dashboard/edit-page (new EmbedSection component)
+
+Display (public creator page):
+  - Renders between the profile card and the link cards section
+  - YouTube  → responsive iframe embed
+  - Twitter/X → Twitter oEmbed script
+  - Spotify  → Spotify iframe embed
+  - Any unsupported URL → silently not rendered
+
+Component: components/shared/EmbedBlock.tsx
+```
+4.11 Sticky Gift Button
+A persistent floating CTA always visible on the public creator page.
+```
+Rules:
+  - Always rendered on every public creator page — no toggle, not optional
+  - Position: fixed, bottom-right corner
+  - Label: creator's default tag label (e.g. "Buy me a coffee ☕")
+  - Amount: default tag amount formatted in creator's currency (e.g. ₦2,000)
+  - On click: scrolls to the gift card section on the page
+  - Reads from existing gift_tags — no new DB changes required
+  - Renders on both mobile and desktop
+  - Must not obscure any critical page content
+  - z-index sits above all page content but below modals
+
+Component: components/shared/StickyGiftButton.tsx
+```
 ---
-
-## 5. DATABASE SCHEMA
-
-### Supabase Tables
-
+5. DATABASE SCHEMA
+Supabase Tables
 ```sql
 -- Creator profiles (extends Supabase auth.users)
 profiles (
-  id          uuid PRIMARY KEY REFERENCES auth.users(id),
-  username    text UNIQUE NOT NULL,
-  display_name text NOT NULL,
-  bio         text,
-  avatar_url  text,
-  currency    text NOT NULL DEFAULT 'NGN',  -- 'NGN' | 'USD' | 'GBP' | 'EUR'
-  is_admin    boolean DEFAULT false,        -- set manually in Supabase, never via UI
-  created_at  timestamptz DEFAULT now()
+  id            uuid PRIMARY KEY REFERENCES auth.users(id),
+  username      text UNIQUE NOT NULL,
+  display_name  text NOT NULL,
+  bio           text,
+  avatar_url    text,
+  currency      text NOT NULL DEFAULT 'NGN',  -- 'NGN' | 'USD' | 'GBP' | 'EUR'
+  is_admin      boolean DEFAULT false,        -- set manually in Supabase, never via UI
+  embed_url     text,                         -- single embed slot (YouTube/Twitter/Spotify URL)
+  created_at    timestamptz DEFAULT now()
 )
 
--- Gift tags (both system and custom)
+-- Gift tags (one per creator, always is_default = true)
 gift_tags (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     uuid REFERENCES profiles(id) ON DELETE CASCADE,
@@ -431,17 +423,30 @@ platform_settings (
   updated_at              timestamptz DEFAULT now()
 )
 
--- Creator social links
+-- Creator social links (platform icons on public profile)
 social_links (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id        uuid REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   platform       text NOT NULL,
-                 -- 'instagram' | 'tiktok' | 'twitter' | 
+                 -- 'instagram' | 'tiktok' | 'twitter' |
                  -- 'youtube' | 'linkedin' | 'website'
   url            text NOT NULL,
   display_order  int DEFAULT 0,
   created_at     timestamptz DEFAULT now(),
   UNIQUE(user_id, platform)   -- one per platform per creator, enforced at DB level
+)
+
+-- Creator external link cards (replaces Linktree)
+creator_links (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       uuid REFERENCES profiles(id) ON DELETE CASCADE,
+  title         text NOT NULL,
+  url           text NOT NULL,
+  description   text,
+  thumbnail_url text,
+  sort_order    int DEFAULT 0,
+  is_active     boolean DEFAULT true,
+  created_at    timestamptz DEFAULT now()
 )
 
 -- Creator notification inbox (written by webhook service role; read/updated by creator)
@@ -457,32 +462,63 @@ notifications (
   created_at  timestamptz DEFAULT now()
 )
 ```
-
-### RLS Policies
-
+RLS Policies
 ```
-profiles:          Public read. Only owner can update. is_admin cannot be updated via client — ever.
-gift_tags:         Public read (for gift link page). Only owner can insert/update/delete.
-support_pools:     Public read. Only owner can insert/update.
-contributions: 
+profiles:
+  - Public read. Only owner can update.
+  - is_admin cannot be updated via client — ever.
+
+gift_tags:
+  - Public read (for gift link page). Only owner can insert/update/delete.
+
+support_pools:
+  - Public read. Only owner can insert/update.
+
+contributions:
   - Public read (for contribution feeds)
   - No direct insert from client (webhook only)
   - Creator can read their own received contributions
+
 webhook_logs:
   - No public access
   - Admin only (service role in webhook handler writes, admin client reads)
+
 platform_settings:
   - No public access
   - Admin only read/write via service role
+
 social_links:
   - Public read (for public gift page display)
   - Only owner can insert/update/delete
+
+creator_links:
+  - Public read (active links only rendered on public page)
+  - Only owner can insert/update/delete
+
+notifications:
+  - Authenticated owner read/update only
+  - Service role insert only (via webhook)
 ```
-
+Migrations Run
+#	Description	Status
+001	All tables, RLS, platform_settings seed	✅ Run
+002	Default tag trigger on profile insert	✅ Run
+003	ADD show_contributors to support_pools	✅ Run
+004	ADD suspended to profiles (idempotent)	✅ Run
+005	CREATE social_links table with RLS	✅ Run
+006	ADD fee + net_amount to contributions (idempotent)	✅ Run
+007	Rename fee columns; ADD paystack_fee, total_charged, platform_fee_percent	✅ Run
+008	UPDATE all existing default tags to "Buy me a drink 🥤"	✅ Run
+009	ADD note text column to contributions	✅ Run
+010	ADD bank_name, bank_code, account_number, account_name, paystack_subaccount_code to profiles	✅ Run
+011	ADD theme_color text DEFAULT '#C87B5C' to profiles	✅ Run
+012	CREATE notifications table, indexes, RLS policies	✅ Run
+013	ADD show_contributions boolean DEFAULT true to profiles	✅ Run
+014	ADD tag_label text to contributions; backfill from gift_tags	✅ Run
+015	CREATE creator_links table	✅ Run
+016	ADD embed_url text to profiles	✅ Run
 ---
-
-## 6. FILE & FOLDER ARCHITECTURE
-
+6. FILE & FOLDER ARCHITECTURE
 ```
 kiima/
 ├── CLAUDE.md                    ← You are here
@@ -520,7 +556,49 @@ kiima/
 │   ├── cards/
 │   ├── forms/
 │   ├── shared/
+│   │   ├── StickyGiftButton.tsx ← floating gift CTA, fixed bottom-right on public creator page
+│   │   ├── EmbedBlock.tsx       ← oEmbed/iframe renderer (YouTube, Twitter/X, Spotify)
+│   │   ├── DrinkQuantitySelector.tsx
+│   │   ├── GoogleButton.tsx
+│   │   ├── GiftTagPill.tsx
+│   │   ├── AnonymousToggle.tsx
+│   │   ├── ProgressBar.tsx
+│   │   ├── ContributionRow.tsx
+│   │   ├── CurrencyInput.tsx
+│   │   ├── KiimaButton.tsx
+│   │   ├── SocialLinksRow.tsx
+│   │   └── SocialHandleInput.tsx
+│   ├── pages/
+│   │   ├── GiftPageClient.tsx
+│   │   └── CreatorLinkCard.tsx  ← single link card component (public creator page)
+│   ├── dashboard/
+│   │   ├── LinksManager.tsx     ← CRUD UI for managing creator_links
+│   │   ├── Sidebar.tsx
+│   │   ├── BottomNav.tsx
+│   │   ├── MobileHeader.tsx
+│   │   ├── DashboardSidebar.tsx
+│   │   ├── DashboardHeader.tsx
+│   │   ├── StatCards.tsx
+│   │   ├── DashboardProfileCard.tsx
+│   │   ├── EarningsCard.tsx
+│   │   ├── RecentGifts.tsx
+│   │   ├── Toast.tsx
+│   │   ├── BankAccountSection.tsx
+│   │   ├── NotificationBell.tsx
+│   │   ├── NotificationPanel.tsx
+│   │   └── NotificationToast.tsx
+│   ├── dashboard/edit/
+│   │   ├── AvatarSection.tsx
+│   │   ├── DisplayNameSection.tsx
+│   │   ├── AboutSection.tsx
+│   │   ├── GiftLabelSection.tsx
+│   │   ├── ThemeColorSection.tsx
+│   │   ├── ShowContributionsSection.tsx
+│   │   ├── EmbedSection.tsx     ← manage embed_url from edit-page dashboard
+│   │   └── LivePreviewPanel.tsx
 │   └── layout/
+│       ├── PublicHeader.tsx
+│       └── MarketingHeader.tsx
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts
@@ -529,12 +607,18 @@ kiima/
 │   ├── paystack/
 │   │   ├── initialize.ts
 │   │   ├── verify.ts
-│   │   └── webhook.ts
+│   │   ├── webhook.ts
+│   │   └── banks.ts
 │   ├── actions/
 │   │   ├── gift.actions.ts
 │   │   ├── pool.actions.ts
 │   │   ├── tag.actions.ts
-│   │   ├── link.actions.ts
+│   │   ├── link.actions.ts      ← social links (getSocialLinks, upsertSocialLink, deleteSocialLink)
+│   │   │                           + creator links (getCreatorLinks, upsertCreatorLink,
+│   │   │                             deleteCreatorLink, reorderCreatorLinks)
+│   │   ├── auth.actions.ts
+│   │   ├── bank.actions.ts
+│   │   ├── notification.actions.ts
 │   │   └── admin.actions.ts
 │   └── utils/
 │       ├── currency.ts
@@ -547,232 +631,165 @@ kiima/
 └── types/
     └── index.ts                 ← All shared TypeScript types
 ```
-
 ---
-
-## 7. COMPONENT INVENTORY
-
+7. COMPONENT INVENTORY
 Keep this updated as components are built. Before building any new component, check this list.
-
-### Cards
-
-| Component | File | Key Props |
-|---|---|---|
-| `ProfileCard` | `cards/ProfileCard.tsx` | `profile: Profile, showLinkBar?: boolean` (default false; pass true in dashboard only) |
-| `GiftActionCard` | `cards/GiftActionCard.tsx` | `tags: GiftTag[], currency: Currency` |
-| `SupportPoolCard` | `cards/SupportPoolCard.tsx` | `pool: SupportPool, currency: Currency` |
-| `ContributionFeedCard` | `cards/ContributionFeedCard.tsx` | `contributions: Contribution[], heading?: string` |
-| `DashboardStatCard` | `cards/DashboardStatCard.tsx` | `label: string, value: string, sub: string` |
-| `AdminStatCard` | `cards/AdminStatCard.tsx` | `label: string, value: string, sub?: string` |
-
-### Forms
-
-| Component | File | Key Props |
-|---|---|---|
-| `GiftForm` | `forms/GiftForm.tsx` | `recipientId: string, tags: GiftTag[], currency: Currency, feePercent: number` |
-| `ContributeForm` | `forms/ContributeForm.tsx` | `poolId: string, recipientId: string, currency: Currency, isClosed: boolean, feePercent: number` |
-| `PoolCreateForm` | `forms/PoolCreateForm.tsx` | `userId: string, currency: Currency` |
-| `SocialLinksForm` | `forms/SocialLinksForm.tsx` | `userId: string, existingLinks: SocialLink[]` |
-
-### Shared Atoms
-
-| Component | File | Key Props |
-|---|---|---|
-| `GoogleButton` | `shared/GoogleButton.tsx` | No props — full-width white Google OAuth button; handles `signInWithOAuth` + loading state |
-| `GiftTagPill` | `shared/GiftTagPill.tsx` | `tag, selected, onSelect, currency` |
-| `AnonymousToggle` | `shared/AnonymousToggle.tsx` | `isAnon, displayName?, onChange` |
-| `ProgressBar` | `shared/ProgressBar.tsx` | `raised: number, goal: number, currency: Currency` |
-| `ContributionRow` | `shared/ContributionRow.tsx` | `contribution: Contribution, isLast?: boolean, source?: string` |
-| `CurrencyInput` | `shared/CurrencyInput.tsx` | `currency: Currency, value, onChange?, readOnly?` |
-| `KiimaButton` | `shared/KiimaButton.tsx` | `children, onClick?, loading?, disabled?, type?, variant?, fullWidth?` |
-| `SocialLinksRow` | `shared/SocialLinksRow.tsx` | `links: SocialLink[], onDark?: boolean` — pass `onDark` when rendering on black backgrounds |
-| `DrinkQuantitySelector` | `shared/DrinkQuantitySelector.tsx` | `drinkPrice, currency, selectedQty, onSelect, emoji?: string` — emoji defaults to 🎁; renders `{emoji} × [1][3][5][?]`; rounded-12 tray on warm bg; pill-shaped (100px radius) quantity buttons; olive selected state |
-| `SocialHandleInput` | `shared/SocialHandleInput.tsx` | `value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@` |
-
-### Layout Components
-
-| Component | File | Notes |
-|---|---|---|
-| `PublicHeader` | `layout/PublicHeader.tsx` | Fixed black header (68px): logo left, dark/light toggle right. Used on public gifter page. |
-| `MarketingHeader` | `layout/MarketingHeader.tsx` | Landing-style black nav (68px): logo + Product/For Creators links + auth-aware CTA. Used on product, creators, privacy, terms pages. |
-
-### Auth Step Components
-
-| Component | File | Key Props |
-|---|---|---|
-| `SignupProgressBar` | `auth/ProgressBar.tsx` | `step: number, total: number` — thin yellow pill bar, 200px centered |
-| `OtpInput` | `auth/OtpInput.tsx` | `value, onChange, disabled?` — 6-box OTP input with auto-advance and paste support |
-| `UsernameStep` | `auth/UsernameStep.tsx` | `onNext(username)` — pill input with kiima.app/ prefix, real-time availability check, fixed bottom bar CTA |
-| `EmailPasswordStep` | `auth/EmailPasswordStep.tsx` | `username, onBack, onNext(userId, email)` — pill inputs, Google button, fixed bottom bar CTA |
-| `ProfileStep` | `auth/ProfileStep.tsx` | `userId, email, username, onNext` — avatar upload, name/bio/social/currency, calls createProfile + uploadAvatar |
-| `VerifyBankStep` | `auth/VerifyBankStep.tsx` | `userId, email` — OTP verification + searchable bank dropdown + account name lookup + saveBankDetails |
-
-### Page Components
-
-| Component | File | Key Props |
-|---|---|---|
-| `GiftPageClient` | `pages/GiftPageClient.tsx` | `recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions` — minimal style: rounded-20 white cards, soft shadow, no hard borders; orange section label + rounded CTA with glow shadow; olive pill qty selector; circular supporter avatars; pill count badge; supporters hidden when showContributions=false |
-
-### Auth Pages
-
-| Route | File |
-|---|---|
-| `/signup` | `app/(auth)/signup/page.tsx` — 4-step signup flow: username → email/password → profile → OTP + bank |
-| `/login` | `app/(auth)/login/page.tsx` — Google button + email/password form |
-| `/forgot-password` | `app/(auth)/forgot-password/page.tsx` |
-| `/reset-password` | `app/(auth)/reset-password/page.tsx` |
-| `/onboarding` | `app/onboarding/page.tsx` — 2-step Google signup completion; pre-fills name/avatar from Google metadata; username availability check; currency select |
-
-### API Routes
-
-| Route | File |
-|---|---|
-| `/auth/callback` | `app/auth/callback/route.ts` — Google OAuth PKCE exchange; routes new users to /onboarding, returning users to /dashboard |
-| `/api/auth/callback` | `app/api/auth/callback/route.ts` — Password reset PKCE exchange |
-| `/api/webhooks/paystack` | `app/api/webhooks/paystack/route.ts` |
-
-### Server Actions
-
-| Action file | Exports |
-|---|---|
-| `lib/actions/auth.actions.ts` | `signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `updateProfileDirect`, `checkUsernameAvailable`, `completeGoogleOnboarding`, `createProfile`, `uploadAvatar` |
-| `lib/actions/bank.actions.ts` | `getBanks`, `lookupAccountName`, `saveBankDetails` |
-| `lib/actions/tag.actions.ts` | `getTagsByUser`, `updateDefaultTag` |
-| `lib/actions/gift.actions.ts` | `initializeGift` |
-| `lib/actions/pool.actions.ts` | `createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors` |
-| `lib/actions/admin.actions.ts` | `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment` |
-| `lib/actions/link.actions.ts` | `getSocialLinks`, `upsertSocialLink`, `deleteSocialLink` |
-| `lib/actions/notification.actions.ts` | `getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead` |
-
-### Paystack Library
-
-| File | Exports |
-|---|---|
-| `lib/paystack/initialize.ts` | `initializePaystackTransaction` |
-| `lib/paystack/webhook.ts` | `verifyPaystackSignature` |
-| `lib/paystack/verify.ts` | `verifyPaystackTransaction` |
-| `lib/paystack/banks.ts` | `fetchSupportedBanks`, `resolveAccountName`, `createPaystackSubaccount` |
-
-### Dashboard Loading Skeletons
-
-| File |
-|---|
-| `app/dashboard/loading.tsx` |
-| `app/dashboard/transactions/loading.tsx` |
-| `app/dashboard/pools/loading.tsx` |
-
-### Dashboard Shell
-
-| File | Notes |
-|---|---|
-| `app/dashboard/layout.tsx` | Session guard, renders DashboardSidebar + main content + BottomNav |
-| `app/dashboard/LogoutButton.tsx` | Signs out → `/login` |
-
-**Layout:** Mobile: `max-width: 480px` centred, `padding: 20px 20px 80px` (clears BottomNav). Desktop (≥768px): black left sidebar 200px + main content `.k-dash-content` (`padding: 40px 48px`). BottomNav hidden on desktop.
-
-### Dashboard Components (`components/dashboard/`)
-
-| Component | File | Key Props |
-|---|---|---|
-| `BottomNav` | `dashboard/BottomNav.tsx` | Unused. File retained but not mounted. |
-| `MobileHeader` | `dashboard/MobileHeader.tsx` | Unused — replaced by mobile support built into Sidebar. File retained but not mounted. |
-| `DashboardSidebar` | `dashboard/DashboardSidebar.tsx` | No props — reads pathname for active state. Black bg, olive active highlight, desktop only via `.k-dash-sidebar` CSS class. |
-| `Sidebar` | `dashboard/Sidebar.tsx` | `displayName, username, avatarUrl` — handles nav for both breakpoints. Desktop (≥768px): fixed 260px left panel. Mobile (<768px): renders `.k-mob-topbar` (black bar + hamburger) and slides in as full-overlay on open; `.k-mob-close-btn` X button inside; backdrop + scroll lock when open. Same nav items, same styling on both. |
-| `DashboardHeader` | `dashboard/DashboardHeader.tsx` | `displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop. |
-| `StatCards` | `dashboard/StatCards.tsx` | `directTotal, poolTotal, giftCount, activePools, currency` |
-| `DashboardProfileCard` | `dashboard/DashboardProfileCard.tsx` | `displayName, username, avatarUrl, bio` — white card with avatar, name, kiima link, bio, share button |
-| `EarningsCard` | `dashboard/EarningsCard.tsx` | `contributions, currency` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown |
-| `RecentGifts` | `dashboard/RecentGifts.tsx` | `contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts |
-| `Toast` | `dashboard/Toast.tsx` | `message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s |
-| `BankAccountSection` | `dashboard/BankAccountSection.tsx` | `userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP |
-| `NotificationBell` | `dashboard/NotificationBell.tsx` | `userId, initialNotifications, initialUnreadCount` — bell button + unread badge + real-time subscription; renders panel on click |
-| `NotificationPanel` | `dashboard/NotificationPanel.tsx` | `notifications, unreadCount, onMarkAsRead, onMarkAllAsRead` — dropdown panel, 380px, empty state, footer mark-all button |
-| `NotificationToast` | `dashboard/NotificationToast.tsx` | `notification, onDismiss` — fixed top-right slide-in, auto-dismisses after 4s |
-
-### Edit Page Section Components (`components/dashboard/edit/`)
-
-| Component | File | Key Props |
-|---|---|---|
-| `AvatarSection` | `dashboard/edit/AvatarSection.tsx` | `userId, initialAvatarUrl, displayName, onChange(url)` — file input, preview, upload to Supabase Storage avatars bucket, remove |
-| `DisplayNameSection` | `dashboard/edit/DisplayNameSection.tsx` | `userId, initialValue, onChange(name)` — text input, 60-char limit with count, yellow Save |
-| `AboutSection` | `dashboard/edit/AboutSection.tsx` | `userId, initialBio, onChange(html)` — Tiptap editor with Bold + Link toolbar; stores HTML in profiles.bio |
-| `GiftLabelSection` | `dashboard/edit/GiftLabelSection.tsx` | `userId, currency, initialLabel, initialAmount, onChange(label, amount)` — emoji picker grid, text input, quick-pick pills, amount input |
-| `ThemeColorSection` | `dashboard/edit/ThemeColorSection.tsx` | `userId, initialColor, onChange(color)` — 6 preset swatches + custom color picker; preview strip |
-| `ShowContributionsSection` | `dashboard/edit/ShowContributionsSection.tsx` | `userId, initialValue: boolean` — pill toggle; auto-saves on change; controls supporter list visibility on gift page |
-| `LivePreviewPanel` | `dashboard/edit/LivePreviewPanel.tsx` | `displayName, username, avatarUrl, bio, themeColor, tagLabel` — desktop-only (≥1200px) phone mockup; updates live from parent state |
-
-### Dashboard Pages
-
-| Route | File |
-|---|---|
-| `/dashboard` | `app/dashboard/page.tsx` |
-| `/dashboard/edit-page` | `app/dashboard/edit-page/page.tsx` + `EditPageClient.tsx` — 5 independent save sections + desktop live preview panel |
-| `/dashboard/transactions` | `app/dashboard/transactions/page.tsx` |
-| `/dashboard/pools` | `app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx` |
-| `/dashboard/pools/[id]` | `app/dashboard/pools/[id]/page.tsx` + `ClosePoolButton.tsx` + `ShowContributorsToggle.tsx` |
-| `/dashboard/links` | `app/dashboard/links/page.tsx` |
-| `/dashboard/settings` | `app/dashboard/settings/page.tsx` + `SettingsClient.tsx` — avatar upload, display name, bio, social links, logout |
-
-### Public Pages
-
-| Route | File |
-|---|---|
-| `/` | `app/page.tsx` |
-| `/[username]` | `app/[username]/page.tsx` |
-| `/[username]/pool/[slug]` | `app/[username]/pool/[slug]/page.tsx` |
-| `/gift/success` | `app/gift/success/page.tsx` |
-| `/gift/cancelled` | `app/gift/cancelled/page.tsx` |
-| `(root)` not-found | `app/not-found.tsx` |
-| `(root)` error | `app/error.tsx` |
-| `/[username]` not-found | `app/[username]/not-found.tsx` |
-| `/[username]/pool/[slug]` not-found | `app/[username]/pool/[slug]/not-found.tsx` |
-
-### Admin Shell
-
-| File | Notes |
-|---|---|
-| `app/admin/layout.tsx` | `is_admin` server-side guard, sidebar shell. Desktop-only. |
-| `app/admin/AdminNav.tsx` | Sidebar nav for all 7 admin sections |
-| `app/admin/AdminLogoutButton.tsx` | Signs out → `/login` |
-
-### Admin Pages
-
-| Route | File | Key client components |
-|---|---|---|
-| `/admin` | `app/admin/page.tsx` | `AdminStatCard` |
-| `/admin/creators` | `app/admin/creators/page.tsx` | `CreatorsClient.tsx` |
-| `/admin/creators/[id]` | `app/admin/creators/[id]/page.tsx` | `SuspendButton.tsx` |
-| `/admin/transactions` | `app/admin/transactions/page.tsx` | `RecheckButton.tsx` |
-| `/admin/pools` | `app/admin/pools/page.tsx` | `ForceCloseButton.tsx` |
-| `/admin/tags` | `app/admin/tags/page.tsx` | `DeleteTagButton.tsx` |
-| `/admin/webhooks` | `app/admin/webhooks/page.tsx` | — |
-| `/admin/settings` | `app/admin/settings/page.tsx` | `SettingsForm.tsx` |
-
-### Database Migrations
-
-| File | Change |
-|---|---|
-| `supabase/migrations/001_initial_schema.sql` | All tables, RLS, platform_settings seed |
-| `supabase/migrations/002_default_tag_trigger.sql` | Default tag trigger on profile insert |
-| `supabase/migrations/003_pool_show_contributors.sql` | ADD show_contributors to support_pools |
-| `supabase/migrations/004_admin_fields.sql` | ADD suspended to profiles (idempotent) |
-| `supabase/migrations/005_social_links.sql` | CREATE social_links table with RLS |
-| `supabase/migrations/006_contributions_fee_columns.sql` | ADD fee + net_amount to contributions (idempotent) |
-| `supabase/migrations/007_payment_refactor.sql` | Rename fee columns; ADD paystack_fee, total_charged, platform_fee_percent |
-| `supabase/migrations/008_update_default_tag.sql` | UPDATE all existing default tags to "Buy me a drink 🥤" |
-| `supabase/migrations/009_contribution_note.sql` | ADD note text column to contributions |
-| `supabase/migrations/010_bank_details.sql` | ADD bank_name, bank_code, account_number, account_name, paystack_subaccount_code to profiles |
-| `supabase/migrations/011_profile_theme_color.sql` | ADD theme_color text DEFAULT '#C87B5C' to profiles |
-| `supabase/migrations/012_notifications.sql` | CREATE notifications table, indexes, RLS policies |
-| `supabase/migrations/013_profile_show_contributions.sql` | ADD show_contributions boolean DEFAULT true to profiles |
-| `supabase/migrations/014_contribution_tag_snapshot.sql` | ADD tag_label text to contributions; backfill from gift_tags |
-
+Cards
+Component	File	Key Props
+`ProfileCard`	`cards/ProfileCard.tsx`	`profile: Profile, showLinkBar?: boolean` (default false; pass true in dashboard only)
+`GiftActionCard`	`cards/GiftActionCard.tsx`	`tags: GiftTag[], currency: Currency`
+`SupportPoolCard`	`cards/SupportPoolCard.tsx`	`pool: SupportPool, currency: Currency`
+`ContributionFeedCard`	`cards/ContributionFeedCard.tsx`	`contributions: Contribution[], heading?: string`
+`DashboardStatCard`	`cards/DashboardStatCard.tsx`	`label: string, value: string, sub: string`
+`AdminStatCard`	`cards/AdminStatCard.tsx`	`label: string, value: string, sub?: string`
+Forms
+Component	File	Key Props
+`GiftForm`	`forms/GiftForm.tsx`	`recipientId: string, tags: GiftTag[], currency: Currency, feePercent: number`
+`ContributeForm`	`forms/ContributeForm.tsx`	`poolId: string, recipientId: string, currency: Currency, isClosed: boolean, feePercent: number`
+`PoolCreateForm`	`forms/PoolCreateForm.tsx`	`userId: string, currency: Currency`
+`SocialLinksForm`	`forms/SocialLinksForm.tsx`	`userId: string, existingLinks: SocialLink[]`
+Shared Atoms
+Component	File	Key Props
+`GoogleButton`	`shared/GoogleButton.tsx`	No props — full-width white Google OAuth button; handles `signInWithOAuth` + loading state
+`GiftTagPill`	`shared/GiftTagPill.tsx`	`tag, selected, onSelect, currency`
+`AnonymousToggle`	`shared/AnonymousToggle.tsx`	`isAnon, displayName?, onChange`
+`ProgressBar`	`shared/ProgressBar.tsx`	`raised: number, goal: number, currency: Currency`
+`ContributionRow`	`shared/ContributionRow.tsx`	`contribution: Contribution, isLast?: boolean, source?: string`
+`CurrencyInput`	`shared/CurrencyInput.tsx`	`currency: Currency, value, onChange?, readOnly?`
+`KiimaButton`	`shared/KiimaButton.tsx`	`children, onClick?, loading?, disabled?, type?, variant?, fullWidth?`
+`SocialLinksRow`	`shared/SocialLinksRow.tsx`	`links: SocialLink[], onDark?: boolean` — pass `onDark` when rendering on black backgrounds
+`DrinkQuantitySelector`	`shared/DrinkQuantitySelector.tsx`	`drinkPrice, currency, selectedQty, onSelect, emoji?: string` — emoji defaults to 🎁; renders `{emoji} × [1][3][5][?]`; rounded-12 tray on warm bg; pill-shaped (100px radius) quantity buttons; olive selected state
+`SocialHandleInput`	`shared/SocialHandleInput.tsx`	`value, onChange, disabled?, selectedPlatform, onPlatformChange, dropdownOpen, onDropdownToggle, onDropdownClose` — platform picker shown only when value starts with `@`
+`StickyGiftButton`	`shared/StickyGiftButton.tsx`	`label: string, amount: number, currency: Currency, targetId?: string` — fixed bottom-right; on click scrolls to gift card; always visible on public creator page
+`EmbedBlock`	`shared/EmbedBlock.tsx`	`url: string` — detects YouTube/Twitter/Spotify; renders appropriate embed; renders nothing for unsupported or empty URLs
+Layout Components
+Component	File	Notes
+`PublicHeader`	`layout/PublicHeader.tsx`	Fixed black header (68px): logo left, dark/light toggle right. Used on public gifter page.
+`MarketingHeader`	`layout/MarketingHeader.tsx`	Landing-style black nav (68px): logo + Product/For Creators links + auth-aware CTA. Used on product, creators, privacy, terms pages.
+Auth Step Components
+Component	File	Key Props
+`SignupProgressBar`	`auth/ProgressBar.tsx`	`step: number, total: number` — thin yellow pill bar, 200px centered
+`OtpInput`	`auth/OtpInput.tsx`	`value, onChange, disabled?` — 6-box OTP input with auto-advance and paste support
+`UsernameStep`	`auth/UsernameStep.tsx`	`onNext(username)` — pill input with kiima.app/ prefix, real-time availability check, fixed bottom bar CTA
+`EmailPasswordStep`	`auth/EmailPasswordStep.tsx`	`username, onBack, onNext(userId, email)` — pill inputs, Google button, fixed bottom bar CTA
+`ProfileStep`	`auth/ProfileStep.tsx`	`userId, email, username, onNext` — avatar upload, name/bio/social/currency, calls createProfile + uploadAvatar
+`VerifyBankStep`	`auth/VerifyBankStep.tsx`	`userId, email` — OTP verification + searchable bank dropdown + account name lookup + saveBankDetails
+Page Components
+Component	File	Key Props
+`GiftPageClient`	`pages/GiftPageClient.tsx`	`recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions, creatorLinks, embedUrl` — renders embed block, link cards, sticky gift button, gift card, supporters
+`CreatorLinkCard`	`pages/CreatorLinkCard.tsx`	`link: CreatorLink` — renders a single external link as a rich card with thumbnail, title, description, and CTA arrow; follows standard card system
+Auth Pages
+Route	File
+`/signup`	`app/(auth)/signup/page.tsx` — 4-step signup flow: username → email/password → profile → OTP + bank
+`/login`	`app/(auth)/login/page.tsx` — Google button + email/password form
+`/forgot-password`	`app/(auth)/forgot-password/page.tsx`
+`/reset-password`	`app/(auth)/reset-password/page.tsx`
+`/onboarding`	`app/onboarding/page.tsx` — 2-step Google signup completion; pre-fills name/avatar from Google metadata; username availability check; currency select
+API Routes
+Route	File
+`/auth/callback`	`app/auth/callback/route.ts` — Google OAuth PKCE exchange; routes new users to /onboarding, returning users to /dashboard
+`/api/auth/callback`	`app/api/auth/callback/route.ts` — Password reset PKCE exchange
+`/api/webhooks/paystack`	`app/api/webhooks/paystack/route.ts`
+Server Actions
+Action file	Exports
+`lib/actions/auth.actions.ts`	`signupAction`, `loginAction`, `forgotPasswordAction`, `resetPasswordAction`, `updateProfile`, `updateProfileDirect`, `checkUsernameAvailable`, `completeGoogleOnboarding`, `createProfile`, `uploadAvatar`
+`lib/actions/bank.actions.ts`	`getBanks`, `lookupAccountName`, `saveBankDetails`
+`lib/actions/tag.actions.ts`	`getTagsByUser`, `updateDefaultTag`
+`lib/actions/gift.actions.ts`	`initializeGift`
+`lib/actions/pool.actions.ts`	`createPool`, `getPools`, `closePool`, `contributePool`, `updateShowContributors`
+`lib/actions/admin.actions.ts`	`suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment`
+`lib/actions/link.actions.ts`	`getSocialLinks`, `upsertSocialLink`, `deleteSocialLink`, `getCreatorLinks`, `upsertCreatorLink`, `deleteCreatorLink`, `reorderCreatorLinks`
+`lib/actions/notification.actions.ts`	`getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead`
+Paystack Library
+File	Exports
+`lib/paystack/initialize.ts`	`initializePaystackTransaction`
+`lib/paystack/webhook.ts`	`verifyPaystackSignature`
+`lib/paystack/verify.ts`	`verifyPaystackTransaction`
+`lib/paystack/banks.ts`	`fetchSupportedBanks`, `resolveAccountName`, `createPaystackSubaccount`
+Dashboard Loading Skeletons
+File
+`app/dashboard/loading.tsx`
+`app/dashboard/transactions/loading.tsx`
+`app/dashboard/pools/loading.tsx`
+Dashboard Shell
+File	Notes
+`app/dashboard/layout.tsx`	Session guard, renders DashboardSidebar + main content + BottomNav
+`app/dashboard/LogoutButton.tsx`	Signs out → `/login`
+Layout: Mobile: `max-width: 480px` centred, `padding: 20px 20px 80px` (clears BottomNav). Desktop (≥768px): black left sidebar 200px + main content `.k-dash-content` (`padding: 40px 48px`). BottomNav hidden on desktop.
+Dashboard Components (`components/dashboard/`)
+Component	File	Key Props
+`BottomNav`	`dashboard/BottomNav.tsx`	Unused. File retained but not mounted.
+`MobileHeader`	`dashboard/MobileHeader.tsx`	Unused — replaced by mobile support built into Sidebar. File retained but not mounted.
+`DashboardSidebar`	`dashboard/DashboardSidebar.tsx`	No props — reads pathname for active state. Black bg, olive active highlight, desktop only via `.k-dash-sidebar` CSS class.
+`Sidebar`	`dashboard/Sidebar.tsx`	`displayName, username, avatarUrl` — handles nav for both breakpoints. Desktop (≥768px): fixed 260px left panel. Mobile (<768px): renders `.k-mob-topbar` (black bar + hamburger) and slides in as full-overlay on open; `.k-mob-close-btn` X button inside; backdrop + scroll lock when open. Same nav items, same styling on both.
+`DashboardHeader`	`dashboard/DashboardHeader.tsx`	`displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop.
+`StatCards`	`dashboard/StatCards.tsx`	`directTotal, poolTotal, giftCount, activePools, currency`
+`DashboardProfileCard`	`dashboard/DashboardProfileCard.tsx`	`displayName, username, avatarUrl, bio` — white card with avatar, name, kiima link, bio, share button
+`EarningsCard`	`dashboard/EarningsCard.tsx`	`contributions, currency` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown
+`RecentGifts`	`dashboard/RecentGifts.tsx`	`contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts
+`Toast`	`dashboard/Toast.tsx`	`message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s
+`BankAccountSection`	`dashboard/BankAccountSection.tsx`	`userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP
+`NotificationBell`	`dashboard/NotificationBell.tsx`	`userId, initialNotifications, initialUnreadCount` — bell button + unread badge + real-time subscription; renders panel on click
+`NotificationPanel`	`dashboard/NotificationPanel.tsx`	`notifications, unreadCount, onMarkAsRead, onMarkAllAsRead` — dropdown panel, 380px, empty state, footer mark-all button
+`NotificationToast`	`dashboard/NotificationToast.tsx`	`notification, onDismiss` — fixed top-right slide-in, auto-dismisses after 4s
+`LinksManager`	`dashboard/LinksManager.tsx`	`userId: string, initialLinks: CreatorLink[]` — CRUD UI for creator_links; add/edit/delete/toggle active/reorder; used on /dashboard/links
+Edit Page Section Components (`components/dashboard/edit/`)
+Component	File	Key Props
+`AvatarSection`	`dashboard/edit/AvatarSection.tsx`	`userId, initialAvatarUrl, displayName, onChange(url)` — file input, preview, upload to Supabase Storage avatars bucket, remove
+`DisplayNameSection`	`dashboard/edit/DisplayNameSection.tsx`	`userId, initialValue, onChange(name)` — text input, 60-char limit with count, yellow Save
+`AboutSection`	`dashboard/edit/AboutSection.tsx`	`userId, initialBio, onChange(html)` — Tiptap editor with Bold + Link toolbar; stores HTML in profiles.bio
+`GiftLabelSection`	`dashboard/edit/GiftLabelSection.tsx`	`userId, currency, initialLabel, initialAmount, onChange(label, amount)` — emoji picker grid, text input, quick-pick pills, amount input
+`ThemeColorSection`	`dashboard/edit/ThemeColorSection.tsx`	`userId, initialColor, onChange(color)` — 6 preset swatches + custom color picker; preview strip
+`ShowContributionsSection`	`dashboard/edit/ShowContributionsSection.tsx`	`userId, initialValue: boolean` — pill toggle; auto-saves on change; controls supporter list visibility on gift page
+`EmbedSection`	`dashboard/edit/EmbedSection.tsx`	`userId, initialEmbedUrl: string` — URL input for embed slot; validates YouTube/Twitter/Spotify only; auto-saves; clears to remove embed
+`LivePreviewPanel`	`dashboard/edit/LivePreviewPanel.tsx`	`displayName, username, avatarUrl, bio, themeColor, tagLabel` — desktop-only (≥1200px) phone mockup; updates live from parent state
+Dashboard Pages
+Route	File
+`/dashboard`	`app/dashboard/page.tsx`
+`/dashboard/edit-page`	`app/dashboard/edit-page/page.tsx` + `EditPageClient.tsx` — 6 independent save sections + desktop live preview panel
+`/dashboard/transactions`	`app/dashboard/transactions/page.tsx`
+`/dashboard/pools`	`app/dashboard/pools/page.tsx` + `PoolsClient.tsx` + `CopyPoolLink.tsx`
+`/dashboard/pools/[id]`	`app/dashboard/pools/[id]/page.tsx` + `ClosePoolButton.tsx` + `ShowContributorsToggle.tsx`
+`/dashboard/links`	`app/dashboard/links/page.tsx` — renders LinksManager for creator_links CRUD
+`/dashboard/settings`	`app/dashboard/settings/page.tsx` + `SettingsClient.tsx` — avatar upload, display name, bio, social links, logout
+Public Pages
+Route	File
+`/`	`app/page.tsx`
+`/[username]`	`app/[username]/page.tsx`
+`/[username]/pool/[slug]`	`app/[username]/pool/[slug]/page.tsx`
+`/gift/success`	`app/gift/success/page.tsx`
+`/gift/cancelled`	`app/gift/cancelled/page.tsx`
+`(root)` not-found	`app/not-found.tsx`
+`(root)` error	`app/error.tsx`
+`/[username]` not-found	`app/[username]/not-found.tsx`
+`/[username]/pool/[slug]` not-found	`app/[username]/pool/[slug]/not-found.tsx`
+Admin Shell
+File	Notes
+`app/admin/layout.tsx`	`is_admin` server-side guard, sidebar shell. Desktop-only.
+`app/admin/AdminNav.tsx`	Sidebar nav for all 7 admin sections
+`app/admin/AdminLogoutButton.tsx`	Signs out → `/login`
+Admin Pages
+Route	File	Key client components
+`/admin`	`app/admin/page.tsx`	`AdminStatCard`
+`/admin/creators`	`app/admin/creators/page.tsx`	`CreatorsClient.tsx`
+`/admin/creators/[id]`	`app/admin/creators/[id]/page.tsx`	`SuspendButton.tsx`
+`/admin/transactions`	`app/admin/transactions/page.tsx`	`RecheckButton.tsx`
+`/admin/pools`	`app/admin/pools/page.tsx`	`ForceCloseButton.tsx`
+`/admin/tags`	`app/admin/tags/page.tsx`	`DeleteTagButton.tsx`
+`/admin/webhooks`	`app/admin/webhooks/page.tsx`	—
+`/admin/settings`	`app/admin/settings/page.tsx`	`SettingsForm.tsx`
+Admin Components (`components/admin/`)
+Component	File	Purpose
+`AdminStatCard`	`cards/AdminStatCard.tsx`	Platform-level stat display
+`CreatorRow`	`admin/CreatorRow.tsx`	Single creator in the creators list
+`TransactionRow`	`admin/TransactionRow.tsx`	Single transaction in the log
+`WebhookRow`	`admin/WebhookRow.tsx`	Single webhook event in log
+`PoolAdminRow`	`admin/PoolAdminRow.tsx`	Single pool in admin pool list
+`AdminConfirmDialog`	`admin/AdminConfirmDialog.tsx`	Confirmation modal for destructive actions
+`PlatformSettingsForm`	`admin/PlatformSettingsForm.tsx`	Settings page form
 ---
-
-## 8. TYPESCRIPT TYPES
-
+8. TYPESCRIPT TYPES
 Full definitions live in `types/index.ts`. Non-obvious fields to know:
-
 ```typescript
 // Contribution — the 5 fee fields are critical to understand:
 gift_amount     // what gifter intends to send the creator
@@ -789,31 +806,41 @@ total_charged   // gift_amount + paystack_fee (what Paystack charges)
 // Always display gift_amount, never total_charged, in contribution feeds.
 // PlatformSettings.platform_fee_percent — never hardcode 3.
 // ProfileWithAdmin.suspended — checked on public gift page to block suspended creators.
+
+// CreatorLink — new type for creator_links table:
+interface CreatorLink {
+  id: string
+  user_id: string
+  title: string
+  url: string
+  description: string | null
+  thumbnail_url: string | null
+  sort_order: number
+  is_active: boolean
+  created_at: string
+}
+
+// Profile now includes embed_url:
+// embed_url: string | null  — YouTube/Twitter/Spotify URL for the embed slot
 ```
-
 ---
-
-## 9. KEY UTILITY FUNCTIONS
-
+9. KEY UTILITY FUNCTIONS
 These must be used consistently. Never inline their logic.
-
-### `formatCurrency(amount, currency)`
+`formatCurrency(amount, currency)`
 ```typescript
 // lib/utils/currency.ts
 // Always use this. Never manually concatenate ₦ + number.
 formatCurrency(5000, 'NGN')  // → "₦5,000"
 formatCurrency(20, 'USD')    // → "$20.00"
 ```
-
-### `toKobo(amount)`
+`toKobo(amount)`
 ```typescript
 // lib/utils/currency.ts
 // Paystack requires amounts in kobo (NGN × 100). Always convert before API calls.
 toKobo(10250)  // → 1025000
 // Never send naira directly to Paystack — always convert to kobo first.
 ```
-
-### `resolveDisplayName(displayName, isAnonymous)`
+`resolveDisplayName(displayName, isAnonymous)`
 ```typescript
 // lib/utils/display-name.ts
 // Always use this for contribution display.
@@ -821,35 +848,28 @@ toKobo(10250)  // → 1025000
 resolveDisplayName("Victor", false)  // → "Victor"
 resolveDisplayName(null, true)       // → "Anonymous" (all anonymous cases → "Anonymous")
 ```
-
-### `formatContributionLine(contribution)`
+`formatContributionLine(contribution)`
 ```typescript
 // Produces: "Victor sent ₦5,000" or "Anonymous bought a drink 🥤"
 // Uses gift_amount for the display value — not total_charged.
 // Always use this. Never format contributions inline.
 ```
-
-### `calculateAllFees(giftAmount, feePercent)`
+`calculateAllFees(giftAmount, feePercent)`
 ```typescript
 // lib/utils/fee.ts — always use this, never inline fee math.
 // feePercent from platform_settings — never hardcode 3.
 // NGN: paystack_fee = min((gift_amount × 0.015) + 100, 2000)
 // Returns: { gift_amount, paystack_fee, kiima_fee, creator_amount, total_charged }
 ```
-
-### `formatFeeBreakdown(giftAmount, feePercent, currency)`
+`formatFeeBreakdown(giftAmount, feePercent, currency)`
 ```typescript
 // lib/utils/fee.ts — live fee display strings for GiftForm / ContributeForm.
 // Returns: { giftLine, feeLine, totalLine }
 // e.g. "You're sending ₦10,000" · "Processing fee ₦250" · "Total charged ₦10,250"
 ```
-
 ---
-
-## 10. V1 OUT OF SCOPE — DO NOT BUILD
-
+10. V1 OUT OF SCOPE — DO NOT BUILD
 If any of the following is suggested, stop and re-read the spec.
-
 ```
 ❌ Real-time updates (WebSockets, Supabase Realtime)
 ❌ Push or email notifications
@@ -865,14 +885,14 @@ If any of the following is suggested, stop and re-read the spec.
 ❌ Comment or message with gift
 ❌ Creator verification badges
 ❌ Mobile app (web only, mobile-first)
+❌ Email/WhatsApp audience capture (V2+)
+❌ UTM-based page personalization (V2+)
+❌ Digital product sales (V2+)
+❌ Creator Pro subscription tier (V2+)
 ```
-
 > ✅ Admin panel IS in scope — see Section 15.
-
 ---
-
-## 11. ENVIRONMENT VARIABLES
-
+11. ENVIRONMENT VARIABLES
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
@@ -887,13 +907,9 @@ PAYSTACK_WEBHOOK_SECRET=          # webhook signature verification
 # App
 NEXT_PUBLIC_APP_URL=              # https://kiima.app (or localhost)
 ```
-
 ---
-
-## 12. BEFORE YOU WRITE ANY CODE — CHECKLIST
-
+12. BEFORE YOU WRITE ANY CODE — CHECKLIST
 Run through this before every code generation. Every session.
-
 ```
 □ Have I read CLAUDE.md in full this session?
 
@@ -925,6 +941,15 @@ Run through this before every code generation. Every session.
 □ Does this touch social links or the ProfileCard?
   → Re-read Section 4.8 before proceeding.
 
+□ Does this touch creator link cards?
+  → Re-read Section 4.9 before proceeding.
+
+□ Does this touch the embed slot?
+  → Re-read Section 4.10 before proceeding.
+
+□ Does this touch the sticky gift button?
+  → Re-read Section 4.11 before proceeding.
+
 □ Am I building something inside /admin?
   → Re-read Section 15 before proceeding.
 
@@ -940,11 +965,8 @@ Run through this before every code generation. Every session.
 □ BEFORE FINISHING: Have I updated Section 7 (Component Inventory)?
 □ BEFORE FINISHING: Have I appended this session's entry to BUILD_LOG.md?
 ```
-
 ---
-
-## 13. NAMING CONVENTIONS
-
+13. NAMING CONVENTIONS
 ```
 Components:   PascalCase              → GiftTagPill.tsx
 Utilities:    camelCase               → formatCurrency.ts
@@ -959,25 +981,16 @@ Branch naming:
   fix/anonymous-toggle
   chore/db-schema-update
 ```
-
 ---
-
-## 14. SESSION HANDOFF NOTES
-
+14. SESSION HANDOFF NOTES
 > Full build history is in BUILD_LOG.md in the project root.
 > Read BUILD_LOG.md at the start of any session that needs
 > historical context. For most coding sessions, it is not needed.
-
 ---
-
-## 15. ADMIN PANEL
-
+15. ADMIN PANEL
 The admin panel is for the platform owner only. It is built in Phase 8, after the creator and gifter experience is complete.
-
 ---
-
-### 15.1 Access Control Rules
-
+15.1 Access Control Rules
 ```
 Rule 1: The admin area lives at /admin — completely separate from /dashboard.
 
@@ -997,26 +1010,19 @@ Rule 4: All admin data fetches use `lib/supabase/admin.ts` (service role client)
 Rule 5: All admin mutations are server actions in `lib/actions/admin.actions.ts` only.
         Never inline admin mutations in page components.
 ```
-
 ---
-
-### 15.2 Admin Pages
-
-| Route | Purpose |
-|---|---|
-| `/admin` | Platform stats: creator count, volume (per currency), contribution count, active pools, new signups (7 days), stuck-pending warnings (>1hr) |
-| `/admin/creators` | All creator accounts list (newest first); search by username/name/email; click through to detail |
-| `/admin/creators/[id]` | Creator profile, tags, pools, contribution history; suspend/unsuspend (sets `suspended` flag, no data deletion) |
-| `/admin/transactions` | All platform contributions; filter by status/date/creator; Paystack ref search; re-check pending button |
-| `/admin/pools` | All pools; filter open/closed; force-close action; click for contributor list |
-| `/admin/tags` | All custom tags (no defaults); delete action for offensive/inappropriate labels |
-| `/admin/webhooks` | Read-only Paystack webhook log; failed events highlighted red; ignored events muted |
-| `/admin/settings` | Default tag amounts per currency (NGN/USD/GBP/EUR) + maintenance mode toggle; saves to `platform_settings` |
-
+15.2 Admin Pages
+Route	Purpose
+`/admin`	Platform stats: creator count, volume (per currency), contribution count, active pools, new signups (7 days), stuck-pending warnings (>1hr)
+`/admin/creators`	All creator accounts list (newest first); search by username/name/email; click through to detail
+`/admin/creators/[id]`	Creator profile, tags, pools, contribution history; suspend/unsuspend (sets `suspended` flag, no data deletion)
+`/admin/transactions`	All platform contributions; filter by status/date/creator; Paystack ref search; re-check pending button
+`/admin/pools`	All pools; filter open/closed; force-close action; click for contributor list
+`/admin/tags`	All custom tags (no defaults); delete action for offensive/inappropriate labels
+`/admin/webhooks`	Read-only Paystack webhook log; failed events highlighted red; ignored events muted
+`/admin/settings`	Default tag amounts per currency (NGN/USD/GBP/EUR) + maintenance mode toggle; saves to `platform_settings`
 ---
-
-### 15.3 Admin Design Rules
-
+15.3 Admin Design Rules
 ```
 - Same card system, colours, and fonts as the rest of Kiima
 - Table rows replace card grids where data is dense (transaction log, creator list)
@@ -1026,31 +1032,21 @@ Rule 5: All admin mutations are server actions in `lib/actions/admin.actions.ts`
 - Admin pages are NOT mobile-optimised — admin is a desktop-only tool
 - Do not use warm copy tone in admin — clear, direct, functional language is correct here
 ```
-
 ---
-
-### 15.4 Admin Component Inventory
-
-| Component | File | Purpose |
-|---|---|---|
-| `AdminStatCard` | `cards/AdminStatCard.tsx` | Platform-level stat display |
-| `CreatorRow` | `admin/CreatorRow.tsx` | Single creator in the creators list |
-| `TransactionRow` | `admin/TransactionRow.tsx` | Single transaction in the log |
-| `WebhookRow` | `admin/WebhookRow.tsx` | Single webhook event in log |
-| `PoolAdminRow` | `admin/PoolAdminRow.tsx` | Single pool in admin pool list |
-| `AdminConfirmDialog` | `admin/AdminConfirmDialog.tsx` | Confirmation modal for destructive actions |
-| `PlatformSettingsForm` | `admin/PlatformSettingsForm.tsx` | Settings page form |
-
+15.4 Admin Component Inventory
+Component	File	Purpose
+`AdminStatCard`	`cards/AdminStatCard.tsx`	Platform-level stat display
+`CreatorRow`	`admin/CreatorRow.tsx`	Single creator in the creators list
+`TransactionRow`	`admin/TransactionRow.tsx`	Single transaction in the log
+`WebhookRow`	`admin/WebhookRow.tsx`	Single webhook event in log
+`PoolAdminRow`	`admin/PoolAdminRow.tsx`	Single pool in admin pool list
+`AdminConfirmDialog`	`admin/AdminConfirmDialog.tsx`	Confirmation modal for destructive actions
+`PlatformSettingsForm`	`admin/PlatformSettingsForm.tsx`	Settings page form
 ---
-
-### 15.5 Admin Server Actions
-
+15.5 Admin Server Actions
 All in `lib/actions/admin.actions.ts`: `suspendCreator`, `unsuspendCreator`, `forceClosePool`, `deleteCustomTag`, `updatePlatformSettings`, `recheckPaystackPayment`.
-
 ---
-
-### 15.6 What the Admin Panel Must NEVER Do
-
+15.6 What the Admin Panel Must NEVER Do
 ```
 ❌ Delete creator accounts or their data
 ❌ View anonymous contributor identity (anonymity is absolute — even for admin)
@@ -1059,82 +1055,63 @@ All in `lib/actions/admin.actions.ts`: `suspendCreator`, `unsuspendCreator`, `fo
 ❌ Promote another user to admin via UI
 ❌ Access Paystack dashboard directly — use the Paystack API only
 ```
-
-
-## 16. LANDING PAGE DESIGN BRIEF
-
-### 16.1 Overview
+---
+16. LANDING PAGE DESIGN BRIEF
+16.1 Overview
 `app/page.tsx` must mirror the reference image pixel-perfectly using an iterative screenshot loop.
-
-### 16.2 Reference Image
+16.2 Reference Image
 Upload the reference image at the start of the session. It is the single source of truth for layout, spacing, typography, colours, and component structure.
-
-### 16.3 Iterative Screenshot Loop — MANDATORY
-
+16.3 Iterative Screenshot Loop — MANDATORY
 Before declaring the page done, Claude MUST run this loop:
-
 Step 1 — Write the initial page based on the reference image.
-
 Step 2 — Run `node scripts/screenshot.js` after every change (captures 1440px desktop + 390px/450px mobile). Script is already in the repo.
-
 Step 4 — After each screenshot, compare it against the reference image:
-  - Check layout, spacing, font sizes, colours, alignment section by section
-  - List every specific discrepancy found (do not generalise — be exact)
-  - Fix each discrepancy in app/page.tsx
-  - Re-run the screenshot script
-  - Repeat
-
+Check layout, spacing, font sizes, colours, alignment section by section
+List every specific discrepancy found (do not generalise — be exact)
+Fix each discrepancy in app/page.tsx
+Re-run the screenshot script
+Repeat
 Step 5 — Only stop iterating when ALL of the following pass:
-
-  DESKTOP CHECKLIST:
-  □ Overall layout matches reference at 1440px width
-  □ Navbar height, logo position, and CTA buttons match reference
-  □ Hero section headline size, weight, and line height match reference
-  □ Hero subtext size and colour match reference
-  □ Hero CTA button shape, colour, and text match reference
-  □ All section vertical spacing matches reference
-  □ All card border radius, shadow, and padding match reference
-  □ All font families render correctly (Fraunces display, Plus Jakarta Sans body)
-  □ Colour values match reference exactly (use eyedropper logic)
-  □ Images or mockups are positioned correctly
-  □ Footer layout, link columns, and bottom bar match reference
-
-  MOBILE CHECKLIST (390px):
-  □ No horizontal scroll
-  □ All sections stack to single column
-  □ Navbar collapses — only logo and primary CTA visible
-  □ Hero headline scales correctly
-  □ All buttons are full width with min 44px tap height
-  □ Font sizes remain readable without zooming
-  □ Cards stack vertically with correct gap
-
-  MINIMUM ITERATIONS: 5
-  Do not stop before 5 complete screenshot-compare-fix cycles.
-  If after 5 iterations discrepancies remain, continue until they are resolved.
-
-### 16.4 Design System Constraints
+DESKTOP CHECKLIST:
+□ Overall layout matches reference at 1440px width
+□ Navbar height, logo position, and CTA buttons match reference
+□ Hero section headline size, weight, and line height match reference
+□ Hero subtext size and colour match reference
+□ Hero CTA button shape, colour, and text match reference
+□ All section vertical spacing matches reference
+□ All card border radius, shadow, and padding match reference
+□ All font families render correctly (Fraunces display, Plus Jakarta Sans body)
+□ Colour values match reference exactly (use eyedropper logic)
+□ Images or mockups are positioned correctly
+□ Footer layout, link columns, and bottom bar match reference
+MOBILE CHECKLIST (390px):
+□ No horizontal scroll
+□ All sections stack to single column
+□ Navbar collapses — only logo and primary CTA visible
+□ Hero headline scales correctly
+□ All buttons are full width with min 44px tap height
+□ Font sizes remain readable without zooming
+□ Cards stack vertically with correct gap
+MINIMUM ITERATIONS: 5
+Do not stop before 5 complete screenshot-compare-fix cycles.
+If after 5 iterations discrepancies remain, continue until they are resolved.
+16.4 Design System Constraints
 Follow Section 3 in full — all colours, spacing, radii, shadows, and fonts must use CSS variables from `tokens.css`. If the reference uses a colour not in the token system, add it to `tokens.css` first.
-
-### 16.5 Session Start Instructions
+16.5 Session Start Instructions
 When starting the landing page session, paste this into Claude Code:
-
-  "Read CLAUDE.md Section 16 fully before writing a single line of code.
-   Here is the reference image: [upload image here]
-   Build app/page.tsx to match this image exactly using the iterative 
-   screenshot loop from Section 16.3. Do not stop until all checklist 
-   items in Section 16.5 pass. Run a minimum of 5 screenshot iterations.
-   npm run dev is already running on localhost:3000."
-
-### 16.6 Output Files
+"Read CLAUDE.md Section 16 fully before writing a single line of code.
+Here is the reference image: [upload image here]
+Build app/page.tsx to match this image exactly using the iterative
+screenshot loop from Section 16.3. Do not stop until all checklist
+items in Section 16.5 pass. Run a minimum of 5 screenshot iterations.
+npm run dev is already running on localhost:3000."
+16.6 Output Files
 When the session is complete, the following must exist:
-  - app/page.tsx — the final landing page
-  - scripts/screenshot.js — the screenshot script (commit this)
-  - scripts/screenshot-desktop.png — final desktop result (do not commit)
-  - scripts/screenshot-mobile.png — final mobile result (do not commit)
-
+app/page.tsx — the final landing page
+scripts/screenshot.js — the screenshot script (commit this)
+scripts/screenshot-desktop.png — final desktop result (do not commit)
+scripts/screenshot-mobile.png — final mobile result (do not commit)
 Add screenshot-desktop.png and screenshot-mobile.png to .gitignore.
-
 Append this session's entry to BUILD_LOG.md when done.
 ---
-
-*This document is the contract. When in doubt, refer back here. The spec is the truth.*
+This document is the contract. When in doubt, refer back here. The spec is the truth.

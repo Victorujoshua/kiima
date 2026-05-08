@@ -3,11 +3,11 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTagsByUser } from '@/lib/actions/tag.actions';
-import { getSocialLinks } from '@/lib/actions/link.actions';
+import { getSocialLinks, getCreatorLinks } from '@/lib/actions/link.actions';
 import GiftPageClient from '@/components/pages/GiftPageClient';
 import PublicHeader from '@/components/layout/PublicHeader';
 import SocialLinksRow from '@/components/shared/SocialLinksRow';
-import type { Profile, Currency, SocialLink, GiftTag, Contribution } from '@/types';
+import type { Profile, Currency, SocialLink, GiftTag, Contribution, CreatorLink } from '@/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kiima.app';
 
@@ -67,9 +67,10 @@ export default async function UserPage({ params, searchParams }: PageProps) {
   }
 
   const admin = createAdminClient();
-  const [tags, links, settingsResult, recentResult, countResult] = await Promise.all([
+  const [tags, links, creatorLinks, settingsResult, recentResult, countResult] = await Promise.all([
     getTagsByUser(profile.id),
     getSocialLinks(profile.id),
+    getCreatorLinks(profile.id, true),
     admin.from('platform_settings').select('platform_fee_percent').limit(1).single(),
     supabase
       .from('contributions')
@@ -90,6 +91,7 @@ export default async function UserPage({ params, searchParams }: PageProps) {
   const feePercent = settingsResult.data?.platform_fee_percent ?? 3;
   const contributions = (recentResult.data ?? []) as Contribution[];
   const contributorCount = countResult.count ?? 0;
+  const embedUrl = (profile as Profile & { embed_url?: string | null }).embed_url ?? null;
 
   const defaultTag = (tags as GiftTag[]).find(t => t.is_default);
   if (!defaultTag) notFound();
@@ -170,6 +172,8 @@ export default async function UserPage({ params, searchParams }: PageProps) {
               contributions={contributions}
               contributorCount={contributorCount}
               showContributions={(profile as any).show_contributions ?? true}
+              creatorLinks={creatorLinks as CreatorLink[]}
+              embedUrl={embedUrl}
             />
           </div>
 
