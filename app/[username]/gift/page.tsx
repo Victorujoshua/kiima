@@ -133,6 +133,8 @@ export default async function GiftPage({ params, searchParams }: PageProps) {
           contributions={contributions}
           contributorCount={contributorCount}
           showContributions={(profile as any).show_contributions ?? true}
+          creatorLinks={[]}
+          embedUrl={null}
         />
 
       </div>
