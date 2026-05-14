@@ -67,6 +67,6 @@ export const config = {
      *   - /api/auth/callback (Supabase PKCE code exchange — password reset)
      *   - /auth/callback (Google OAuth code exchange)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/auth/callback|auth/callback).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/auth/callback|api/admin/migrate-subaccounts|auth/callback).*)',
   ],
 };

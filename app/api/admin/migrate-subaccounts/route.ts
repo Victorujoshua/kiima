@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createPaystackSubaccount } from '@/lib/paystack/banks';
 
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
-  // Protect: require service role key in Authorization header
-  const authHeader = req.headers.get('authorization') ?? '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  if (!token || token !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const authHeader = req.headers.get('Authorization');
+  const token = authHeader?.replace('Bearer ', '');
+
+  if (token !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
