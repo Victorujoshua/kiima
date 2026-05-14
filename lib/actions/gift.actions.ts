@@ -47,10 +47,10 @@ export async function initializeGift(
   // Unique reference: kma_ prefix + timestamp + random suffix
   const reference = `kma_${Date.now()}_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
 
-  // Fetch creator profile for currency + username
+  // Fetch creator profile for currency, username, and subaccount
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('currency, username')
+    .select('currency, username, paystack_subaccount_code')
     .eq('id', recipientId)
     .single();
 
@@ -114,13 +114,16 @@ export async function initializeGift(
   }
 
   try {
-    // Charge total_charged (includes Paystack processing fee paid by gifter)
+    // Charge total_charged (includes Paystack processing fee paid by gifter).
+    // Split via subaccount: kiima_fee routes to Kiima's account, remainder to creator.
     const { authorizationUrl } = await initializePaystackTransaction({
-      email:       'gift@kiima.app',
-      amount:      fees.total_charged,
-      currency:    profile.currency,
+      email:             'gift@kiima.app',
+      amount:            fees.total_charged,
+      currency:          profile.currency,
       reference,
       callbackUrl,
+      subaccountCode:    profile.paystack_subaccount_code ?? undefined,
+      transactionCharge: profile.paystack_subaccount_code ? fees.kiima_fee : undefined,
       metadata: {
         recipient_id:  recipientId,
         pool_id:       poolId,
