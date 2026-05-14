@@ -18,6 +18,7 @@ export default async function DashboardPage() {
     { data: profile },
     { data: earningsData },
     { data: recentData },
+    { data: withdrawalsData },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -39,6 +40,12 @@ export default async function DashboardPage() {
       .eq('status', 'confirmed')
       .order('created_at', { ascending: false })
       .limit(5),
+
+    supabase
+      .from('withdrawals')
+      .select('amount')
+      .eq('user_id', userId)
+      .neq('status', 'cancelled'),
   ]);
 
   const currency    = (profile?.currency ?? 'NGN') as Currency;
@@ -50,8 +57,11 @@ export default async function DashboardPage() {
   const accountNumber = profile?.account_number ?? null;
   const hasBankAccount = !!(bankName && accountNumber);
 
-  const allContributions  = (earningsData ?? []) as { gift_amount: number; pool_id: string | null; created_at: string }[];
+  const allContributions    = (earningsData ?? []) as { gift_amount: number; pool_id: string | null; created_at: string }[];
   const recentContributions = (recentData ?? []) as Contribution[];
+  const totalWithdrawn      = (withdrawalsData ?? []).reduce((s, w) => s + Number(w.amount), 0);
+  const totalReceived       = allContributions.reduce((s, c) => s + Number(c.gift_amount), 0);
+  const availableBalance    = totalReceived - totalWithdrawn;
 
   return (
     <div>
@@ -83,6 +93,7 @@ export default async function DashboardPage() {
         currency={currency}
         bankName={bankName}
         accountNumber={accountNumber}
+        availableBalance={availableBalance}
       />
 
       <RecentGifts contributions={recentContributions} currency={currency} creatorName={displayName} />

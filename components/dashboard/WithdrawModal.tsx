@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatCurrency } from '@/lib/utils/currency';
+import { requestWithdrawal } from '@/lib/actions/withdrawal.actions';
 import type { Currency } from '@/types';
 
 interface Props {
@@ -16,16 +17,26 @@ interface Props {
 
 export default function WithdrawModal({ isOpen, onClose, bankName, accountNumber, currency, balance }: Props) {
   const router = useRouter();
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount]       = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]         = useState<string | null>(null);
+  const [success, setSuccess]     = useState(false);
+
+  // Reset state each time modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setAmount('');
+      setError(null);
+      setSuccess(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const hasBankAccount = !!(bankName && accountNumber);
-  const masked = accountNumber ? `****${accountNumber.slice(-4)}` : '';
-  const numericAmount = Number(amount);
-  const canSubmit = numericAmount > 0 && numericAmount <= balance && !submitting;
+  const masked         = accountNumber ? `****${accountNumber.slice(-4)}` : '';
+  const numericAmount  = Number(amount);
+  const canSubmit      = numericAmount > 0 && numericAmount <= balance && !submitting;
 
   function handleBackdropClick(e: React.MouseEvent) {
     if (e.target === e.currentTarget) onClose();
@@ -35,9 +46,14 @@ export default function WithdrawModal({ isOpen, onClose, bankName, accountNumber
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
-    // TODO: implement withdrawal action
+    const result = await requestWithdrawal(numericAmount);
     setSubmitting(false);
-    setError('Withdrawals are not yet enabled. Check back soon.');
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setSuccess(true);
+      router.refresh();
+    }
   }
 
   return (
@@ -49,7 +65,20 @@ export default function WithdrawModal({ isOpen, onClose, bankName, accountNumber
           <button type="button" onClick={onClose} style={closeBtnStyle} aria-label="Close">✕</button>
         </div>
 
-        {!hasBankAccount ? (
+        {/* ── Success state ── */}
+        {success ? (
+          <div style={successStateStyle}>
+            <div style={successIconStyle}>✓</div>
+            <p style={successHeadingStyle}>Withdrawal requested</p>
+            <p style={successBodyStyle}>
+              We&apos;ll process your withdrawal of {formatCurrency(numericAmount, currency)} within 24 hours.
+              Funds will be sent to {bankName} {masked}.
+            </p>
+            <button type="button" onClick={onClose} style={doneBtnStyle}>
+              Done
+            </button>
+          </div>
+        ) : !hasBankAccount ? (
           /* ── No bank account state ── */
           <div style={noBankStateStyle}>
             <span style={bankEmojiStyle}>🏦</span>
@@ -176,6 +205,60 @@ const closeBtnStyle: React.CSSProperties = {
   cursor: 'pointer',
   padding: '4px 8px',
   lineHeight: 1,
+};
+
+const successStateStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  textAlign: 'center',
+  padding: '8px 0 4px',
+  gap: 8,
+};
+
+const successIconStyle: React.CSSProperties = {
+  width: 52,
+  height: 52,
+  borderRadius: '50%',
+  background: '#EEF8F0',
+  border: '1px solid #B8E4C4',
+  color: '#3D9B56',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 22,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 4,
+};
+
+const successHeadingStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 16,
+  color: '#1C1916',
+  margin: 0,
+};
+
+const successBodyStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  color: '#9A9089',
+  lineHeight: 1.55,
+  margin: '4px 0 12px',
+  maxWidth: 300,
+};
+
+const doneBtnStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 14,
+  color: '#ffffff',
+  background: '#1C1916',
+  border: 'none',
+  borderRadius: 100,
+  padding: '12px 32px',
+  cursor: 'pointer',
 };
 
 const noBankStateStyle: React.CSSProperties = {

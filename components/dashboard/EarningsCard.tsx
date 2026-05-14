@@ -14,10 +14,11 @@ interface ContributionItem {
 }
 
 interface Props {
-  contributions: ContributionItem[];
-  currency:      Currency;
-  bankName:      string | null;
-  accountNumber: string | null;
+  contributions:    ContributionItem[];
+  currency:         Currency;
+  bankName:         string | null;
+  accountNumber:    string | null;
+  availableBalance: number;
 }
 
 const PERIOD_MS: Record<Period, number | null> = {
@@ -26,7 +27,7 @@ const PERIOD_MS: Record<Period, number | null> = {
   'all': null,
 };
 
-export default function EarningsCard({ contributions, currency, bankName, accountNumber }: Props) {
+export default function EarningsCard({ contributions, currency, bankName, accountNumber, availableBalance }: Props) {
   const [period, setPeriod]           = useState<Period>('30d');
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
@@ -40,8 +41,7 @@ export default function EarningsCard({ contributions, currency, bankName, accoun
   const poolTotal   = filtered.filter(c =>  c.pool_id).reduce((s, c) => s + Number(c.gift_amount), 0);
   const grandTotal  = directTotal + poolTotal;
 
-  // All-time total for withdrawal balance
-  const allTimeTotal = contributions.reduce((s, c) => s + Number(c.gift_amount), 0);
+  // allTimeTotal kept for reference; availableBalance (prop) is what the modal uses
 
   return (
     <>
@@ -96,7 +96,7 @@ export default function EarningsCard({ contributions, currency, bankName, accoun
         bankName={bankName}
         accountNumber={accountNumber}
         currency={currency}
-        balance={allTimeTotal}
+        balance={availableBalance}
       />
     </>
   );
