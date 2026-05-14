@@ -5,6 +5,28 @@
 ---
 
 ```
+Date: 2026-05-14 (session 14)
+Built:
+  - Bank verification OTP replaced with Loops email delivery
+    sendBankVerificationOTP → Loops template cmp56hiez02x10j0dqwukp54x
+    Variables: firstname, otpcode. 10-minute expiry.
+  - lib/utils/otp.ts: generateOTP, sendAndStoreOTP, verifyStoredOTP
+    (admin client, stores in otp_verifications table, deletes on use)
+  - lib/actions/otp.actions.ts: sendBankOTP, confirmBankOTP server actions
+  - BankAccountSection: wired to new actions, removed Supabase auth OTP
+  - Migration 017: otp_verifications table — run in Supabase SQL Editor
+
+Next:
+  - Run migration 017_otp_verifications.sql in Supabase SQL Editor
+  - Test bank OTP flow end-to-end in production
+
+Open issues:
+  - None
+```
+
+---
+
+```
 Date: 2026-05-14 (session 13)
 Built:
   - Paystack subaccount splits activated on all payments (initializeGift now
