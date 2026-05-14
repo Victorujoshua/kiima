@@ -676,7 +676,7 @@ Component	File	Key Props
 `UsernameStep`	`auth/UsernameStep.tsx`	`onNext(username)` — pill input with kiima.app/ prefix, real-time availability check, fixed bottom bar CTA
 `EmailPasswordStep`	`auth/EmailPasswordStep.tsx`	`username, onBack, onNext(userId, email)` — pill inputs, Google button, fixed bottom bar CTA
 `ProfileStep`	`auth/ProfileStep.tsx`	`userId, email, username, onNext` — avatar upload, name/bio/social/currency, calls createProfile + uploadAvatar
-`VerifyBankStep`	`auth/VerifyBankStep.tsx`	`userId, email` — OTP verification + searchable bank dropdown + account name lookup + saveBankDetails
+`VerifyEmailStep`	`auth/VerifyEmailStep.tsx`	`email: string` — 6-digit OTP email verification; auto-submits at 6 digits; resend with 60s cooldown; routes to /dashboard on success
 Page Components
 Component	File	Key Props
 `GiftPageClient`	`pages/GiftPageClient.tsx`	`recipientId, creatorName, defaultTag, feePercent, currency, contributions, contributorCount, showContributions` — renders gift form + supporters + footer; used only on /[username]/gift
@@ -729,7 +729,8 @@ Component	File	Key Props
 `DashboardHeader`	`dashboard/DashboardHeader.tsx`	`displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop.
 `StatCards`	`dashboard/StatCards.tsx`	`directTotal, poolTotal, giftCount, activePools, currency`
 `DashboardProfileCard`	`dashboard/DashboardProfileCard.tsx`	`displayName, username, avatarUrl, bio` — white card with avatar, name, kiima link, bio, share button
-`EarningsCard`	`dashboard/EarningsCard.tsx`	`contributions, currency` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown
+`EarningsCard`	`dashboard/EarningsCard.tsx`	`contributions, currency, bankName, accountNumber` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown; Withdraw button opens WithdrawModal
+`WithdrawModal`	`dashboard/WithdrawModal.tsx`	`isOpen, onClose, bankName, accountNumber, currency, balance` — modal; no-bank state prompts Settings; has-bank state shows amount input, masked account, and Withdraw button (backend TODO)
 `RecentGifts`	`dashboard/RecentGifts.tsx`	`contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts
 `Toast`	`dashboard/Toast.tsx`	`message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s
 `BankAccountSection`	`dashboard/BankAccountSection.tsx`	`userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP

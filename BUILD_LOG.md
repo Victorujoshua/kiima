@@ -5,6 +5,43 @@
 ---
 
 ```
+Date: 2026-05-14 (session 15)
+Built:
+  - Wallet / bank-account-required withdrawal feature (7-part spec):
+    1. lib/actions/auth.actions.ts: added updateBankDetails() — updates profiles
+       bank columns only, no Paystack subaccount creation during edits
+    2. components/dashboard/BankAccountSection.tsx: new 'empty' state (no OTP
+       for first-time setup); 'display' → OTP → 'editing' for changes; uses
+       updateBankDetails + router.refresh() after save
+    3. components/dashboard/WithdrawModal.tsx: CREATED — no-bank state prompts
+       Settings; has-bank state shows balance, amount input, masked account,
+       Withdraw button (backend TODO placeholder)
+    4. components/dashboard/EarningsCard.tsx: added bankName/accountNumber props,
+       "Withdraw →" pill button, WithdrawModal rendered inline
+    5. app/dashboard/page.tsx: profile query now fetches bank_name + account_number;
+       yellow #FFFBEA banner shown until bank account added; passes bank props to
+       EarningsCard
+    6. app/(auth)/signup/page.tsx: step 4 replaced VerifyBankStep with VerifyEmailStep
+    7. components/auth/VerifyEmailStep.tsx: CREATED — email OTP via supabase.auth
+       verifyOtp type 'signup'; auto-submit at 6 digits; 60s resend cooldown;
+       routes to /dashboard on success
+  - CLAUDE.md Section 7 updated: VerifyBankStep → VerifyEmailStep; EarningsCard
+    props updated; WithdrawModal added
+
+Next:
+  - Run migration 017_otp_verifications.sql in Supabase SQL Editor (if not yet done)
+  - Implement actual withdrawal backend (Paystack transfer API) — currently TODO
+  - Rotate Supabase service role key (was exposed in a previous session)
+  - Run scripts/migrate-subaccounts.mjs to recreate live subaccounts for existing creators
+
+Open issues:
+  - WithdrawModal submit shows "Withdrawals are not yet enabled" — backend not built
+  - OTP debug console.logs still present in lib/utils/otp.ts — remove before go-live
+```
+
+---
+
+```
 Date: 2026-05-14 (session 14)
 Built:
   - Bank verification OTP replaced with Loops email delivery
