@@ -5,6 +5,33 @@
 ---
 
 ```
+Date: 2026-05-14 (session 13)
+Built:
+  - Paystack subaccount splits activated on all payments (initializeGift now
+    passes subaccountCode + transactionCharge so kiima_fee routes to Kiima's
+    account and creator_amount settles directly to creator's bank)
+  - One-time migration script: scripts/migrate-subaccounts.mjs — recreates
+    live Paystack subaccounts for creators who signed up on test keys
+    (run with: node --env-file=.env.local scripts/migrate-subaccounts.mjs)
+  - Admin API route app/api/admin/migrate-subaccounts/route.ts added
+    (middleware exclusion + nodejs runtime — alternative to script)
+  - Bank details OTP fixed: replaced supabase.auth.reauthenticate() with
+    signInWithOtp (shouldCreateUser: false) + verifyOtp type 'email',
+    delegating entirely to ZeptoMail SMTP with 1-hour OTP expiry
+
+Next:
+  - Run migrate-subaccounts script against production to replace test codes
+  - Verify a live payment splits correctly in Paystack dashboard
+  - Rotate Supabase service role key (was shared in conversation)
+
+Open issues:
+  - Creators who failed migration (bad test account numbers) must re-enter
+    bank details from /dashboard/settings
+```
+
+---
+
+```
 Date: 2026-05-08 (session 12)
 Session: Twitter/X oEmbed — proper embed support via server-side API
 
