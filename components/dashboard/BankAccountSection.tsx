@@ -41,7 +41,10 @@ export default function BankAccountSection({
     setOtpSending(true);
     setOtpError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.reauthenticate();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false },
+    });
     setOtpSending(false);
     if (error) {
       setOtpError('Could not send code — try again.');
@@ -56,8 +59,7 @@ export default function BankAccountSection({
     setOtpVerifying(true);
     setOtpError(null);
     const supabase = createClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'reauthentication' as any });
+    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' });
     setOtpVerifying(false);
     if (error) {
       setOtpError('Invalid or expired code. Try again.');
@@ -71,7 +73,10 @@ export default function BankAccountSection({
     if (cooldown > 0) return;
     setOtpError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.reauthenticate();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false },
+    });
     if (!error) setCooldown(60);
     else setOtpError('Could not resend — try again.');
   }
@@ -185,7 +190,7 @@ export default function BankAccountSection({
             Verify it&apos;s you
           </p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9A9089', margin: 0, lineHeight: 1.5 }}>
-            A 6-digit code was sent to <strong style={{ color: '#1C1916' }}>{email}</strong>. Enter it below to continue.
+            A 6-digit code was sent to <strong style={{ color: '#1C1916' }}>{email}</strong>. Code is valid for 1 hour.
           </p>
         </div>
 
