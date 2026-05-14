@@ -733,7 +733,7 @@ Component	File	Key Props
 `WithdrawModal`	`dashboard/WithdrawModal.tsx`	`isOpen, onClose, bankName, accountNumber, currency, balance` — modal; no-bank state prompts Settings; has-bank state shows amount input, masked account, and Withdraw button (backend TODO)
 `RecentGifts`	`dashboard/RecentGifts.tsx`	`contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts
 `Toast`	`dashboard/Toast.tsx`	`message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s
-`BankAccountSection`	`dashboard/BankAccountSection.tsx`	`userId, email, bankName, accountNumber, accountName, onSaved, onError` — 3-stage state machine: display → otp → editing; OTP via supabase.auth.reauthenticate() before allowing changes; first setup skips OTP
+`BankAccountSection`	`dashboard/BankAccountSection.tsx`	`userId, email, bankName, accountNumber, accountName, onSaved, onError` — 4-stage state machine: empty → editing (no OTP); display → otp → editing (OTP via Loops/sendBankOTP); uses updateBankDetails + router.refresh()
 `NotificationBell`	`dashboard/NotificationBell.tsx`	`userId, initialNotifications, initialUnreadCount` — bell button + unread badge + real-time subscription; renders panel on click
 `NotificationPanel`	`dashboard/NotificationPanel.tsx`	`notifications, unreadCount, onMarkAsRead, onMarkAllAsRead` — dropdown panel, 380px, empty state, footer mark-all button
 `NotificationToast`	`dashboard/NotificationToast.tsx`	`notification, onDismiss` — fixed top-right slide-in, auto-dismisses after 4s

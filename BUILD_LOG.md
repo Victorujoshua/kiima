@@ -5,6 +5,36 @@
 ---
 
 ```
+Date: 2026-05-14 (session 16)
+Built:
+  - Verified all 7 parts of wallet/bank-account spec are fully implemented:
+      1. Settings Payout Account section (BankAccountSection, empty/display/otp/editing)
+      2. WithdrawModal no-bank + has-bank states
+      3. OTP wired via sendBankOTP / confirmBankOTP (Loops)
+      4. updateBankDetails server action in auth.actions.ts
+      5. Signup step 4 = VerifyEmailStep only (no bank step)
+      6. Dashboard banner when bank account missing
+      7. Withdraw button in EarningsCard
+  - Fixed BankAccountSection display state to match spec exactly:
+      - Display order: bank name → ****last4 → account name
+      - Button label: "Change bank account" (was "Change")
+      - Masked format: ****XXXX (was ••••••XXXX)
+  - Build: 0 errors
+
+Next:
+  - Run migration 017_otp_verifications.sql in Supabase SQL Editor (REQUIRED for OTP)
+  - Run scripts/migrate-subaccounts.mjs to recreate live Paystack subaccounts
+  - Rotate Supabase service role key (was exposed in session 13)
+  - Implement withdrawal backend (Paystack Transfer API) when ready
+
+Open issues:
+  - WithdrawModal withdraw button shows placeholder error (backend not built)
+  - OTP debug console.logs still in lib/utils/otp.ts — remove before go-live
+```
+
+---
+
+```
 Date: 2026-05-14 (session 15)
 Built:
   - Wallet / bank-account-required withdrawal feature (7-part spec):
