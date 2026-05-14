@@ -9,6 +9,7 @@ const TEMPLATE_IDS = {
   poolContribution: 'cmofsnhqs03ok0izsmvvqcxtc',
   poolGoalReached:  'cmofsq83u03tz0izsx3x3716e',
   confirmEmail:     'cmofsrz3o0q6c0j0leo1acjh2',
+  bankVerification: 'cmp56hiez02x10j0dqwukp54x',
 };
 
 type EmailResult = { success: true } | { success: false; error: string };
@@ -135,6 +136,33 @@ export async function sendPoolContributionEmail(data: {
     return { success: true };
   } catch (err) {
     console.error('[loops] sendPoolContributionEmail failed:', err);
+    return { success: false, error: String(err) };
+  }
+}
+
+// ─── Bank verification OTP email ─────────────────────────────────────────────
+
+export async function sendBankVerificationOTP(data: {
+  email: string;
+  firstName: string;
+  otpCode: string;
+}): Promise<EmailResult> {
+  if (!loops) {
+    console.warn('[loops] LOOPS_API_KEY not set — skipping bank verification OTP');
+    return { success: false, error: 'Loops not configured' };
+  }
+  try {
+    await loops.sendTransactionalEmail({
+      transactionalId: TEMPLATE_IDS.bankVerification,
+      email: data.email,
+      dataVariables: {
+        firstname: data.firstName,
+        otpcode:   data.otpCode,
+      },
+    });
+    return { success: true };
+  } catch (err) {
+    console.error('[loops] sendBankVerificationOTP failed:', err);
     return { success: false, error: String(err) };
   }
 }

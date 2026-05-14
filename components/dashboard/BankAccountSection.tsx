@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { getBanks, lookupAccountName, saveBankDetails } from '@/lib/actions/bank.actions';
+import { sendBankOTP, confirmBankOTP } from '@/lib/actions/otp.actions';
 import OtpInput from '@/components/auth/OtpInput';
 import type { PaystackBank } from '@/lib/actions/bank.actions';
 
@@ -40,13 +40,9 @@ export default function BankAccountSection({
   async function handleRequestOtp() {
     setOtpSending(true);
     setOtpError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false },
-    });
+    const result = await sendBankOTP();
     setOtpSending(false);
-    if (error) {
+    if (!result.success) {
       setOtpError('Could not send code — try again.');
     } else {
       setStage('otp');
@@ -58,11 +54,10 @@ export default function BankAccountSection({
     if (otp.length !== 6) return;
     setOtpVerifying(true);
     setOtpError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' });
+    const result = await confirmBankOTP(otp);
     setOtpVerifying(false);
-    if (error) {
-      setOtpError('Invalid or expired code. Try again.');
+    if (!result.valid) {
+      setOtpError(result.error ?? 'Invalid or expired code. Try again.');
     } else {
       setOtp('');
       setStage('editing');
@@ -72,12 +67,8 @@ export default function BankAccountSection({
   async function handleResendOtp() {
     if (cooldown > 0) return;
     setOtpError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false },
-    });
-    if (!error) setCooldown(60);
+    const result = await sendBankOTP();
+    if (result.success) setCooldown(60);
     else setOtpError('Could not resend — try again.');
   }
 
@@ -190,7 +181,7 @@ export default function BankAccountSection({
             Verify it&apos;s you
           </p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9A9089', margin: 0, lineHeight: 1.5 }}>
-            A 6-digit code was sent to <strong style={{ color: '#1C1916' }}>{email}</strong>. Code is valid for 1 hour.
+            A 6-digit code was sent to <strong style={{ color: '#1C1916' }}>{email}</strong>. Code is valid for 10 minutes.
           </p>
         </div>
 
