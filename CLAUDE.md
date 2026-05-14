@@ -517,6 +517,8 @@ Migrations Run
 014	ADD tag_label text to contributions; backfill from gift_tags	✅ Run
 015	CREATE creator_links table	✅ Run
 016	ADD embed_url text to profiles	✅ Run
+017	CREATE otp_verifications table	⏳ Run in Supabase SQL Editor
+018	CREATE withdrawals table + RLS	⏳ Run in Supabase SQL Editor
 ---
 6. FILE & FOLDER ARCHITECTURE
 ```
@@ -704,6 +706,7 @@ Action file	Exports
 `lib/actions/link.actions.ts`	`getSocialLinks`, `upsertSocialLink`, `deleteSocialLink`, `getCreatorLinks`, `upsertCreatorLink`, `deleteCreatorLink`, `reorderCreatorLinks`
 `lib/actions/notification.actions.ts`	`getNotifications`, `getUnreadCount`, `markAsRead`, `markAllAsRead`
 `lib/actions/embed.actions.ts`	`fetchTwitterOembed(url): Promise<string | null>` — server-side Twitter oEmbed fetch; cached 1hr via revalidate
+`lib/actions/withdrawal.actions.ts`	`requestWithdrawal(amount)` — validates available balance server-side (confirmed contributions - non-cancelled withdrawals), inserts into withdrawals table
 Paystack Library
 File	Exports
 `lib/paystack/initialize.ts`	`initializePaystackTransaction`
@@ -729,8 +732,8 @@ Component	File	Key Props
 `DashboardHeader`	`dashboard/DashboardHeader.tsx`	`displayName, username, avatarUrl` — 56px avatar, share + copy buttons. Wrapped in `.k-dash-header-mobile` on dashboard page so hidden on desktop.
 `StatCards`	`dashboard/StatCards.tsx`	`directTotal, poolTotal, giftCount, activePools, currency`
 `DashboardProfileCard`	`dashboard/DashboardProfileCard.tsx`	`displayName, username, avatarUrl, bio` — white card with avatar, name, kiima link, bio, share button
-`EarningsCard`	`dashboard/EarningsCard.tsx`	`contributions, currency, bankName, accountNumber` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown; Withdraw button opens WithdrawModal
-`WithdrawModal`	`dashboard/WithdrawModal.tsx`	`isOpen, onClose, bankName, accountNumber, currency, balance` — modal; no-bank state prompts Settings; has-bank state shows amount input, masked account, and Withdraw button (backend TODO)
+`EarningsCard`	`dashboard/EarningsCard.tsx`	`contributions, currency, bankName, accountNumber, availableBalance` — client component; period selector (7d/30d/all); Fraunces 48px total; gifts/pools breakdown; Withdraw button opens WithdrawModal
+`WithdrawModal`	`dashboard/WithdrawModal.tsx`	`isOpen, onClose, bankName, accountNumber, currency, balance` — no-bank → Settings prompt; has-bank → amount input + requestWithdrawal(); success state shows confirmation + Done button; router.refresh() after success
 `RecentGifts`	`dashboard/RecentGifts.tsx`	`contributions, currency, creatorName` — last 5 with colored avatar initials, tag label, relative time, amounts
 `Toast`	`dashboard/Toast.tsx`	`message, variant?, onDismiss` — fixed bottom-center, auto-dismiss 3s
 `BankAccountSection`	`dashboard/BankAccountSection.tsx`	`userId, email, bankName, accountNumber, accountName, onSaved, onError` — 4-stage state machine: empty → editing (no OTP); display → otp → editing (OTP via Loops/sendBankOTP); uses updateBankDetails + router.refresh()

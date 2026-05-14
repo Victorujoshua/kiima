@@ -5,6 +5,36 @@
 ---
 
 ```
+Date: 2026-05-14 (session 17)
+Built:
+  - Full withdrawal backend:
+    - supabase/migrations/018_withdrawals.sql: withdrawals table with RLS
+      (status: pending|processing|completed|cancelled; creator can SELECT + INSERT own rows)
+    - lib/actions/withdrawal.actions.ts: requestWithdrawal(amount) server action
+      Validates balance server-side (sum confirmed contributions - sum non-cancelled withdrawals)
+      Checks bank account exists, inserts withdrawal row, returns { success } or { error }
+    - WithdrawModal.tsx: replaced placeholder "not yet enabled" with real requestWithdrawal call
+      Added success state: "Withdrawal requested ✓" + amount + bank + Done button
+      router.refresh() called on success so available balance updates
+    - dashboard/page.tsx: fetches withdrawals sum, computes availableBalance = received - withdrawn
+      Passes availableBalance to EarningsCard
+    - EarningsCard.tsx: accepts availableBalance prop, passes to WithdrawModal as balance
+  - Build: 0 errors
+
+Next:
+  - Run migration 017_otp_verifications.sql in Supabase SQL Editor (REQUIRED for bank OTP)
+  - Run migration 018_withdrawals.sql in Supabase SQL Editor (REQUIRED for withdrawals)
+  - Run scripts/migrate-subaccounts.mjs to recreate live Paystack subaccounts
+  - Rotate Supabase service role key (was exposed in session 13)
+
+Open issues:
+  - Withdrawals are manual (no Paystack Transfer API call) — status stays 'pending' until admin acts
+  - OTP debug console.logs still in lib/utils/otp.ts — remove before go-live
+```
+
+---
+
+```
 Date: 2026-05-14 (session 16)
 Built:
   - Verified all 7 parts of wallet/bank-account spec are fully implemented:
