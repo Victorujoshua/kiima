@@ -443,6 +443,37 @@ export async function uploadAvatar(
   return { url: publicUrl };
 }
 
+// ─── Update Bank Details (no subaccount creation) ─────────────────────────────
+
+export async function updateBankDetails(
+  userId: string,
+  details: {
+    bank_name: string;
+    bank_code: string;
+    account_number: string;
+    account_name: string;
+  }
+): Promise<{ success?: boolean; error?: string }> {
+  if (!userId) return { error: 'Something went wrong — try again.' };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      bank_name:      details.bank_name,
+      bank_code:      details.bank_code,
+      account_number: details.account_number,
+      account_name:   details.account_name,
+    })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('[updateBankDetails]', error.message);
+    return { error: 'Something went wrong — try again.' };
+  }
+  return { success: true };
+}
+
 // ─── Reset Password ────────────────────────────────────────────────────────
 
 export interface ResetPasswordState {

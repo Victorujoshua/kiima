@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getBanks, lookupAccountName, saveBankDetails } from '@/lib/actions/bank.actions';
+import { useRouter } from 'next/navigation';
+import { getBanks, lookupAccountName } from '@/lib/actions/bank.actions';
+import { updateBankDetails } from '@/lib/actions/auth.actions';
 import { sendBankOTP, confirmBankOTP } from '@/lib/actions/otp.actions';
 import OtpInput from '@/components/auth/OtpInput';
 import type { PaystackBank } from '@/lib/actions/bank.actions';
 
-type Stage = 'display' | 'otp' | 'editing';
+type Stage = 'empty' | 'display' | 'otp' | 'editing';
 
 interface Props {
   userId:        string;
@@ -21,15 +23,16 @@ interface Props {
 export default function BankAccountSection({
   userId, email, bankName, accountNumber, accountName, onSaved, onError,
 }: Props) {
+  const router = useRouter();
   const hasDetails = !!(bankName && accountNumber && accountName);
-  const [stage, setStage]             = useState<Stage>(hasDetails ? 'display' : 'editing');
+  const [stage, setStage] = useState<Stage>(hasDetails ? 'display' : 'empty');
 
   // ── OTP stage ──────────────────────────────────────────────────────────────
-  const [otp, setOtp]                 = useState('');
-  const [otpSending, setOtpSending]   = useState(false);
+  const [otp, setOtp]                   = useState('');
+  const [otpSending, setOtpSending]     = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpError, setOtpError]       = useState<string | null>(null);
-  const [cooldown, setCooldown]       = useState(0);
+  const [otpError, setOtpError]         = useState<string | null>(null);
+  const [cooldown, setCooldown]         = useState(0);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -73,16 +76,16 @@ export default function BankAccountSection({
   }
 
   // ── Edit form stage ─────────────────────────────────────────────────────────
-  const [banks, setBanks]             = useState<PaystackBank[]>([]);
-  const [bankSearch, setBankSearch]   = useState('');
+  const [banks, setBanks]               = useState<PaystackBank[]>([]);
+  const [bankSearch, setBankSearch]     = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedBank, setSelectedBank] = useState<PaystackBank | null>(null);
-  const [accNumber, setAccNumber]     = useState('');
+  const [accNumber, setAccNumber]       = useState('');
   const [resolvedName, setResolvedName] = useState<string | null>(null);
-  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lookupError, setLookupError]   = useState<string | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
-  const [saving, setSaving]           = useState(false);
-  const dropdownRef                   = useRef<HTMLDivElement>(null);
+  const [saving, setSaving]             = useState(false);
+  const dropdownRef                     = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (stage !== 'editing') return;
@@ -130,15 +133,38 @@ export default function BankAccountSection({
   const handleSave = useCallback(async () => {
     if (!selectedBank || !resolvedName || accNumber.length !== 10) return;
     setSaving(true);
-    const result = await saveBankDetails(userId, selectedBank.name, selectedBank.code, accNumber, resolvedName);
+    const result = await updateBankDetails(userId, {
+      bank_name:      selectedBank.name,
+      bank_code:      selectedBank.code,
+      account_number: accNumber,
+      account_name:   resolvedName,
+    });
     setSaving(false);
     if (result.error) {
       onError(result.error);
     } else {
-      onSaved('Payout account updated ✓');
+      onSaved('Bank account saved ✓');
       setStage('display');
+      router.refresh();
     }
-  }, [selectedBank, resolvedName, accNumber, userId, onSaved, onError]);
+  }, [selectedBank, resolvedName, accNumber, userId, onSaved, onError, router]);
+
+  // ── RENDER: empty ──────────────────────────────────────────────────────────
+  if (stage === 'empty') {
+    return (
+      <div>
+        <p style={emptyTextStyle}>No bank account added yet.</p>
+        <p style={emptySubStyle}>Add one to enable withdrawals.</p>
+        <button
+          type="button"
+          onClick={() => setStage('editing')}
+          style={addBtnStyle}
+        >
+          Add bank account
+        </button>
+      </div>
+    );
+  }
 
   // ── RENDER: display ────────────────────────────────────────────────────────
   if (stage === 'display') {
@@ -156,7 +182,7 @@ export default function BankAccountSection({
             disabled={otpSending}
             style={changeBtnStyle}
           >
-            {otpSending ? 'Sending…' : 'Update'}
+            {otpSending ? 'Sending…' : 'Change'}
           </button>
         </div>
         <div style={verifiedBadgeStyle}>
@@ -276,13 +302,41 @@ export default function BankAccountSection({
         disabled={!resolvedName || saving}
         style={saveBtnStyle(!resolvedName || saving)}
       >
-        {saving ? 'Saving…' : 'Save payout account'}
+        {saving ? 'Saving…' : 'Save bank account'}
       </button>
     </div>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
+
+const emptyTextStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+  margin: '0 0 4px',
+};
+
+const emptySubStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  color: 'var(--color-text-muted)',
+  margin: '0 0 16px',
+};
+
+const addBtnStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 14,
+  color: '#ffffff',
+  background: '#1C1916',
+  border: 'none',
+  borderRadius: 100,
+  padding: '12px 20px',
+  cursor: 'pointer',
+  transition: 'background 0.15s ease',
+};
 
 const fieldLabelStyle: React.CSSProperties = {
   display: 'block',

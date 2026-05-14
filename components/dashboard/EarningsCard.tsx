@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatCurrency } from '@/lib/utils/currency';
+import WithdrawModal from '@/components/dashboard/WithdrawModal';
 import type { Currency } from '@/types';
 
 type Period = '7d' | '30d' | 'all';
@@ -15,6 +16,8 @@ interface ContributionItem {
 interface Props {
   contributions: ContributionItem[];
   currency:      Currency;
+  bankName:      string | null;
+  accountNumber: string | null;
 }
 
 const PERIOD_MS: Record<Period, number | null> = {
@@ -23,8 +26,9 @@ const PERIOD_MS: Record<Period, number | null> = {
   'all': null,
 };
 
-export default function EarningsCard({ contributions, currency }: Props) {
-  const [period, setPeriod] = useState<Period>('30d');
+export default function EarningsCard({ contributions, currency, bankName, accountNumber }: Props) {
+  const [period, setPeriod]           = useState<Period>('30d');
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   const now     = Date.now();
   const cutoff  = PERIOD_MS[period];
@@ -36,41 +40,65 @@ export default function EarningsCard({ contributions, currency }: Props) {
   const poolTotal   = filtered.filter(c =>  c.pool_id).reduce((s, c) => s + Number(c.gift_amount), 0);
   const grandTotal  = directTotal + poolTotal;
 
+  // All-time total for withdrawal balance
+  const allTimeTotal = contributions.reduce((s, c) => s + Number(c.gift_amount), 0);
+
   return (
-    <div style={cardStyle}>
-      {/* Header */}
-      <div style={headerRowStyle}>
-        <span style={headingStyle}>Earnings</span>
-        <select
-          value={period}
-          onChange={e => setPeriod(e.target.value as Period)}
-          style={periodSelectStyle}
-        >
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="all">All time</option>
-        </select>
+    <>
+      <div style={cardStyle}>
+        {/* Header */}
+        <div style={headerRowStyle}>
+          <span style={headingStyle}>Earnings</span>
+          <select
+            value={period}
+            onChange={e => setPeriod(e.target.value as Period)}
+            style={periodSelectStyle}
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="all">All time</option>
+          </select>
+        </div>
+
+        {/* Big number */}
+        <p style={bigAmountStyle}>
+          {formatCurrency(grandTotal, currency)}
+        </p>
+
+        {/* Breakdown + Withdraw button */}
+        <div style={bottomRowStyle}>
+          <div style={breakdownRowStyle}>
+            <div style={breakdownItemStyle}>
+              <span style={{ ...dotStyle, background: '#D7D744' }} />
+              <span style={breakdownAmountStyle}>{formatCurrency(directTotal, currency)}</span>
+              <span style={breakdownLabelStyle}>Gifts</span>
+            </div>
+            <div style={breakdownItemStyle}>
+              <span style={{ ...dotStyle, background: '#FF5C00' }} />
+              <span style={breakdownAmountStyle}>{formatCurrency(poolTotal, currency)}</span>
+              <span style={breakdownLabelStyle}>Pools</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setWithdrawOpen(true)}
+            style={withdrawBtnStyle}
+          >
+            Withdraw →
+          </button>
+        </div>
       </div>
 
-      {/* Big number */}
-      <p style={bigAmountStyle}>
-        {formatCurrency(grandTotal, currency)}
-      </p>
-
-      {/* Breakdown */}
-      <div style={breakdownRowStyle}>
-        <div style={breakdownItemStyle}>
-          <span style={{ ...dotStyle, background: '#D7D744' }} />
-          <span style={breakdownAmountStyle}>{formatCurrency(directTotal, currency)}</span>
-          <span style={breakdownLabelStyle}>Gifts</span>
-        </div>
-        <div style={breakdownItemStyle}>
-          <span style={{ ...dotStyle, background: '#FF5C00' }} />
-          <span style={breakdownAmountStyle}>{formatCurrency(poolTotal, currency)}</span>
-          <span style={breakdownLabelStyle}>Pools</span>
-        </div>
-      </div>
-    </div>
+      <WithdrawModal
+        isOpen={withdrawOpen}
+        onClose={() => setWithdrawOpen(false)}
+        bankName={bankName}
+        accountNumber={accountNumber}
+        currency={currency}
+        balance={allTimeTotal}
+      />
+    </>
   );
 }
 
@@ -111,18 +139,26 @@ const periodSelectStyle: React.CSSProperties = {
 };
 
 const bigAmountStyle: React.CSSProperties = {
-  fontFamily:  'var(--font-display)',
-  fontWeight:  600,
-  fontSize:    48,
-  color:       '#1C1916',
-  margin:      '0 0 20px',
-  lineHeight:  1,
+  fontFamily:    'var(--font-display)',
+  fontWeight:    600,
+  fontSize:      48,
+  color:         '#1C1916',
+  margin:        '0 0 20px',
+  lineHeight:    1,
   letterSpacing: '-1px',
 };
 
+const bottomRowStyle: React.CSSProperties = {
+  display:        'flex',
+  alignItems:     'center',
+  justifyContent: 'space-between',
+  flexWrap:       'wrap',
+  gap:            12,
+};
+
 const breakdownRowStyle: React.CSSProperties = {
-  display: 'flex',
-  gap:     24,
+  display:  'flex',
+  gap:      24,
   flexWrap: 'wrap',
 };
 
@@ -151,4 +187,18 @@ const breakdownLabelStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize:   13,
   color:      '#9A9089',
+};
+
+const withdrawBtnStyle: React.CSSProperties = {
+  fontFamily:   'var(--font-body)',
+  fontWeight:   600,
+  fontSize:     13,
+  color:        '#ffffff',
+  background:   '#1C1916',
+  border:       'none',
+  borderRadius: 100,
+  padding:      '10px 20px',
+  cursor:       'pointer',
+  transition:   'background 0.15s ease',
+  flexShrink:   0,
 };

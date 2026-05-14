@@ -4,11 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import SignupProgressBar from '@/components/auth/ProgressBar';
-import UsernameStep     from '@/components/auth/UsernameStep';
+import SignupProgressBar  from '@/components/auth/ProgressBar';
+import UsernameStep      from '@/components/auth/UsernameStep';
 import EmailPasswordStep from '@/components/auth/EmailPasswordStep';
 import ProfileStep       from '@/components/auth/ProfileStep';
-import VerifyBankStep    from '@/components/auth/VerifyBankStep';
+import VerifyEmailStep   from '@/components/auth/VerifyEmailStep';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -70,8 +70,7 @@ export default function SignupPage() {
           />
         )}
         {step === 4 && (
-          <VerifyBankStep
-            userId={userId}
+          <VerifyEmailStep
             email={email}
           />
         )}
