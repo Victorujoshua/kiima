@@ -168,13 +168,14 @@ export default function BankAccountSection({
 
   // ── RENDER: display ────────────────────────────────────────────────────────
   if (stage === 'display') {
-    const masked = accountNumber ? `••••••${accountNumber.slice(-4)}` : '';
+    const masked = accountNumber ? `****${accountNumber.slice(-4)}` : '';
     return (
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12, gap: 12 }}>
           <div>
-            <p style={detailNameStyle}>{accountName}</p>
-            <p style={detailMetaStyle}>{bankName} · {masked}</p>
+            <p style={detailNameStyle}>{bankName}</p>
+            <p style={detailMetaStyle}>{masked}</p>
+            <p style={{ ...detailMetaStyle, marginTop: 2 }}>{accountName}</p>
           </div>
           <button
             type="button"
@@ -182,7 +183,7 @@ export default function BankAccountSection({
             disabled={otpSending}
             style={changeBtnStyle}
           >
-            {otpSending ? 'Sending…' : 'Change'}
+            {otpSending ? 'Sending…' : 'Change bank account'}
           </button>
         </div>
         <div style={verifiedBadgeStyle}>
