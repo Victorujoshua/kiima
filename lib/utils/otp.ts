@@ -11,51 +11,65 @@ export async function sendAndStoreOTP(
 ): Promise<{ success: boolean; error?: string }> {
   const otp = generateOTP();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+  const normalizedEmail = email.toLowerCase().trim();
 
   const supabase = createAdminClient();
 
+  // Delete any existing row first to avoid upsert conflict edge cases
+  await supabase
+    .from('otp_verifications')
+    .delete()
+    .eq('email', normalizedEmail)
+    .eq('purpose', 'bank_details');
+
   const { error: storeError } = await supabase
     .from('otp_verifications')
-    .upsert(
-      {
-        email,
-        otp,
-        expires_at: expiresAt.toISOString(),
-        purpose: 'bank_details',
-      },
-      { onConflict: 'email,purpose' }
-    );
+    .insert({
+      email: normalizedEmail,
+      otp,
+      expires_at: expiresAt.toISOString(),
+      purpose: 'bank_details',
+    });
 
   if (storeError) {
     console.error('[otp] sendAndStoreOTP store error:', storeError.message);
     return { success: false, error: 'Failed to store OTP' };
   }
 
-  return sendBankVerificationOTP({ email, firstName, otpCode: otp });
+  console.log('[otp] stored OTP for', normalizedEmail, '— code:', otp);
+  return sendBankVerificationOTP({ email: normalizedEmail, firstName, otpCode: otp });
 }
 
 export async function verifyStoredOTP(
   email: string,
   otp: string
 ): Promise<{ valid: boolean; error?: string }> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const normalizedOtp = otp.trim();
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('otp_verifications')
     .select('otp, expires_at')
-    .eq('email', email)
+    .eq('email', normalizedEmail)
     .eq('purpose', 'bank_details')
     .single();
+
+  console.log('[otp] verify lookup — email:', normalizedEmail, 'found:', !!data, 'error:', error?.message);
 
   if (error || !data) {
     return { valid: false, error: 'No code found. Request a new one.' };
   }
 
-  if (new Date() > new Date(data.expires_at)) {
+  const expired = new Date() > new Date(data.expires_at);
+  console.log('[otp] stored:', data.otp, 'entered:', normalizedOtp, 'expired:', expired);
+
+  if (expired) {
     return { valid: false, error: 'Code expired. Request a new one.' };
   }
 
-  if (data.otp !== otp) {
+  if (data.otp !== normalizedOtp) {
     return { valid: false, error: 'Invalid code. Try again.' };
   }
 
@@ -63,7 +77,7 @@ export async function verifyStoredOTP(
   await supabase
     .from('otp_verifications')
     .delete()
-    .eq('email', email)
+    .eq('email', normalizedEmail)
     .eq('purpose', 'bank_details');
 
   return { valid: true };
